@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 
 until rabbitmqctl await_startup 2>/dev/null; do
   echo "Waiting for RabbitMQ..."
@@ -9,17 +8,24 @@ done
 echo "Creating users..."
 
 create_user() {
-  local user=$1
-  local password=$2
-  local configure=$3
-  local write=$4
-  local read=$5
+  user=$1
+  password=$2
+  configure=$3
+  write=$4
+  read=$5
 
-  rabbitmqctl add_user "$user" "$password" 2>/dev/null \
-    && echo "User $user created" \
-    || echo "User $user already exists, skipping"
+  existing=$(rabbitmqctl list_users | grep -w "$user")
+  echo "Checking user $user: '$existing'"
+
+  if [ -z "$existing" ]; then
+    rabbitmqctl add_user "$user" "$password"
+    echo "User $user created"
+  else
+    echo "User $user already exists, skipping"
+  fi
 
   rabbitmqctl set_permissions -p "$RABBIT_VHOST" "$user" "$configure" "$write" "$read"
+  echo "Permissions set for $user"
 }
 
 create_user "$RECEIVER_USER" "$RECEIVER_PASSWORD" ""   "stream\.events"        ""
