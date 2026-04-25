@@ -19,6 +19,15 @@
         "tsConfigPath": "apps/api/tsconfig.app.json"
       }
     },
+    "config": {
+      "type": "library",
+      "root": "libs/config",
+      "entryFile": "index",
+      "sourceRoot": "libs/config/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/config/tsconfig.lib.json"
+      }
+    },
     "database": {
       "type": "library",
       "root": "libs/database",
@@ -35,15 +44,6 @@
       "sourceRoot": "apps/discord-bot/src",
       "compilerOptions": {
         "tsConfigPath": "apps/discord-bot/tsconfig.app.json"
-      }
-    },
-    "global-dto": {
-      "type": "library",
-      "root": "libs/global-dto",
-      "entryFile": "index",
-      "sourceRoot": "libs/global-dto/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/global-dto/tsconfig.lib.json"
       }
     },
     "telegram-bot": {

@@ -30,7 +30,7 @@ create_user() {
 
 create_user "$RECEIVER_USER" "$RECEIVER_PASSWORD" ""   "stream\.events"        ""
 create_user "$API_USER"      "$API_PASSWORD"      ".*" ".*"                    ".*"
-create_user "$DISCORD_USER"  "$DISCORD_PASSWORD"  ""   ""                      "notification\.discord"
-create_user "$TELEGRAM_USER" "$TELEGRAM_PASSWORD" ""   ""                      "notification\.telegram"
+create_user "$DISCORD_USER"  "$DISCORD_PASSWORD"  "notifications\.discord"  ""  "notifications\.discord"
+create_user "$TELEGRAM_USER" "$TELEGRAM_PASSWORD" "notifications\.telegram" ""  "notifications\.telegram"
 
 echo "Users created successfully"

@@ -28,12 +28,12 @@
       "@lib/database/*": [
         "libs/database/src/*"
       ],
-      "lib/global-dto": [
-        "libs/global-dto/src"
+      "@lib/config": [
+        "libs/config/src"
       ],
-      "lib/global-dto/*": [
-        "libs/global-dto/src/*"
-      ]
+      "@lib/config/*": [
+        "libs/config/src/*"
+      ],
     }
   }
 }
