@@ -1,7 +1,13 @@
+import { AppConfigModule } from '@libs/config';
+import { DiscordModule, SubscriptionModule } from './modules';
 import { Module } from '@nestjs/common';
 
 @Module({
-  imports: [],
+  imports: [
+    AppConfigModule,
+    DiscordModule,
+    SubscriptionModule,
+  ],
   controllers: [],
   providers: [],
 })

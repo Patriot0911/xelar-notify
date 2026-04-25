@@ -43,7 +43,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/discord-bot/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/discord-bot/tsconfig.app.json"
+        "tsConfigPath": "apps/discord-bot/tsconfig.app.json",
+        "webpack": true,
+        "webpackConfigPath": "apps/discord-bot/webpack.config.js"
       }
     },
     "telegram-bot": {
