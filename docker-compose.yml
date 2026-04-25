@@ -1,6 +1,8 @@
 services:
   postgres:
     image: postgres:16-alpine
+    ports:
+      - "${DB_PORT}:5432"
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -17,6 +19,8 @@ services:
     image: redis:7-alpine
     volumes:
       - redis_data:/data
+    ports:
+      - "${REDIS_PORT}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -46,6 +50,8 @@ services:
       - TELEGRAM_USER=${RABBIT_TELEGRAM_USER}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "${RABBIT_PORT}:5672"
     healthcheck:
       test: |
         rabbitmq-diagnostics ping && \
@@ -58,17 +64,15 @@ services:
       start_period: 30s
     restart: unless-stopped
 
-  # migrate:
-  #   build:
-  #     context: .
-  #     args:
-  #       APP: api
-  #   command: ["node", "dist/migrate"]
-  #   env_file: .env
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   restart: on-failure
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.migrate
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
 
   api:
     build:
@@ -79,8 +83,8 @@ services:
       - "${API_PORT}:${API_PORT}"
     env_file: .env
     depends_on:
-      # migrate:
-      #   condition: service_completed_successfully
+      migrate:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:

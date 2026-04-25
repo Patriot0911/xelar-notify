@@ -12,7 +12,6 @@ ENV APP=${APP}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# встановлюємо залежності сервісу прямо тут
 RUN if [ -f apps/${APP}/package.json ]; then \
       cd apps/${APP} && npm ci; \
     fi
