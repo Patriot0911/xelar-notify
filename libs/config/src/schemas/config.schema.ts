@@ -6,6 +6,12 @@ export const configSchema = z.object({
   API_PORT:              z.coerce.number().default(3000),
   WEBHOOK_RECEIVER_PORT: z.coerce.number().default(3001),
 
+  // Auth
+  JWT_SECRET_ACCESS:  z.string(),
+  JWT_SECRET_REFRESH:  z.string(),
+  JWT_TTL_ACCESS:  z.coerce.number().default(3600),
+  JWT_TTL_REFRESH:  z.coerce.number().default(86400),
+
   // Discord
   DISCORD_TOKEN: z.string(),
   DISCORD_CLIENT_ID: z.string(),
@@ -20,6 +26,8 @@ export const configSchema = z.object({
   // Redis
   REDIS_HOST: z.string(),
   REDIS_PORT: z.coerce.number().default(6379),
+  REDIS_USER: z.string(),
+  REDIS_PASSWORD: z.string(),
 
   // RabbitMQ
   RABBIT_HOST:     z.string(),
