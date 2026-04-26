@@ -1,6 +1,6 @@
-import { IAccessTokenPayload, IAuthResponse, ILoginByEmailModel, IRefreshTokenPayload, IRegisterByEmailModel, IUserPayload, TokenType } from '../models';
+import { IAccessTokenPayload, IAuthResponse, ILoginByEmailModel, IRefreshTokenPayload, IRegisterByEmailModel, TokenType } from '../models';
 import { UserEntity } from '@libs/database/entities';
-import { BadRequestException, Inject, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { PasswordService } from './password.service';
@@ -24,8 +24,8 @@ export class AuthService {
   ) {}
 
   async authByDiscordCode(code: string): Promise<IAuthResponse> {
-    const { access_token, } = await this.discordAuthService.exchangeCodeForTokens(code);
-    const discordMe = await this.discordAuthService.getDiscordMe(access_token);
+    const { accessToken, } = await this.discordAuthService.exchangeCodeForTokens(code);
+    const discordMe = await this.discordAuthService.getDiscordMeByToken(accessToken);
 
     let userData = await this.usersRepository.findOne({
       where: [
@@ -39,13 +39,13 @@ export class AuthService {
         email: discordMe.email,
         displayName: discordMe.globalName,
         discordId: discordMe.id,
-        discordAccessToken: access_token,
+        discordAccessToken: accessToken,
       });
       userData = await this.usersRepository.save(newUser);
     } else {
       if (userData.discordId !== discordMe.id) {
         userData.discordId = discordMe.id;
-        userData.discordAccessToken = access_token;
+        userData.discordAccessToken = accessToken;
         await this.usersRepository.save(userData);
       }
     }
@@ -101,16 +101,6 @@ export class AuthService {
     );
     await this.updateRefreshToken(createdUser.id, tokens.refreshToken);
     return this.authMapper.toAuthResponse(createdUser, tokens);
-  }
-
-  async getMe(userId: string): Promise<IUserPayload> {
-    const userData = await this.usersRepository.findOneOrFail({
-      where: { id: userId, },
-    });
-    if (!userData) {
-      throw new UnauthorizedException();
-    }
-    return this.authMapper.toMeDto(userData);
   }
 
   async refreshToken(userId: string, refreshToken: string) {
@@ -175,5 +165,5 @@ export class AuthService {
     if (!userData || !userData?.refreshToken) return false;
     const isValidRefresh = await this.passwordService.verify(userData.refreshToken, refreshToken);
     return isValidRefresh;
-  };
+  }
 }

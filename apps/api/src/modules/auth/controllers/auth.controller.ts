@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpStatus, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { JwtRefreshGuard, JwtAccessGuard } from '../guards';
-import { AuthService } from '../services';
+import { AuthService, MeService } from '../services';
 import { IRefreshTokenPayloadWithToken, IAccessTokenPayload, IAuthResponse, IUserPayload } from '../models';
 import { ApiGenericResponses, Feature, FeatureGuard } from '../../../shared';
 import { AuthResponseDto, LoginByEmailDto, RegistrationByEmailDto, UserPayloadDto } from '../dto';
@@ -13,6 +13,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly discordAuthService: DiscordAuthService,
+    private readonly meService: MeService,
   ) {}
 
   @Post('login/email')
@@ -32,7 +33,7 @@ export class AuthController {
   @Post('discord')
   @Feature('register-discord')
   @UseGuards(FeatureGuard)
-  @ApiGenericResponses({ [HttpStatus.PERMANENT_REDIRECT]: String, })
+  @ApiGenericResponses({ [HttpStatus.MOVED_PERMANENTLY]: String, })
   async redirectForDiscordAuth(@Res() res) {
     const redirectUri = this.discordAuthService.getDiscordAuthRedirectUri();
     return res.redirect(redirectUri);
@@ -42,7 +43,7 @@ export class AuthController {
   @Feature('register-discord')
   @UseGuards(FeatureGuard)
   @ApiGenericResponses({ [HttpStatus.CREATED]: AuthResponseDto, })
-  async authByDiscord(@Query('code') code: string) { // : Promise<IAuthResponse>
+  async authByDiscord(@Query('code') code: string): Promise<IAuthResponse> {
     return await this.authService.authByDiscordCode(code);
   }
 
@@ -69,6 +70,15 @@ export class AuthController {
   @ApiGenericResponses({ [HttpStatus.OK]: UserPayloadDto, })
   async me(@Req() request): Promise<IUserPayload> {
     const { sub, } = <IAccessTokenPayload> request.user;
-    return await this.authService.getMe(sub);
+    return await this.meService.getMe(sub);
+  }
+
+  @Get('me/guilds')
+  @ApiBearerAuth()
+  @UseGuards(JwtAccessGuard)
+  @ApiGenericResponses({ [HttpStatus.OK]: UserPayloadDto, })
+  async getMeGuilds(@Req() request): Promise<IUserPayload> {
+    const { sub, } = <IAccessTokenPayload> request.user;
+    return await this.meService.getUserDiscordGuilds(sub);
   }
 }

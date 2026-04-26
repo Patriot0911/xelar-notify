@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
-import { DiscordAuthService } from './services';
-import { DiscordAuthMapper } from './mappers';
+import { DiscordAuthService, DiscordBaseService, DiscordGuildService } from './services';
+import { DiscordAuthMapper, DiscordGuildMapper } from './mappers';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { UserEntity } from '@libs/database';
 
 @Module({
   imports: [
@@ -9,11 +11,21 @@ import { DiscordAuthMapper } from './mappers';
       baseURL: 'https://discord.com/api',
       timeout: 5000,
     }),
+    TypeOrmModule.forFeature([
+      UserEntity,
+    ]),
   ],
   providers: [
+    DiscordBaseService,
+    DiscordGuildService,
     DiscordAuthService,
     DiscordAuthMapper,
+    DiscordGuildMapper,
   ],
-  exports: [DiscordAuthService,],
+  exports: [
+    DiscordAuthService,
+    DiscordBaseService,
+    DiscordGuildService,
+  ],
 })
 export class DiscordModule {}
