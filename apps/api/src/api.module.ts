@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth';
+import { AuthModule } from './modules/auth';
+import { DiscordModule } from './modules/discord';
 import { DatabaseModule } from '@libs/database';
 import { AppConfigModule } from '@libs/config';
 
@@ -8,6 +9,7 @@ import { AppConfigModule } from '@libs/config';
     AuthModule,
     DatabaseModule,
     AppConfigModule,
+    DiscordModule,
   ],
 })
 export class ApiModule {}

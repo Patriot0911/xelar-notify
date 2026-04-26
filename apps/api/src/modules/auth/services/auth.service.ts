@@ -1,17 +1,19 @@
 import { IAccessTokenPayload, IAuthResponse, ILoginByEmailModel, IRefreshTokenPayload, IRegisterByEmailModel, IUserPayload, TokenType } from '../models';
 import { UserEntity } from '@libs/database/entities';
-import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { PasswordService } from './password.service';
 import { JwtService } from '@nestjs/jwt';
 import type { ConfigType } from '@nestjs/config';
 import { AuthMapper } from '../mappers';
 import { authConfig } from '@libs/config';
+import { DiscordAuthService } from '../../discord';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly discordAuthService: DiscordAuthService,
     private readonly passwordService: PasswordService,
     private readonly jwtService: JwtService,
     private readonly authMapper: AuthMapper,
@@ -21,15 +23,54 @@ export class AuthService {
     private usersRepository: Repository<UserEntity>,
   ) {}
 
+  async authByDiscordCode(code: string): Promise<IAuthResponse> {
+    const { access_token, } = await this.discordAuthService.exchangeCodeForTokens(code);
+    const discordMe = await this.discordAuthService.getDiscordMe(access_token);
+
+    let userData = await this.usersRepository.findOne({
+      where: [
+        { email: discordMe.email, },
+        { discordId: discordMe.id, },
+      ],
+    });
+
+    if (!userData) {
+      const newUser = this.usersRepository.create({
+        email: discordMe.email,
+        displayName: discordMe.globalName,
+        discordId: discordMe.id,
+        discordAccessToken: access_token,
+      });
+      userData = await this.usersRepository.save(newUser);
+    } else {
+      if (userData.discordId !== discordMe.id) {
+        userData.discordId = discordMe.id;
+        userData.discordAccessToken = access_token;
+        await this.usersRepository.save(userData);
+      }
+    }
+
+    const tokens = await this.generateTokens(
+      userData.id,
+    );
+    await this.updateRefreshToken(userData.id, tokens.refreshToken);
+
+    return this.authMapper.toAuthResponse(userData, tokens);
+  }
+
   async loginByEmail(data: ILoginByEmailModel): Promise<IAuthResponse> {
     const userData = await this.usersRepository.findOne({
-      where: { email: data.email, },
+      where: {
+        email: data.email,
+        password: Not(IsNull()),
+      },
     });
+
     if (!userData) {
       throw new BadRequestException('Invalid credentials');
     }
 
-    const isValidPassword = await this.passwordService.verify(userData.password, data.password);
+    const isValidPassword = await this.passwordService.verify(userData.password!, data.password);
     if (!isValidPassword) {
       throw new BadRequestException('Invalid credentials');
     }

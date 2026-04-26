@@ -10,14 +10,16 @@ export class AuthMapper {
       user: {
         id: user.id,
         displayName: user.displayName,
+        discordId: user.discordId,
       },
-    }
+    };
   }
 
   toMeDto(user: UserEntity): IUserPayload {
     return {
       id: user.id,
       displayName: user.displayName,
+      discordId: user.discordId,
     };
   }
 }

@@ -14,11 +14,14 @@ export class UserEntity {
   @Column({ unique: true, nullable: true, type: 'varchar' })
   discordId?: string | null;
 
-  @Column()
-  password: string;
+  @Column({ nullable: true, type: 'varchar' })
+  password?: string | null;
 
   @Column({ nullable: true, type: 'varchar' })
   refreshToken?: string | null;
+
+  @Column({ nullable: true, type: 'varchar' })
+  discordAccessToken?: string | null;
 
   // @Column({ unique: true, nullable: true })
   // telegramId?: string | null;

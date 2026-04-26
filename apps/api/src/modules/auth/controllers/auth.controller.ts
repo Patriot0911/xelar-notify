@@ -1,16 +1,18 @@
-import { Body, Controller, Get, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { JwtRefreshGuard, JwtAccessGuard } from '../guards';
 import { AuthService } from '../services';
 import { IRefreshTokenPayloadWithToken, IAccessTokenPayload, IAuthResponse, IUserPayload } from '../models';
-import { ApiGenericResponses, Feature, FeatureGuard } from '../../shared';
+import { ApiGenericResponses, Feature, FeatureGuard } from '../../../shared';
 import { AuthResponseDto, LoginByEmailDto, RegistrationByEmailDto, UserPayloadDto } from '../dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { DiscordAuthService } from '../../discord';
 
 @ApiTags('Auth')
 @Controller('api/auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly discordAuthService: DiscordAuthService,
   ) {}
 
   @Post('login/email')
@@ -23,8 +25,25 @@ export class AuthController {
   @Feature('register-email')
   @UseGuards(FeatureGuard)
   @ApiGenericResponses({ [HttpStatus.CREATED]: AuthResponseDto, })
-  async register(@Body() data: RegistrationByEmailDto): Promise<IAuthResponse> {
+  async registerByEmail(@Body() data: RegistrationByEmailDto): Promise<IAuthResponse> {
     return await this.authService.registerByEmail(data);
+  }
+
+  @Post('discord')
+  @Feature('register-discord')
+  @UseGuards(FeatureGuard)
+  @ApiGenericResponses({ [HttpStatus.PERMANENT_REDIRECT]: String, })
+  async redirectForDiscordAuth(@Res() res) {
+    const redirectUri = this.discordAuthService.getDiscordAuthRedirectUri();
+    return res.redirect(redirectUri);
+  }
+
+  @Get('discord/authorize')
+  @Feature('register-discord')
+  @UseGuards(FeatureGuard)
+  @ApiGenericResponses({ [HttpStatus.CREATED]: AuthResponseDto, })
+  async authByDiscord(@Query('code') code: string) { // : Promise<IAuthResponse>
+    return await this.authService.authByDiscordCode(code);
   }
 
   @Post('refresh')
