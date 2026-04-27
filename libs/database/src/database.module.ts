@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { AppConfig } from '@libs/config';
-import { Streamer, UserEntity } from './entities';
+import { Streamer, TwitchAppEntity, UserEntity } from './entities';
 
 @Module({
   imports: [
@@ -18,6 +18,7 @@ import { Streamer, UserEntity } from './entities';
         entities: [
           Streamer,
           UserEntity,
+          TwitchAppEntity,
         ],
         migrations: [__dirname + '/migrations/*{.ts,.js}'],
         migrationsRun: false,
