@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToOne, JoinColumn } from 'typeorm';
+import { TwitchStreamerEntity } from './twitch-streamer';
 
 @Entity('users')
 export class UserEntity {
@@ -22,6 +23,17 @@ export class UserEntity {
 
   @Column({ nullable: true, type: 'varchar' })
   discordAccessToken?: string | null;
+
+  @Column({ nullable: true, type: 'varchar' })
+  discordRefreshToken?: string | null; // Todo: add refresh in auth api
+
+  @OneToOne(
+    () => TwitchStreamerEntity,
+    (twitchAccount) => twitchAccount.user,
+    { cascade: true, }
+  )
+  @JoinColumn()
+  twitchAccount?: TwitchStreamerEntity;
 
   // @Column({ unique: true, nullable: true })
   // telegramId?: string | null;
