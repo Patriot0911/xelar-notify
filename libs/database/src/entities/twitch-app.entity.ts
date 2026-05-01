@@ -7,11 +7,20 @@ export class TwitchAppEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
+  name: string;
+
   @Column({ unique: true })
   clientId: string;
 
   @Column()
   clientSecret: string;
+
+  @Column({ nullable: true })
+  accessToken?: string;
+
+  @Column({ nullable: true })
+  tokenExpiresAt?: number;
 
   @Column({ default: 0 })
   currentCost: number;

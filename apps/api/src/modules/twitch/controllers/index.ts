@@ -1,1 +1,1 @@
-export * from './twitch.controller';
+export * from './twitch-admin.controller';

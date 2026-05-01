@@ -2,10 +2,11 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TwitchAppEntity } from '@libs/database';
-import { TwitchAuthService, TwitchApiService } from './services';
+import { TwitchAuthService, TwitchApiService, TwitchAdminService } from './services';
 import { TwitchTokenManager } from './twitch-token.manager';
 import { TwitchAuthInterceptor } from './twitch-auth.interceptor';
-import { TwitchController } from './controllers';
+import { TwitchAdminController } from './controllers';
+import { TwitchAppMapper } from './mappers';
 
 @Module({
   imports: [
@@ -17,12 +18,14 @@ import { TwitchController } from './controllers';
       TwitchAppEntity,
     ]),
   ],
-  controllers: [TwitchController],
+  controllers: [TwitchAdminController],
   providers: [
     TwitchAuthService,
     TwitchTokenManager,
     TwitchApiService,
     TwitchAuthInterceptor,
+    TwitchAppMapper,
+    TwitchAdminService,
   ],
   exports: [],
 })
