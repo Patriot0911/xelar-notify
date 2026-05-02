@@ -4,6 +4,7 @@ import { DiscordModule } from './modules/discord';
 import { TwitchModule } from './modules/twitch';
 import { DatabaseModule } from '@libs/database';
 import { AppConfigModule } from '@libs/config';
+import { CryptoModule } from './modules/crypto';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { AppConfigModule } from '@libs/config';
     AppConfigModule,
     DiscordModule,
     TwitchModule,
+    CryptoModule,
   ],
 })
 export class ApiModule {}

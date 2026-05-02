@@ -13,14 +13,14 @@ export class TwitchAppEntity {
   @Column({ unique: true })
   clientId: string;
 
-  @Column()
+  @Column({ name: 'client_secret' })
   clientSecret: string;
 
-  @Column({ nullable: true })
-  accessToken?: string;
+  @Column({ nullable: true, type: 'varchar', name: 'access_token' })
+  accessToken?: string | null;
 
-  @Column({ nullable: true })
-  tokenExpiresAt?: number;
+  @Column({ nullable: true, })
+  tokenExpiresAt?: Date;
 
   @Column({ default: 0 })
   currentCost: number;

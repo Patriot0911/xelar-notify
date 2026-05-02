@@ -16,10 +16,6 @@ export class TwitchAuthService {
     private readonly twitchAppsRepository: Repository<TwitchAppEntity>,
   ) {}
 
-  async getTwitchApps() {
-    return this.twitchAppsRepository.find();
-  }
-
   async getTokenForApp(clientId: string, forceRefresh = false): Promise<string> {
     if (forceRefresh) {
       this.tokenManager.invalidate(clientId);
@@ -40,7 +36,7 @@ export class TwitchAuthService {
     });
   }
 
-  private async fetchToken(clientId: string, clientSecret: string) {
+  async fetchToken(clientId: string, clientSecret: string) {
     const params = new URLSearchParams({
       client_id:     clientId,
       client_secret: clientSecret,

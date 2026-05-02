@@ -2,7 +2,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { AppConfig } from '@libs/config';
-import { Streamer, TwitchAppEntity, UserEntity } from './entities';
+import {
+  TwitchBroadcastSubscriptionEntity,
+  TwitchStreamerEntity,
+  TwitchStreamerEventEntity,
+  TwitchAppEntity,
+  UserEntity,
+} from './entities';
 
 @Module({
   imports: [
@@ -16,7 +22,9 @@ import { Streamer, TwitchAppEntity, UserEntity } from './entities';
         password: config.get('DB_PASSWORD', { infer: true }),
         database: config.get('DB_NAME',     { infer: true }),
         entities: [
-          Streamer,
+          TwitchBroadcastSubscriptionEntity,
+          TwitchStreamerEventEntity,
+          TwitchStreamerEntity,
           UserEntity,
           TwitchAppEntity,
         ],

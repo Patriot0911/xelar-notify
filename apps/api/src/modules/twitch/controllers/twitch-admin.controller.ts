@@ -1,10 +1,10 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TwitchAdminService } from '../services';
-import { GetTwitchAppsRequestDto } from '../dto/get-twitch-apps-request.dto';
 import { JwtAccessGuard } from '../../auth';
 import { IGenericListPayloadResponse } from 'apps/api/src/shared';
 import { ITwitchAppShortModel } from '../models';
+import { AddTwitchAppDto, GetTwitchAppsDto } from '../dto';
 
 @ApiTags('Twitch')
 @Controller('api/twitch/admin')
@@ -16,7 +16,14 @@ export class TwitchAdminController {
   @Get('apps')
   @ApiBearerAuth()
   @UseGuards(JwtAccessGuard)
-  async getAllApps(@Query() params: GetTwitchAppsRequestDto): Promise<IGenericListPayloadResponse<ITwitchAppShortModel>> {
+  async getAllApps(@Query() params: GetTwitchAppsDto): Promise<IGenericListPayloadResponse<ITwitchAppShortModel>> {
     return await this.twitchAdminService.getAllTwitchApps(params);
+  }
+
+  @Post('apps')
+  @ApiBearerAuth()
+  @UseGuards(JwtAccessGuard)
+  async addTwitchApp(@Body() body: AddTwitchAppDto): Promise<ITwitchAppShortModel> {
+    return await this.twitchAdminService.addTwitchApp(body);
   }
 }

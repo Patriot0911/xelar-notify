@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, Max, Min } from 'class-validator';
 import { IGetTwitchAppsFilterModel } from '../models';
 
-export class GetTwitchAppsRequestDto implements IGetTwitchAppsFilterModel {
+export class GetTwitchAppsDto implements IGetTwitchAppsFilterModel {
   @ApiProperty({ required: false, default: 1 })
   @IsNumber()
   @Min(1)

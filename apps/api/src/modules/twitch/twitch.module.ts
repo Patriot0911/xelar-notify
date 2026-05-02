@@ -7,6 +7,9 @@ import { TwitchTokenManager } from './twitch-token.manager';
 import { TwitchAuthInterceptor } from './twitch-auth.interceptor';
 import { TwitchAdminController } from './controllers';
 import { TwitchAppMapper } from './mappers';
+import { CryptoService } from '../../shared';
+import { TwitchAppsRepository } from './repositories';
+import { DataSource } from 'typeorm';
 
 @Module({
   imports: [
@@ -26,6 +29,13 @@ import { TwitchAppMapper } from './mappers';
     TwitchAuthInterceptor,
     TwitchAppMapper,
     TwitchAdminService,
+    TwitchAppsRepository,
+    {
+      provide: TwitchAppsRepository,
+      useFactory: (dataSource: DataSource, crypto: CryptoService) =>
+        new TwitchAppsRepository(dataSource, crypto),
+      inject: [DataSource, CryptoService],
+    }
   ],
   exports: [],
 })

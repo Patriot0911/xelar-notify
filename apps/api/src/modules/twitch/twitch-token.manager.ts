@@ -1,14 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { ITwitchTokenModel } from './models';
-import { InjectRepository } from '@nestjs/typeorm';
-import { TwitchAppEntity } from '@libs/database';
-import { Repository } from 'typeorm';
+import { TwitchAppsRepository } from './repositories';
 
 @Injectable()
 export class TwitchTokenManager {
   constructor(
-    @InjectRepository(TwitchAppEntity)
-    private readonly twitchAppsRepository: Repository<TwitchAppEntity>,
+    private readonly twitchAppsRepository: TwitchAppsRepository,
   ) {}
 
   // Todo: replace with redis
@@ -47,18 +44,18 @@ export class TwitchTokenManager {
           accessToken: true,
           tokenExpiresAt: true,
         }
-      });
+      }, true);
 
       if (
         twitchApp
         && twitchApp.accessToken
         && twitchApp.tokenExpiresAt
-        && Date.now() < twitchApp.tokenExpiresAt
+        && Date.now() < twitchApp.tokenExpiresAt.getTime()
       ) {
         this.setToken(
           clientId,
           twitchApp.accessToken,
-          twitchApp.tokenExpiresAt
+          twitchApp.tokenExpiresAt.getTime()
         );
         return this.getOrRefresh(clientId, refreshFn);
       }
@@ -75,13 +72,11 @@ export class TwitchTokenManager {
     const refreshing = refreshFn().finally(() => {
       const current = this.tokens.get(clientId);
       if (current) {
-        this.twitchAppsRepository.update(
+        this.twitchAppsRepository.updateToken(
           { clientId, },
-          {
-            accessToken: current.accessToken,
-            tokenExpiresAt: current.expiresAt,
-          }
-        )
+          current.accessToken,
+          new Date(current.expiresAt)
+        );
         current.refreshing = null;
       }
     });

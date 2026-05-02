@@ -5,6 +5,7 @@ export const configSchema = z.object({
   NODE_ENV:              z.enum(['development', 'production']).default('development'),
   API_PORT:              z.coerce.number().default(3000),
   WEBHOOK_RECEIVER_PORT: z.coerce.number().default(3001),
+  ENCRYPTION_KEY:        z.string(),
 
   // Auth
   JWT_SECRET_ACCESS:  z.string(),
