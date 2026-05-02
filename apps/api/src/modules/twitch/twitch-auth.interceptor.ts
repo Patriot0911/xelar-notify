@@ -8,6 +8,7 @@ import { HttpService } from '@nestjs/axios';
 import { Observable } from 'rxjs';
 import { AxiosError } from 'axios';
 import { TwitchAuthService } from './services';
+import { ITwitchHttpConfigModel } from './models';
 
 @Injectable()
 export class TwitchAuthInterceptor implements NestInterceptor {
@@ -22,9 +23,11 @@ export class TwitchAuthInterceptor implements NestInterceptor {
   createAxiosInterceptors(httpService: HttpService) {
     const axios = httpService.axiosRef;
 
-    axios.interceptors.request.use(async (config: any) => { // todo: add generic model for config
-      const clientId = config.twitchClientId;
-      if (!clientId) return config;
+    axios.interceptors.request.use(async (config: any) => {
+      const clientId = (<ITwitchHttpConfigModel> config).twitchClientId;
+      if (!clientId) {
+        return config;
+      }
 
       const token = await this.twitchAuthService.getTokenForApp(clientId);
       config.headers['Authorization'] = `Bearer ${token}`;

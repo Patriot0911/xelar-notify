@@ -1,38 +1,43 @@
-import { TwitchAppEntity } from '@libs/database';
 import { HttpService } from '@nestjs/axios';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { firstValueFrom } from 'rxjs';
-import { Repository } from 'typeorm';
+import { TwitchAppsRepository } from '../repositories';
+import { ITwitchChannelsApiResponseModel, ITwitchHttpConfigModel, TSearchTwitchChannelsResponseModel } from '../models';
+import { TwitchApiMapper } from '../mappers';
 
 @Injectable()
 export class TwitchApiService {
   constructor(
     private readonly httpService: HttpService,
-    @InjectRepository(TwitchAppEntity)
-    private readonly twitchAppsRepository: Repository<TwitchAppEntity>,
+    private readonly twitchAppsRepository: TwitchAppsRepository,
+    private readonly twitchApiMapper: TwitchApiMapper,
   ) {}
 
-  async getStream(userLogin: string) {
+  async getChannels(searchStr?: string, cursor?: string, limit: number = 20): Promise<TSearchTwitchChannelsResponseModel> {
     const app = await this.getLeastLoadedApp();
+    const query = searchStr ? encodeURIComponent(searchStr) : '';
 
-    const { data } = await firstValueFrom(
-      this.httpService.get('/helix/streams', {
-        params: { user_login: userLogin },
+    const { data: { data, pagination, } } = await firstValueFrom(
+      this.httpService.get<ITwitchChannelsApiResponseModel>('/helix/search/channels', <ITwitchHttpConfigModel> {
+        params: {
+          query,
+          first: limit,
+          after: cursor,
+        },
         twitchClientId: app.clientId,
-      } as any),
-      // todo: add generic model for params
+      }),
     );
 
-    return data;
+    return {
+      items: data.map(
+        (c) => this.twitchApiMapper.TwitchApiChannelToNormalized(c)
+      ),
+      meta: pagination,
+    };
   }
 
   private async getLeastLoadedApp() {
-    const app = await this.twitchAppsRepository
-      .createQueryBuilder('app')
-      .where('app.capacity < app.maxCapacity')
-      .orderBy('app.capacity', 'ASC')
-      .getOne();
+    const app = await this.twitchAppsRepository.findLeastLoaded();
     if (!app) {
       throw new InternalServerErrorException('No Twitch app available');
     }

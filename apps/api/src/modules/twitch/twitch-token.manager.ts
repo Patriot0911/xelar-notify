@@ -37,7 +37,6 @@ export class TwitchTokenManager {
     const state = this.tokens.get(clientId);
 
     if (!state) {
-      // todo: move to sep method?
       const twitchApp = await this.twitchAppsRepository.findOne({
         where: { clientId, },
         select: {

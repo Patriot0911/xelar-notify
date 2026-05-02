@@ -6,10 +6,11 @@ import { TwitchAuthService, TwitchApiService, TwitchAdminService } from './servi
 import { TwitchTokenManager } from './twitch-token.manager';
 import { TwitchAuthInterceptor } from './twitch-auth.interceptor';
 import { TwitchAdminController } from './controllers';
-import { TwitchAppMapper } from './mappers';
+import { TwitchApiMapper, TwitchAppMapper } from './mappers';
 import { CryptoService } from '../../shared';
 import { TwitchAppsRepository } from './repositories';
 import { DataSource } from 'typeorm';
+import { TwitchController } from './controllers/twitch.controller';
 
 @Module({
   imports: [
@@ -21,13 +22,17 @@ import { DataSource } from 'typeorm';
       TwitchAppEntity,
     ]),
   ],
-  controllers: [TwitchAdminController],
+  controllers: [
+    TwitchAdminController,
+    TwitchController,
+  ],
   providers: [
     TwitchAuthService,
     TwitchTokenManager,
     TwitchApiService,
     TwitchAuthInterceptor,
     TwitchAppMapper,
+    TwitchApiMapper,
     TwitchAdminService,
     TwitchAppsRepository,
     {

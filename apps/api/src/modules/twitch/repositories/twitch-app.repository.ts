@@ -55,10 +55,12 @@ export class TwitchAppsRepository extends Repository<TwitchAppEntity> {
   }
 
   async findLeastLoaded(): Promise<TwitchAppEntity | null> {
-    return this.createQueryBuilder('app')
+    const app = await this
+      .createQueryBuilder('app')
       .where('app.currentCost < app.maxCost')
       .orderBy('app.currentCost', 'ASC')
       .getOne();
+    return app ? this.decryptFields(app) : app;
   }
 
   private encryptFields(app: Partial<TwitchAppEntity>): Partial<TwitchAppEntity> {
