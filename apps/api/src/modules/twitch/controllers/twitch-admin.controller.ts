@@ -7,6 +7,8 @@ import { ITwitchAppShortModel } from '../models';
 import { AddTwitchAppDto, EditTwitchAppDto, GetTwitchAppsDto } from '../dto';
 
 @ApiTags('Twitch Admin')
+@ApiBearerAuth()
+@UseGuards(JwtAccessGuard)
 @Controller('api/twitch/admin')
 export class TwitchAdminController {
   constructor(
@@ -14,22 +16,16 @@ export class TwitchAdminController {
   ) {}
 
   @Get('apps')
-  @ApiBearerAuth()
-  @UseGuards(JwtAccessGuard)
   async getAllApps(@Query() params: GetTwitchAppsDto): Promise<IGenericListPayloadResponse<ITwitchAppShortModel>> {
     return await this.twitchAdminService.getAllTwitchApps(params);
   }
 
   @Post('apps')
-  @ApiBearerAuth()
-  @UseGuards(JwtAccessGuard)
   async addTwitchApp(@Body() body: AddTwitchAppDto): Promise<ITwitchAppShortModel> {
     return await this.twitchAdminService.addTwitchApp(body);
   }
 
   @Patch('apps/:appId')
-  @ApiBearerAuth()
-  @UseGuards(JwtAccessGuard)
   async editTwitchApp(
     @Param('appId') appId: string,
     @Body() body: EditTwitchAppDto
@@ -38,8 +34,6 @@ export class TwitchAdminController {
   }
 
   @Delete('apps/:appId')
-  @ApiBearerAuth()
-  @UseGuards(JwtAccessGuard)
   async deleteTwitchApp(@Param('appId') appId: string): Promise<boolean> {
     return await this.twitchAdminService.deleteTwitchApp(appId);
   }

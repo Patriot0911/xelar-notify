@@ -1,5 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { TwitchBroadcastSubscriptionEntity } from './twitch-broadcast-subscription';
+import { Column, CreateDateColumn, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TwitchStreamerEventEntity } from './twitch-streamer-event';
 import { UserEntity } from './user.entity';
 
@@ -7,6 +6,9 @@ import { UserEntity } from './user.entity';
 export class TwitchStreamerEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column()
+  broadcasterId: string;
 
   @Column({ unique: true, })
   twitchLogin: string;
@@ -17,20 +19,12 @@ export class TwitchStreamerEntity {
   @OneToOne(() => UserEntity, (user) => user.twitchAccount)
   user?: UserEntity;
 
-  @OneToOne(
-    () => TwitchBroadcastSubscriptionEntity,
-    (broadcast) => broadcast.streamer,
-    { cascade: true, }
-  )
-  @JoinColumn()
-  broadcastSubscription?: TwitchBroadcastSubscriptionEntity;
-
   @OneToMany(
     () => TwitchStreamerEventEntity,
     (event) => event.streamer,
     { cascade: true, }
   )
-  personalEvents: TwitchStreamerEventEntity[];
+  eventSubscriptions: TwitchStreamerEventEntity[];
 
   @CreateDateColumn()
   createdAt: Date;
