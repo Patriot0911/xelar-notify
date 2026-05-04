@@ -5,3 +5,4 @@ export * from './twitch-http-config.model';
 export * from './twitch-channels';
 export * from './twitch-api-pagination.model';
 export * from './shared-response.model';
+export * from './twitch-subscriptions-api.model';

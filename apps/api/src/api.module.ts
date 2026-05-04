@@ -5,6 +5,8 @@ import { TwitchModule } from './modules/twitch';
 import { DatabaseModule } from '@libs/database';
 import { AppConfigModule } from '@libs/config';
 import { CryptoModule } from './modules/crypto';
+import { TwitchSubscriptionsModule } from './modules/twitch-subscriptions';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { CryptoModule } from './modules/crypto';
     AppConfigModule,
     DiscordModule,
     TwitchModule,
+    TwitchSubscriptionsModule,
+    NotificationsModule,
     CryptoModule,
   ],
 })

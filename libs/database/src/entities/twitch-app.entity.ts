@@ -1,6 +1,12 @@
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { TwitchStreamerEventEntity } from './twitch-streamer-event';
 
+export enum TwitchAppStatus {
+  Active = 'active',
+  Internal = 'internal',
+  Locked = 'locked', // prevent from "least loaded"
+};
+
 @Entity('twitch_apps')
 export class TwitchAppEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -9,11 +15,20 @@ export class TwitchAppEntity {
   @Column()
   name: string;
 
+  @Column({ enum: TwitchAppStatus, default: TwitchAppStatus.Active })
+  status: TwitchAppStatus;
+
+  @Column()
+  clusterTag: string;
+
   @Column({ unique: true })
   clientId: string;
 
   @Column({ name: 'client_secret' })
   clientSecret: string;
+
+  @Column()
+  webhookSecret: string;
 
   @Column({ nullable: true, type: 'varchar', name: 'access_token' })
   accessToken?: string | null;

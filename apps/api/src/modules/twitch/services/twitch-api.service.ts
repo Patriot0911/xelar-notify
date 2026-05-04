@@ -2,8 +2,10 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { TwitchAppsRepository } from '../repositories';
-import { ITwitchChannelsApiResponseModel, ITwitchHttpConfigModel, TSearchTwitchChannelsResponseModel } from '../models';
+import { ITwitchChannelsApiResponseModel, ITwitchEventRegistrationResponseModel, ITwitchHttpConfigModel, TSearchTwitchChannelsResponseModel } from '../models';
 import { TwitchApiMapper } from '../mappers';
+import { TwitchStreamerEvents } from '@libs/database';
+import { AxiosError } from 'axios';
 
 @Injectable()
 export class TwitchApiService {
@@ -13,6 +15,7 @@ export class TwitchApiService {
     private readonly twitchApiMapper: TwitchApiMapper,
   ) {}
 
+  // todo: move to twitch-public?
   async getChannels(searchStr?: string, cursor?: string, limit: number = 20): Promise<TSearchTwitchChannelsResponseModel> {
     const app = await this.getLeastLoadedApp();
     const query = searchStr ? encodeURIComponent(searchStr) : '';
@@ -34,6 +37,39 @@ export class TwitchApiService {
       ),
       meta: pagination,
     };
+  }
+
+  async registerStreamOnlineEvent(
+    clientId: string,
+    webhookUrl: string,
+    webhookSecret: string,
+    broadcasterId: string,
+  ) {
+    try {
+      const { data, } = await firstValueFrom(
+        this.httpService.post<ITwitchEventRegistrationResponseModel>(
+          'helix/eventsub/subscriptions',
+          {
+            type: TwitchStreamerEvents.STREAM_ONLINE,
+            version: '1',
+            condition: { broadcaster_user_id: broadcasterId },
+            transport: {
+              method: 'webhook',
+              callback: webhookUrl,
+              secret: webhookSecret,
+            },
+          },
+          <ITwitchHttpConfigModel> { twitchClientId: clientId, }
+        ),
+      );
+      return data;
+    } catch(e: unknown) {
+      const { message, status } = <AxiosError> e;
+      console.error(message);
+      throw new InternalServerErrorException(
+        `Twitch Event registration went wrong. Please contact administrator for more information [${status}]`
+      );
+    }
   }
 
   private async getLeastLoadedApp() {

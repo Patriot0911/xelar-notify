@@ -1,14 +1,18 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@libs/database';
+import { TwitchSubscriptionService } from './services';
+import { TwitchModule } from '../twitch/twitch.module';
+import { TwitchSubscriptionsController } from './controllers';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      UserEntity,
-    ]),
+    TwitchModule,
   ],
-  providers: [],
-  exports: [],
+  controllers: [TwitchSubscriptionsController,],
+  providers: [
+    TwitchSubscriptionService,
+  ],
+  exports: [
+    TwitchSubscriptionService,
+  ],
 })
-export class TwitchSubscriptionModule {}
+export class TwitchSubscriptionsModule {}

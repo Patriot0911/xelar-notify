@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, MinLength } from 'class-validator';
+import { IsOptional, IsString, MinLength } from 'class-validator';
 
 export class AddTwitchAppDto {
   @ApiProperty({ required: true })
@@ -14,4 +14,13 @@ export class AddTwitchAppDto {
   @ApiProperty({ required: true })
   @IsString()
   name: string;
+
+  @ApiProperty({ required: true })
+  @IsString()
+  clusterTag: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  webhookSecret?: string;
 }

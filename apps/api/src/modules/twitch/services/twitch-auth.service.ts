@@ -24,7 +24,7 @@ export class TwitchAuthService {
     return this.tokenManager.getOrRefresh(clientId, async () => {
       const app = await this.twitchAppsRepository.findOne({
         where: { clientId },
-      }, true);
+      }, true, { clientSecret: true });
 
       if (!app) {
         throw new NotFoundException(`Twitch app ${clientId} not found`);

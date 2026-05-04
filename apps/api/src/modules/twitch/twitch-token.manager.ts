@@ -43,7 +43,7 @@ export class TwitchTokenManager {
           accessToken: true,
           tokenExpiresAt: true,
         }
-      }, true);
+      }, true, { accessToken: true, });
 
       if (
         twitchApp

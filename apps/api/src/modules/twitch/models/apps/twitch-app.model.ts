@@ -4,3 +4,9 @@ export interface ITwitchAppShortModel {
   name: string;
   createdAt: Date;
 };
+
+export interface ITwitchAppEncryptOptionsModel {
+  webhookSecret?: boolean;
+  accessToken?: boolean;
+  clientSecret?: boolean;
+};
