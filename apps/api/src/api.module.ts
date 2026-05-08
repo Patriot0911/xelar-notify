@@ -4,9 +4,9 @@ import { DiscordModule } from './modules/discord';
 import { TwitchModule } from './modules/twitch';
 import { DatabaseModule } from '@libs/database';
 import { AppConfigModule } from '@libs/config';
-import { CryptoModule } from './modules/crypto';
 import { TwitchSubscriptionsModule } from './modules/twitch-subscriptions';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { CryptoModule } from '@libs/shared';
 
 @Module({
   imports: [

@@ -5,12 +5,11 @@ import { TwitchAppEntity, TwitchStreamerEventEntity } from '@libs/database';
 import { TwitchAuthService, TwitchApiService, TwitchAdminService } from './services';
 import { TwitchTokenManager } from './twitch-token.manager';
 import { TwitchAuthInterceptor } from './twitch-auth.interceptor';
-import { TwitchAdminController } from './controllers';
 import { TwitchApiMapper, TwitchAppMapper } from './mappers';
-import { CryptoService } from '../../shared';
 import { TwitchAppsRepository } from './repositories';
 import { DataSource } from 'typeorm';
 import { TwitchController } from './controllers/twitch.controller';
+import { CryptoService } from '@libs/shared';
 
 @Module({
   imports: [
@@ -24,7 +23,6 @@ import { TwitchController } from './controllers/twitch.controller';
     ]),
   ],
   controllers: [
-    TwitchAdminController,
     TwitchController,
   ],
   providers: [

@@ -38,6 +38,7 @@
     "amqp-connection-manager": "^5.0.0",
     "amqplib": "^1.0.3",
     "dotenv": "^17.4.2",
+    "ioredis": "^5.10.1",
     "pg": "^8.20.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -92,7 +93,9 @@
     ],
     "moduleNameMapper": {
       "^@lib/database(|/.*)$": "<rootDir>/libs/database/src/$1",
-      "^lib/config(|/.*)$": "<rootDir>/libs/config/src/$1"
+      "^@libs/shared/shared(|/.*)$": "<rootDir>/libs/shared/src/$1",
+      "^lib/config(|/.*)$": "<rootDir>/libs/config/src/$1",
+      "^redis/redis(|/.*)$": "<rootDir>/libs/redis/src/$1"
     }
   }
 }

@@ -1,8 +1,8 @@
 import { Repository, DataSource, FindOptionsWhere } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { TwitchAppEntity } from '@libs/database';
-import { CryptoService } from 'apps/api/src/shared';
 import { ITwitchAppEncryptOptionsModel } from '../models';
+import { CryptoService } from '@libs/shared';
 
 const defaultEncryptOptions: ITwitchAppEncryptOptionsModel = {
   accessToken: true,

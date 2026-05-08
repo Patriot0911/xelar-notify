@@ -6,7 +6,7 @@ export const configSchema = z.object({
   API_PORT:              z.coerce.number().default(3000),
   WEBHOOK_RECEIVER_PORT: z.coerce.number().default(3001),
   ENCRYPTION_KEY:        z.string(),
-  WEBHOOK_URL:           z.url(),
+  TWITCH_WEBHOOK_URL:    z.url(),
 
   // Auth
   JWT_SECRET_ACCESS:  z.string(),

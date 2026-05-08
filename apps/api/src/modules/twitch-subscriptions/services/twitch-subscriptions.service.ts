@@ -19,7 +19,7 @@ export class TwitchSubscriptionService {
       throw new InternalServerErrorException('No Twitch app available');
     }
 
-    const webhookBaseUrl = this.configService.get<string>('WEBHOOK_URL');
+    const webhookBaseUrl = this.configService.get<string>('TWITCH_WEBHOOK_URL');
 
     const twtichResData = await this.twitchApiService.registerStreamOnlineEvent(
       app.clientId,
@@ -29,6 +29,9 @@ export class TwitchSubscriptionService {
     );
 
     return twtichResData;
+  }
+
+  async getAllTwitchSubscriptions() {
   }
 
   private async findTwitchApp(appId?: string) {

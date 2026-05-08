@@ -1,9 +1,12 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TwitchNotificationsService } from '../services';
+import { JwtAccessGuard } from '../../auth';
 
 @ApiTags('Twitch Notifications')
 @Controller('api/notifications/twitch/stream-online')
+@ApiBearerAuth()
+@UseGuards(JwtAccessGuard)
 export class TwitchNotificationsController {
   constructor(
     private readonly twitchNotificationsService: TwitchNotificationsService,
