@@ -1,15 +1,21 @@
 import { Module } from '@nestjs/common';
 import { TwitchSubscriptionService } from './services';
 import { TwitchModule } from '../twitch/twitch.module';
-import { TwitchSubscriptionsController } from './controllers';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { TwitchStreamerEntity, TwitchStreamerEventEntity } from '@libs/database';
+import { TwitchSubscriptionMapper } from './mappers';
 
 @Module({
   imports: [
     TwitchModule,
+    TypeOrmModule.forFeature([
+      TwitchStreamerEventEntity,
+      TwitchStreamerEntity,
+    ]),
   ],
-  controllers: [TwitchSubscriptionsController,],
   providers: [
     TwitchSubscriptionService,
+    TwitchSubscriptionMapper,
   ],
   exports: [
     TwitchSubscriptionService,

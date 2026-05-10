@@ -15,10 +15,6 @@ export class AddTwitchAppDto {
   @IsString()
   name: string;
 
-  @ApiProperty({ required: true })
-  @IsString()
-  clusterTag: string;
-
   @ApiProperty()
   @IsString()
   @IsOptional()

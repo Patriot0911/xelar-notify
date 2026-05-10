@@ -37,6 +37,9 @@ export class NotificationDestinationEntity {
   @JoinColumn({ name: 'streamer_event_id' })
   streamerEvent: TwitchStreamerEventEntity;
 
+  @Column({ type: 'text', nullable: true })
+  payload?: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 }

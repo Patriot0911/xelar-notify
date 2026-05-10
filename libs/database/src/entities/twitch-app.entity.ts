@@ -18,9 +18,6 @@ export class TwitchAppEntity {
   @Column({ enum: TwitchAppStatus, default: TwitchAppStatus.Active })
   status: TwitchAppStatus;
 
-  @Column()
-  clusterTag: string;
-
   @Column({ unique: true })
   clientId: string;
 

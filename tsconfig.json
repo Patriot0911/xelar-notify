@@ -35,6 +35,12 @@
       "@libs/database/*": [
         "libs/database/src/*"
       ],
+      "@libs/queue": [
+        "libs/queue/src"
+      ],
+      "@libs/queue/*": [
+        "libs/queue/src/*"
+      ],
       "@libs/redis": [
         "libs/redis/src"
       ],

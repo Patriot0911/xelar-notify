@@ -4,7 +4,9 @@ import { REDIS_CLIENT } from './redis.constants';
 import { ConfigService } from '@nestjs/config';
 import { AppConfig } from '@libs/config';
 import Redis from 'ioredis';
+import { Global } from '@nestjs/common/decorators';
 
+@Global()
 @Module({
   providers: [
     {
@@ -12,8 +14,6 @@ import Redis from 'ioredis';
       inject: [ConfigService],
       useFactory: (config: ConfigService<AppConfig>) => {
         return new Redis({
-          password: config.get('REDIS_PASSWORD'),
-          username: config.get('REDIS_USER'),
           host: config.get('REDIS_HOST'),
           port: config.get('REDIS_PORT'),
         });

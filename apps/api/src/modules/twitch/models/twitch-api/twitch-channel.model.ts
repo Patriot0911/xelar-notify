@@ -16,7 +16,7 @@ export interface ITwitchApiChannelModel {
 };
 
 export interface ITwitchApiChannelNormalizedModel {
-  twitchId: string;
+  broadcasterId: string;
   broadcasterLanguage?: string;
   broadcasterLogin: string;
   displayName: string;

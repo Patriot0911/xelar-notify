@@ -17,10 +17,5 @@ export class EditTwitchAppDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
-  clusterTag?: string;
-
-  @ApiProperty()
-  @IsString()
-  @IsOptional()
   name?: string;
 }

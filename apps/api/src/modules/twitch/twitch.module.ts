@@ -2,7 +2,7 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TwitchAppEntity, TwitchStreamerEventEntity } from '@libs/database';
-import { TwitchAuthService, TwitchApiService, TwitchAdminService } from './services';
+import { TwitchAuthService, TwitchApiService } from './services';
 import { TwitchTokenManager } from './twitch-token.manager';
 import { TwitchAuthInterceptor } from './twitch-auth.interceptor';
 import { TwitchApiMapper, TwitchAppMapper } from './mappers';
@@ -32,7 +32,6 @@ import { CryptoService } from '@libs/shared';
     TwitchAuthInterceptor,
     TwitchAppMapper,
     TwitchApiMapper,
-    TwitchAdminService,
     TwitchAppsRepository,
     {
       provide: TwitchAppsRepository,
@@ -44,6 +43,7 @@ import { CryptoService } from '@libs/shared';
   exports: [
     TwitchAuthService,
     TwitchAppsRepository,
+    TwitchAppMapper,
     TwitchApiService,
   ],
 })

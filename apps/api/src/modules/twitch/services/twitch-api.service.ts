@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { TwitchAppsRepository } from '../repositories';
-import { ITwitchChannelsApiResponseModel, ITwitchEventRegistrationResponseModel, ITwitchHttpConfigModel, TSearchTwitchChannelsResponseModel } from '../models';
+import { ITwitchApiUserModel, ITwitchApiUserNormalizedModel, ITwitchChannelsApiResponseModel, ITwitchEventRegistrationResponseModel, ITwitchHttpConfigModel, TSearchTwitchChannelsResponseModel } from '../models';
 import { TwitchApiMapper } from '../mappers';
 import { TwitchStreamerEvents } from '@libs/database';
 import { AxiosError } from 'axios';
@@ -15,7 +15,6 @@ export class TwitchApiService {
     private readonly twitchApiMapper: TwitchApiMapper,
   ) {}
 
-  // todo: move to twitch-public?
   async getChannels(searchStr?: string, cursor?: string, limit: number = 20): Promise<TSearchTwitchChannelsResponseModel> {
     const app = await this.getLeastLoadedApp();
     const query = searchStr ? encodeURIComponent(searchStr) : '';
@@ -37,6 +36,38 @@ export class TwitchApiService {
       ),
       meta: pagination,
     };
+  }
+
+  async getUserById(broadcasterId: string): Promise<ITwitchApiUserNormalizedModel | null> {
+    const users = await this.getUsers([broadcasterId]);
+    return users.length > 0 ? users[0] : null;
+  }
+
+  async getUsers(broadcasterIds: string[], logins: string[] = []): Promise<ITwitchApiUserNormalizedModel[]> {
+    if (broadcasterIds.length + logins.length > 100) {
+      throw new InternalServerErrorException('Reached limit for Twitch API search params');
+    }
+    const app = await this.getLeastLoadedApp();
+    try {
+      const { data, } = await firstValueFrom(
+        this.httpService.get<ITwitchApiUserModel[]>('/helix/users', <ITwitchHttpConfigModel> {
+          params: {
+            id: broadcasterIds,
+            login: logins,
+          },
+          twitchClientId: app.clientId,
+        }),
+      );
+      return data.map(
+        (d) => this.twitchApiMapper.TwitchApiUserToNormalized(d)
+      );
+    } catch(e: unknown) {
+      const { message, status } = <AxiosError> e;
+      console.error(message);
+      throw new InternalServerErrorException(
+        `Something went wrong with Twitch API. Please contact administrator for more information [${status}]`
+      );
+    }
   }
 
   async registerStreamOnlineEvent(

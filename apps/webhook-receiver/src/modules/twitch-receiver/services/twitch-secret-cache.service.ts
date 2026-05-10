@@ -7,18 +7,18 @@ export class TwitchSecretCacheService {
   private readonly TTL = 4 * 60 * 60; // 4 h
 
   constructor(
-    private readonly redis: RedisService,
+    private readonly redisService: RedisService,
   ) {}
 
   async getSecret(clientId: string): Promise<string | null> {
-    return this.redis.get<string>(twitchWebhookSecret(clientId));
+    return this.redisService.get<string>(twitchWebhookSecret(clientId));
   }
 
   async setSecret(clientId: string, secret: string): Promise<void> {
-    await this.redis.set(twitchWebhookSecret(clientId), secret, this.TTL);
+    await this.redisService.set(twitchWebhookSecret(clientId), secret, this.TTL);
   }
 
   async invalidate(clientId: string): Promise<void> {
-    await this.redis.delete(twitchWebhookSecret(clientId));
+    await this.redisService.delete(twitchWebhookSecret(clientId));
   }
 }

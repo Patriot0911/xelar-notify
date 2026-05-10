@@ -1,18 +1,17 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { IGenericListPayloadResponse, IPaginationFilters } from 'apps/api/src/shared';
-import { TwitchAppMapper } from '../mappers';
-import { ITwitchAppShortModel } from '../models';
-import { AddTwitchAppDto, EditTwitchAppDto } from '../dto';
-import { TwitchAuthService } from './twitch-auth.service';
-import { TwitchAppsRepository } from '../repositories';
+import { TwitchAppMapper } from '../../twitch/mappers';
+import { ITwitchAppShortModel } from '../../twitch/models';
+import { TwitchAuthService } from '../../twitch/services/twitch-auth.service';
+import { TwitchAppsRepository } from '../../twitch/repositories';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TwitchStreamerEventEntity } from '@libs/database';
 import type { Repository } from 'typeorm';
 import crypto from 'node:crypto';
+import { AddTwitchAppDto, EditTwitchAppDto } from '../dto';
 
-// todo: move to twitch admin module?
 @Injectable()
-export class TwitchAdminService {
+export class TwitchAdminAppService {
   constructor(
     private readonly twitchAppsRepository: TwitchAppsRepository,
     private readonly twitchAppMapper: TwitchAppMapper,
@@ -57,7 +56,6 @@ export class TwitchAdminService {
 
     const twitchApp = await this.twitchAppsRepository.saveApp({
       name:           dto.name,
-      clusterTag: dto.clusterTag,
       clientId:       dto.clientId,
       clientSecret:   dto.clientSecret,
       webhookSecret:  webhookSecret,

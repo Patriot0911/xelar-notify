@@ -1,8 +1,20 @@
+import { QueuePatterns, QueueService } from '@libs/queue';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { AppConfig } from '@libs/config';
 
 @Injectable()
 export class TwitchReceiverService {
-  constructor() {}
+  constructor(
+    private readonly queueService: QueueService,
+  ) {}
+
+  revokeTwitchSubscription() {
+    this.queueService.emit(QueuePatterns.twitch.subscription.revoked, {});
+  }
+
+  acknowledgeEvent(eventId: string) {
+    this.queueService.emit(QueuePatterns.twitch.subscription.verified, { eventId });
+  }
+
+  async handleEvent(dto: any) {
+  }
 }

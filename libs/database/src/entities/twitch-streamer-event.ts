@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { NotificationDestinationEntity } from './notification-destination.entity';
 import { TwitchStreamerEntity } from './twitch-streamer';
 import { TwitchAppEntity } from './twitch-app.entity';
@@ -12,7 +12,14 @@ export enum TwitchStreamerEvents {
   CHANNEL_CHEER     = 'channel.cheer',
 };
 
+export enum TwitchEventStatuses {
+  PENDING = 'pending',
+  VERIFIED = 'verified',
+  REVOKED = 'revoked',
+};
+
 @Entity('twitch_streamer_events')
+@Unique(['event', 'streamerId'])
 export class TwitchStreamerEventEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -29,6 +36,9 @@ export class TwitchStreamerEventEntity {
   @Column({ enum: TwitchStreamerEvents })
   event: TwitchStreamerEvents;
 
+  @Column({ enum: TwitchEventStatuses })
+  eventStatus: TwitchEventStatuses;
+
   @ManyToOne(() => TwitchStreamerEntity, (streamer) => streamer.eventSubscriptions)
   @JoinColumn({ name: 'streamer_id' })
   streamer: TwitchStreamerEntity;
@@ -43,9 +53,6 @@ export class TwitchStreamerEventEntity {
     { cascade: true }
   )
   destinations: NotificationDestinationEntity[];
-
-  @Column({ type: 'text', nullable: true })
-  payload?: string | null;
 
   @CreateDateColumn()
   createdAt: Date;
