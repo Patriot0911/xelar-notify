@@ -28,9 +28,24 @@ create_user() {
   echo "Permissions set for $user"
 }
 
-create_user "$RECEIVER_USER" "$RECEIVER_PASSWORD" ""   "stream\.events"        ""
-create_user "$API_USER"      "$API_PASSWORD"      ".*" ".*"                    ".*"
-create_user "$DISCORD_USER"  "$DISCORD_PASSWORD"  "notifications\.discord"  ""  "notifications\.discord"
-create_user "$TELEGRAM_USER" "$TELEGRAM_PASSWORD" "notifications\.telegram" ""  "notifications\.telegram"
+create_user "$RECEIVER_USER" "$RECEIVER_PASSWORD" \
+  "stream\.events.*|twitch\.subscriptions.*" \
+  "stream\.events.*|twitch\.subscriptions.*|amq\.default" \
+  ""
+
+create_user "$API_USER" "$API_PASSWORD" \
+  ".*" \
+  ".*" \
+  ".*"
+
+create_user "$DISCORD_USER" "$DISCORD_PASSWORD" \
+  "discord\.(notifications|requests)" \
+  "discord\.requests" \
+  "discord\.(notifications|requests)"
+
+create_user "$TELEGRAM_USER" "$TELEGRAM_PASSWORD" \
+  "telegram\.(notifications|requests)" \
+  "telegram\.requests" \
+  "telegram\.(notifications|requests)"
 
 echo "Users created successfully"

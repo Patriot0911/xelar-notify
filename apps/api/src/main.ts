@@ -4,12 +4,46 @@ import { ApiModule } from './api.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter, ResponseInterceptor } from './shared';
+import { ConfigService } from '@nestjs/config';
+import { AppConfig } from '@libs/config';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { Queues } from '@libs/queue';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiModule);
-  const { NODE_ENV, API_PORT } = process.env;
+  const config = app.get(ConfigService<AppConfig>);
 
-  if (NODE_ENV !== 'production') {
+  const rabbitUrl = buildAmqpUrl(
+    config.get('RABBIT_API_USER')!,
+    config.get('RABBIT_API_PASSWORD')!,
+    config.get('RABBIT_HOST')!,
+    config.get('RABBIT_PORT')!,
+    config.get('RABBIT_VHOST')!,
+  );
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [rabbitUrl],
+      queue: Queues.TWITCH_SUBSCRIPTIONS,
+      queueOptions: { durable: true },
+      wildcards: true,
+      noAck: false,
+    },
+  });
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [rabbitUrl],
+      queue: Queues.STREAM_EVENTS,
+      queueOptions: { durable: true },
+      wildcards: true,
+      noAck: false,
+    },
+  });
+
+  if (config.get('NODE_ENV') !== 'production') {
     const options = new DocumentBuilder()
       .addBearerAuth()
       .setTitle('Med Scheduler API')
@@ -45,6 +79,17 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(API_PORT ?? 3000);
+  await app.startAllMicroservices();
+  await app.listen(config.get('API_PORT') ?? 3000);
 }
 bootstrap();
+
+function buildAmqpUrl(
+  user: string,
+  password: string,
+  host: string,
+  port: string,
+  vhost: string,
+): string {
+  return `amqp://${user}:${password}@${host}:${port}/${encodeURIComponent(vhost)}`;
+}

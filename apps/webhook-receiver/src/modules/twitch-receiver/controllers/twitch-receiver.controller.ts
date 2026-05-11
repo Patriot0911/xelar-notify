@@ -11,7 +11,7 @@ export class TwitchReceiverController {
     private readonly twitchDedupService: TwitchDedupService
   ) {}
 
-  @Post(':clientId')
+  @Post(':clientId/:eventId')
   @HttpCode(200)
   async handleTwitchWebhook(
     @Headers('twitch-eventsub-message-id') messageId: string,
@@ -19,10 +19,11 @@ export class TwitchReceiverController {
     @Headers('twitch-eventsub-message-timestamp') timestamp: string,
     @Headers('twitch-eventsub-message-signature') signature: string,
     @Param('clientId') clientId: string,
+    @Param('eventId')  eventId: string,
     @Req() req: RawBodyRequest<Request>,
     @Body() body: any,
   ) {
-    if (!req.rawBody || !clientId) {
+    if (!req.rawBody || !clientId || !eventId) {
       throw new BadRequestException('Invalid request body');
     }
 
@@ -39,13 +40,12 @@ export class TwitchReceiverController {
     }
 
     if (messageType === 'webhook_callback_verification') {
-      const eventId = body?.subscription.id;
       this.twitchReceiverService.acknowledgeEvent(eventId);
       return body.challenge;
     }
 
     if (messageType === 'revocation') {
-      this.twitchReceiverService.revokeTwitchSubscription();
+      this.twitchReceiverService.revokeTwitchSubscription(eventId);
       return { status: 'ok' };
     }
 

@@ -24,7 +24,7 @@ export class TwitchSecretService {
   ): Promise<boolean> {
     const secret = await this.getSecret(clientId);
     if (!secret) {
-      throw new InternalServerErrorException(`Cannot find app with clientId "${clientId}"`);
+      throw new InternalServerErrorException(`Cannot find data for "${clientId}"`);
     }
 
     const message = messageId + timestamp + rawBody.toString('utf8');

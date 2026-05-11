@@ -1,21 +1,9 @@
 export const QueuePatterns = {
-  discord: {
-    notifications: {
-      send:     'discord.notifications.send',
-    },
-  },
-  telegram: {
-    notifications: {
-      send:     'telegram.notifications.send',
-    },
-  },
   twitch: {
-    subscription: {
-      verified:  'twitch.subscription.verified',
-      revoked:   'twitch.subscription.revoked',
+    subscriptions: {
+      verified: 'twitch.subscriptions.verified',
+      revoked: 'twitch.subscriptions.revoked',
     },
-    stream: {
-      online:    'stream.online',
-    },
+    events: {}
   },
 } as const;

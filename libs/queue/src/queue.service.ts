@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { Channel } from 'amqplib';
+import type { Channel } from 'amqplib';
 import { QUEUE_CHANNEL } from './queue.constants';
 
 @Injectable()
@@ -9,11 +9,14 @@ export class QueueService {
     private readonly channel: Channel,
   ) {}
 
-  async emit<T>(queue: string, data: T): Promise<void> {
+  async emit<T>(queue: string, pattern: string, data: T): Promise<void> {
     await this.channel.assertQueue(queue, { durable: true });
     this.channel.sendToQueue(
       queue,
-      Buffer.from(JSON.stringify(data)),
+      Buffer.from(JSON.stringify({
+        pattern,
+        data,
+      })),
       { persistent: true },
     );
   }

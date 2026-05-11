@@ -9,6 +9,10 @@ export type TTwitchBroadcasterType =
   | 'partner' // partner broadcaster
   | ''; // normal broadcaster
 
+export interface ITwitchGetUsersApiResponseModel {
+  data: ITwitchApiUserModel[];
+};
+
 export interface ITwitchApiUserModel {
   id: string;
   login: string;

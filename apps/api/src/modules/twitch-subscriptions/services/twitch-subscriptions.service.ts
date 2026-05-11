@@ -42,20 +42,33 @@ export class TwitchSubscriptionService {
 
     const streamer = await this.getOrCreateStreamer(broadcasterId);
 
-    const eventEntity = this.twitchStreamerEventsRepository.create({
+    const existingEvent = await this.twitchStreamerEventsRepository.findOne({
+      where: {
+        streamerId: streamer.id,
+        event: TwitchStreamerEvents.STREAM_ONLINE,
+      },
+    });
+
+    if (!!existingEvent) {
+      throw new BadRequestException(
+        `Twitch event "${TwitchStreamerEvents.STREAM_ONLINE}" for streamer "${streamer.displayName}" already exists`
+      );
+    }
+
+    const event = this.twitchStreamerEventsRepository.create({
       event: TwitchStreamerEvents.STREAM_ONLINE,
-      twitchApp: app,
-      streamer,
+      twitchAppId: app.id,
+      streamerId: streamer.id,
       eventStatus: TwitchEventStatuses.PENDING,
     });
 
-    const createdEvent = await this.twitchStreamerEventsRepository.save(eventEntity);
+    const createdEvent = await this.twitchStreamerEventsRepository.save(event);
 
     const webhookBaseUrl = this.configService.get<string>('TWITCH_WEBHOOK_URL');
 
     const twtichResData = await this.twitchApiService.registerStreamOnlineEvent(
       app.clientId,
-      `${webhookBaseUrl}/${app.clientId}`,
+      `${webhookBaseUrl}/${app.clientId}/${event.id}`,
       app.webhookSecret,
       broadcasterId
     );
@@ -72,10 +85,10 @@ export class TwitchSubscriptionService {
     return createdEvent;
   }
 
-  async acknowledgeEvent(subscriptionId: string): Promise<boolean> {
+  async changeEventStatus(eventId: string, status: TwitchEventStatuses): Promise<boolean> {
     const result = await this.twitchStreamerEventsRepository.update(
-      { subscriptionId, },
-      { eventStatus: TwitchEventStatuses.VERIFIED, }
+      { id: eventId, },
+      { eventStatus: status, }
     );
     return !!result.affected;
   }
