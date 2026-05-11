@@ -28,7 +28,6 @@ async function bootstrap() {
       queue: Queues.TWITCH_SUBSCRIPTIONS,
       queueOptions: { durable: true },
       wildcards: true,
-      noAck: false,
     },
   });
 
