@@ -72,18 +72,19 @@ export class TwitchApiService {
     }
   }
 
-  async registerStreamOnlineEvent(
+  async registerEvent(
     clientId: string,
     webhookUrl: string,
     webhookSecret: string,
     broadcasterId: string,
+    event: TwitchStreamerEvents = TwitchStreamerEvents.STREAM_ONLINE,
   ) {
     try {
       const { data, } = await firstValueFrom(
         this.httpService.post<ITwitchEventRegistrationResponseModel>(
           'helix/eventsub/subscriptions',
           {
-            type: TwitchStreamerEvents.STREAM_ONLINE,
+            type: event,
             version: '1',
             condition: { broadcaster_user_id: broadcasterId },
             transport: {

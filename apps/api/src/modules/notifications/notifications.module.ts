@@ -2,20 +2,21 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@libs/database';
 import { TwitchNotificationsService } from './services';
-import { TwitchNotificationsController } from './controllers';
+import { TwitchSubscriptionsModule } from '../twitch-subscriptions';
 
 @Module({
   imports: [
+    TwitchSubscriptionsModule,
     TypeOrmModule.forFeature([
       UserEntity,
     ]),
   ],
-  controllers: [
-    TwitchNotificationsController,
-  ],
+  controllers: [],
   providers: [
     TwitchNotificationsService,
   ],
-  exports: [],
+  exports: [
+    TwitchNotificationsService,
+  ],
 })
 export class NotificationsModule {}

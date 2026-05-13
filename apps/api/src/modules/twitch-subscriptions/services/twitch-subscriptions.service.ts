@@ -22,16 +22,18 @@ export class TwitchSubscriptionService {
     private twitchStreamerRepository: Repository<TwitchStreamerEntity>,
   ) {}
 
-  async registerStreamOnlineSubscription(broadcasterId: string): Promise<TwitchStreamerEventEntity> {
+  async registerSubscription(broadcasterId: string, event: TwitchStreamerEvents): Promise<TwitchStreamerEventEntity> {
     const existingSubscription = await this.twitchStreamerEventsRepository.findOne({
       where: {
-        event: TwitchStreamerEvents.STREAM_ONLINE,
+        event,
         streamer: { broadcasterId, },
       },
     });
 
     if (!!existingSubscription) {
-      throw new InternalServerErrorException('Twitch subscription already exists');
+      throw new BadRequestException(
+        `Twitch event "${event}" already exists`
+      );
     }
 
     const app = await this.getTwitchAppForBroadcaster(broadcasterId);
@@ -42,33 +44,20 @@ export class TwitchSubscriptionService {
 
     const streamer = await this.getOrCreateStreamer(broadcasterId);
 
-    const existingEvent = await this.twitchStreamerEventsRepository.findOne({
-      where: {
-        streamerId: streamer.id,
-        event: TwitchStreamerEvents.STREAM_ONLINE,
-      },
-    });
-
-    if (!!existingEvent) {
-      throw new BadRequestException(
-        `Twitch event "${TwitchStreamerEvents.STREAM_ONLINE}" for streamer "${streamer.displayName}" already exists`
-      );
-    }
-
-    const event = this.twitchStreamerEventsRepository.create({
+    const newEvent = this.twitchStreamerEventsRepository.create({
       event: TwitchStreamerEvents.STREAM_ONLINE,
       twitchAppId: app.id,
       streamerId: streamer.id,
       eventStatus: TwitchEventStatuses.PENDING,
     });
 
-    const createdEvent = await this.twitchStreamerEventsRepository.save(event);
+    const createdEvent = await this.twitchStreamerEventsRepository.save(newEvent);
 
     const webhookBaseUrl = this.configService.get<string>('TWITCH_WEBHOOK_URL');
 
-    const twtichResData = await this.twitchApiService.registerStreamOnlineEvent(
+    const twtichResData = await this.twitchApiService.registerEvent(
       app.clientId,
-      `${webhookBaseUrl}/${app.clientId}/${event.id}`,
+      `${webhookBaseUrl}/${app.clientId}/${createdEvent.id}`,
       app.webhookSecret,
       broadcasterId
     );
@@ -111,6 +100,22 @@ export class TwitchSubscriptionService {
       ),
       meta: { count: total, },
     }
+  }
+
+  async getOrCreateEvent(broadcasterId: string, event: TwitchStreamerEvents): Promise<TwitchStreamerEventEntity> {
+    const eventRecord = await this.twitchStreamerEventsRepository.findOne({
+      where: {
+        streamer: { broadcasterId, },
+        event,
+      },
+      relations: { streamer: true, },
+    });
+
+    if (!!eventRecord) {
+      return eventRecord;
+    }
+
+    return this.registerSubscription(broadcasterId, event);
   }
 
   private async getOrCreateStreamer(broadcasterId: string) {

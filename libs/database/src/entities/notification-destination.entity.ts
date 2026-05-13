@@ -23,6 +23,7 @@ export class NotificationDestinationEntity {
   channelId?: string | null;
 
   // discord_bot
+  // required for discord
   @Column({ nullable: true, type: 'varchar' })
   guildId?: string | null;
 

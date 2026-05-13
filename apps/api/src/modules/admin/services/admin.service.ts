@@ -9,7 +9,7 @@ export class AdminService {
   ) {}
 
   async addTwitchEventStreamOnline(dto: AddStreamOnlineSubscriptionDto) {
-    return this.twitchSubscriptionService.registerStreamOnlineSubscription(dto.broadcasterId);
+    return this.twitchSubscriptionService.registerSubscription(dto.broadcasterId);
   }
 
   async getTwitchEvents(query: GetTwitchSubscriptionsDto) {

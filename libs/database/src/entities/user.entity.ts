@@ -9,6 +9,14 @@ export class UserEntity {
   @Column()
   displayName: string;
 
+  // usage for public events (stream.online etc)
+  @Column({ default: 0, type: 'int' })
+  publicEvenetsCost: number;
+
+  // usage for personal events as an account owner
+  @Column({ default: 0, type: 'int' })
+  privateEvenetsCost: number;
+
   @Column({ unique: true, nullable: true, type: 'varchar' })
   email?: string | null;
 

@@ -28,7 +28,7 @@ export class TwitchSubscriptionsCronService {
         createdAt: LessThan(gapTime),
       },
       select: ['id', 'subscriptionId', 'eventStatus', 'twitchApp'],
-      relations: ['twitchApp'],
+      relations: { twitchApp: true, },
     });
 
     const groupedByClientId = stale.reduce((acc, event) => {
