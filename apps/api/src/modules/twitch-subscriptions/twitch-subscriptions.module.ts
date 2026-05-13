@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { TwitchSubscriptionService } from './services';
+import { TwitchSubscriptionsCronService, TwitchSubscriptionService } from './services';
 import { TwitchModule } from '../twitch/twitch.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TwitchStreamerEntity, TwitchStreamerEventEntity } from '@libs/database';
@@ -14,6 +14,7 @@ import { TwitchSubscriptionMapper } from './mappers';
     ]),
   ],
   providers: [
+    TwitchSubscriptionsCronService,
     TwitchSubscriptionService,
     TwitchSubscriptionMapper,
   ],

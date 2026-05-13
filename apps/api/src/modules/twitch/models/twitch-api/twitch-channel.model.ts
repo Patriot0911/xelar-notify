@@ -1,4 +1,4 @@
-import { ITwitchApiPagination } from '../twitch-api-pagination.model';
+import { ITwitchApiPaginationModel } from '../twitch-api-pagination.model';
 
 export interface ITwitchApiChannelModel {
   id: string;
@@ -32,5 +32,5 @@ export interface ITwitchApiChannelNormalizedModel {
 
 export interface ITwitchChannelsApiResponseModel {
   data: ITwitchApiChannelModel[];
-  pagination: ITwitchApiPagination;
+  pagination: ITwitchApiPaginationModel;
 };

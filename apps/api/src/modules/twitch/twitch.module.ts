@@ -10,6 +10,7 @@ import { TwitchAppsRepository } from './repositories';
 import { DataSource } from 'typeorm';
 import { TwitchController } from './controllers/twitch.controller';
 import { CryptoService } from '@libs/shared';
+import { TwitchAppService } from './services/twitch-app.service';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CryptoService } from '@libs/shared';
     TwitchAppMapper,
     TwitchApiMapper,
     TwitchAppsRepository,
+    TwitchAppService,
     {
       provide: TwitchAppsRepository,
       useFactory: (dataSource: DataSource, crypto: CryptoService) =>
@@ -45,6 +47,7 @@ import { CryptoService } from '@libs/shared';
     TwitchAppsRepository,
     TwitchAppMapper,
     TwitchApiService,
+    TwitchAppService,
   ],
 })
 export class TwitchModule implements OnModuleInit {

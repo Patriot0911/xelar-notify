@@ -1,3 +1,3 @@
-export interface ITwitchApiPagination {
+export interface ITwitchApiPaginationModel {
   cursor: string;
 };

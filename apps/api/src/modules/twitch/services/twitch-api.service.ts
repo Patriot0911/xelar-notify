@@ -6,6 +6,8 @@ import { ITwitchApiUserModel, ITwitchApiUserNormalizedModel, ITwitchChannelsApiR
 import { TwitchApiMapper } from '../mappers';
 import { TwitchStreamerEvents } from '@libs/database';
 import { AxiosError } from 'axios';
+import { ITwitchGetSubscriptionsApiResponseModel, TTwitchSubscriptionStatus } from '../models/twitch-api/twitch-subscription.model';
+import { IGetTwitchSubscriptionParamsModel } from '../models/twitch-params.model';
 
 @Injectable()
 export class TwitchApiService {
@@ -99,6 +101,49 @@ export class TwitchApiService {
       console.error(message);
       throw new InternalServerErrorException(
         `Twitch Event registration went wrong. Please contact administrator for more information [${status}]`
+      );
+    }
+  }
+
+  async getSubscriptionById(subscriptionId: string, clientId: string) {
+    const subscriptions = await this.getSubscriptions(clientId, { subscriptionIds: [subscriptionId] });
+    return subscriptions.data.length > 0 ? subscriptions.data[0] : null;
+  }
+
+  async getSubscriptions(
+    clientId: string,
+    options: IGetTwitchSubscriptionParamsModel
+  ) {
+    const app = await this.twitchAppsRepository.findOne(
+      { where: { clientId, }, }, true, { accessToken: true,}
+    );
+
+    if (!app) {
+      throw new InternalServerErrorException('Cannot find Twitch app for provided clientId');
+    }
+
+    try {
+      const { data, } = await firstValueFrom(
+        this.httpService.get<ITwitchGetSubscriptionsApiResponseModel>(
+          `helix/eventsub/subscriptions`,
+          <ITwitchHttpConfigModel> {
+            params: {
+              subscription_id: options.subscriptionIds,
+              status: options.statuses,
+              after: options.after,
+              user_id: options.userIds,
+            },
+            twitchClientId: clientId,
+            accessToken: app.accessToken,
+          },
+        ),
+      );
+      return data;
+    } catch(e: unknown) {
+      const { message, status } = <AxiosError> e;
+      console.error(message);
+      throw new InternalServerErrorException(
+        `Twitch API subscription error. Please contact administrator for more information [${status}]`
       );
     }
   }
