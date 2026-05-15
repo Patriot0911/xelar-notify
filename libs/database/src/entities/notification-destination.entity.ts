@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TwitchStreamerEventEntity } from './twitch-streamer-event';
 import { TDiscordWebhookPayload } from 'apps/api/src/modules/notification-payload/schemas';
+import { UserEntity } from './user.entity';
 
 export enum NotificationPlatform {
   DISCORD_BOT     = 'discord_bot',
@@ -14,6 +15,19 @@ export class DiscordNotificationDestinationEntity {
 
   @Column()
   streamerEventId: string;
+
+  @ManyToOne(
+    () => UserEntity,
+    (user) => user.discordNotifications,
+  )
+  @JoinColumn({ name: 'credit_owner_id' })
+  creditOwner: UserEntity;
+
+  @Column({ type: 'varchar', name: 'credit_owner_id' })
+  creditOwnerId: string;
+
+  @Column({ type: 'decimal', precision: 3, scale: 1 })
+  creditCost: number;
 
   @Column({ type: 'enum', enum: NotificationPlatform })
   type: NotificationPlatform;
