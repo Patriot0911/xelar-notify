@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
-import { DiscordAuthService, DiscordBaseService, DiscordGuildService } from './services';
+import { DiscordWebhookiService, DiscordAuthService, DiscordBaseService, DiscordGuildService } from './services';
 import { DiscordAuthMapper, DiscordGuildMapper } from './mappers';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '@libs/database';
@@ -21,11 +21,13 @@ import { UserEntity } from '@libs/database';
     DiscordAuthService,
     DiscordAuthMapper,
     DiscordGuildMapper,
+    DiscordWebhookiService,
   ],
   exports: [
     DiscordAuthService,
     DiscordBaseService,
     DiscordGuildService,
+    DiscordWebhookiService,
   ],
 })
 export class DiscordModule {}

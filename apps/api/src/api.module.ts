@@ -9,6 +9,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { TwitchEventsModule } from './modules/streamer-events';
 import { CryptoModule } from '@libs/shared';
 import { AdminModule } from './modules/admin';
+import { NotificationPayloadModule } from './modules/notification-payload';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AdminModule } from './modules/admin';
     CryptoModule,
     AdminModule,
     TwitchEventsModule,
+    NotificationPayloadModule,
   ],
 })
 export class ApiModule {}

@@ -6,7 +6,7 @@ export class AddDiscordNotificationDto {
   broadcasterId: string;
 
   @IsJSON()
-  payload: string;
+  payload: Record<string, unknown>;
 
   @IsEnum([NotificationPlatform.DISCORD_BOT, NotificationPlatform.DISCORD_WEBHOOK])
   type: NotificationPlatform.DISCORD_BOT | NotificationPlatform.DISCORD_WEBHOOK;

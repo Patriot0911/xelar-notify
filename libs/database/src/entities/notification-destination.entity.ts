@@ -1,14 +1,14 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TwitchStreamerEventEntity } from './twitch-streamer-event';
+import { TDiscordWebhookPayload } from 'apps/api/src/modules/notification-payload/schemas';
 
 export enum NotificationPlatform {
   DISCORD_BOT     = 'discord_bot',
   DISCORD_WEBHOOK = 'discord_webhook',
-  TELEGRAM_BOT    = 'telegram_bot',
 };
 
-@Entity('notification_destinations')
-export class NotificationDestinationEntity {
+@Entity('discord_notification_destinations')
+export class DiscordNotificationDestinationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -16,14 +16,13 @@ export class NotificationDestinationEntity {
   streamerEventId: string;
 
   @Column({ type: 'enum', enum: NotificationPlatform })
-  platform: NotificationPlatform;
+  type: NotificationPlatform;
 
-  // discord_bot & telegram_bot (chatId)
+  // discord_bot
   @Column({ nullable: true, type: 'varchar' })
   channelId?: string | null;
 
   // discord_bot
-  // required for discord
   @Column({ nullable: true, type: 'varchar' })
   guildId?: string | null;
 
@@ -33,13 +32,13 @@ export class NotificationDestinationEntity {
 
   @ManyToOne(
     () => TwitchStreamerEventEntity,
-    (event) => event.destinations,
+    (event) => event.discordDestinations,
   )
   @JoinColumn({ name: 'streamer_event_id' })
   streamerEvent: TwitchStreamerEventEntity;
 
-  @Column({ type: 'text', nullable: true })
-  payload?: string | null;
+  @Column({ type: 'jsonb', nullable: true })
+  messagePayload: TDiscordWebhookPayload | null;
 
   @CreateDateColumn()
   createdAt: Date;

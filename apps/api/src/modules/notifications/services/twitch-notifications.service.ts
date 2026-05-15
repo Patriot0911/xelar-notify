@@ -1,13 +1,15 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
-import { NotificationDestinationEntity, NotificationPlatform, TwitchStreamerEvents, UserEntity } from '@libs/database';
+import { DiscordNotificationDestinationEntity, NotificationPlatform, TwitchStreamerEvents, UserEntity } from '@libs/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AddDiscordNotificationDto } from '../dto';
+import { DiscordWebhookiService } from '../../discord';
+import { DiscordPayloadService } from '../../notification-payload/services';
 
 @Injectable()
 export class TwitchNotificationsService {
-  // todo: move these values to config
+  // todo: move these values to config or database
   private readonly publicEventsMaxCost = 20;
   private readonly privateEventsMaxCost = 10;
   private readonly publicAllowedEvents = [
@@ -16,8 +18,10 @@ export class TwitchNotificationsService {
 
   constructor(
     private readonly twitchSubscriptionService: TwitchSubscriptionService,
-    @InjectRepository(NotificationDestinationEntity)
-    private notificationDestinationsRepository: Repository<NotificationDestinationEntity>,
+    private readonly discordPayloadService: DiscordPayloadService,
+    private readonly discordApiService: DiscordWebhookiService,
+    @InjectRepository(DiscordNotificationDestinationEntity)
+    private discordNotificationDestinationsRepository: Repository<DiscordNotificationDestinationEntity>,
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
   ) {}
@@ -59,22 +63,23 @@ export class TwitchNotificationsService {
 
     const subscription = await this.twitchSubscriptionService.getOrCreateEvent(dto.broadcasterId, dto.event);
 
-    const notification = this.notificationDestinationsRepository.create({
+    this.discordPayloadService.validatePayload(dto.payload);
+
+    const notification = this.discordNotificationDestinationsRepository.create({
       streamerEventId: subscription.id,
-      platform: dto.type,
+      type: dto.type,
       guildId: dto.guildId,
-      // todo: add validation for payload structure
-      payload: dto.payload,
+      messagePayload: dto.payload,
     });
 
     if (dto.type === NotificationPlatform.DISCORD_BOT) {
       notification.channelId = dto.channelId;
     } else {
-      // todo: add validation for webhook url
+      await this.discordApiService.validateWebhook(dto.webhookUrl!, dto.guildId);
       notification.webhookUrl = dto.webhookUrl;
     }
 
-    const createdNotification = await this.notificationDestinationsRepository.save(notification);
+    const createdNotification = await this.discordNotificationDestinationsRepository.save(notification);
     return createdNotification;
   }
 }

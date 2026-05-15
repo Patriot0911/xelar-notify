@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { NotificationDestinationEntity } from './notification-destination.entity';
+import { DiscordNotificationDestinationEntity } from './notification-destination.entity';
 import { TwitchStreamerEntity } from './twitch-streamer';
 import { TwitchAppEntity } from './twitch-app.entity';
 
@@ -48,11 +48,11 @@ export class TwitchStreamerEventEntity {
   twitchApp: TwitchAppEntity;
 
   @OneToMany(
-    () => NotificationDestinationEntity,
+    () => DiscordNotificationDestinationEntity,
     (dest) => dest.streamerEvent,
     { cascade: true }
   )
-  destinations: NotificationDestinationEntity[];
+  discordDestinations: DiscordNotificationDestinationEntity[];
 
   @CreateDateColumn()
   createdAt: Date;
