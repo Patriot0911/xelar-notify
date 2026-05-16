@@ -1,5 +1,5 @@
 import { AppConfig, AppConfigModule } from '@libs/config';
-import { DiscordModule, NotificationsModule } from './modules';
+import { AccountModule, DiscordModule, NotificationsModule } from './modules';
 import { Module } from '@nestjs/common';
 import { RpcModule } from '@libs/rpc';
 import { ConfigService } from '@nestjs/config';
@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 @Module({
   imports: [
     AppConfigModule,
+    AccountModule,
     DiscordModule,
     NotificationsModule,
     RpcModule.forRootAsync({

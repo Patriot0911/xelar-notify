@@ -4,7 +4,7 @@ import { DiscordNotificationDestinationEntity, TwitchStreamerEntity, UserEntity 
 import { DiscordModule } from '../discord/discord.module';
 import { TwitchSubscriptionsModule } from '../twitch-subscriptions';
 import { NotificationsModule } from '../notifications/notifications.module';
-import { AddDestinationHandler } from './handlers';
+import { AddDestinationHandler, AuthenticateHandler } from './handlers';
 import { TwitchModule } from '../twitch';
 
 @Module({
@@ -19,7 +19,7 @@ import { TwitchModule } from '../twitch';
       TwitchStreamerEntity,
     ]),
   ],
-  controllers: [AddDestinationHandler],
+  controllers: [AddDestinationHandler, AuthenticateHandler],
   providers: [],
 })
 export class DiscordHandlerModule {}

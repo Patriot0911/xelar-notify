@@ -1,10 +1,11 @@
 import { TwitchStreamerEvents } from '@libs/database';
-import { SlashCommandBuilder } from 'discord.js';
+import { PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 
 export default function addDestinationCommandMeta() {
   const commandBuilder = new SlashCommandBuilder()
     .setName('add-destination')
     .setDescription('Add a notification destination for a streamer event')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption(option =>
       option.setName('broadcaster')
         .setDescription('Twitch broadcaster ID to receive notifications from')

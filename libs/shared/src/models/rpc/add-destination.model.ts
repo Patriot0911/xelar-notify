@@ -13,5 +13,3 @@ export interface IAddDestinationResult {
   eventType: string;
   // remainingCredits: number;
 };
-
-export type TDestinationResponse = IGenericRpcResponse<IAddDestinationResult>;

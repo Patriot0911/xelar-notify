@@ -8,6 +8,7 @@ import { AddDestinationDto } from '../dto';
 import { IAddDestinationResult, RpcBusinessException, RpcError } from '@libs/shared';
 import { RpcPayload } from '@libs/rpc';
 import { TwitchNotificationsService } from '../../notifications/services';
+import { DiscordAuthService } from '../../discord/services';
 
 @Controller()
 export class AddDestinationHandler {
@@ -17,6 +18,7 @@ export class AddDestinationHandler {
     @InjectRepository(TwitchStreamerEntity)
     private readonly twitchStreamerRepository: Repository<TwitchStreamerEntity>,
     private readonly twitchNotificationsService: TwitchNotificationsService,
+    private readonly discordAuthService: DiscordAuthService,
   ) {}
 
   @MessagePattern(RpcPatterns.discord.addDestination)
@@ -28,7 +30,8 @@ export class AddDestinationHandler {
     if (!user) {
       throw new RpcBusinessException(
         RpcError.NOT_REGISTERED,
-        'User is not registered in the system'
+        'User is not registered in the system',
+        { authUrl: this.discordAuthService.getDiscordAuthRedirectUri() },
       );
     }
 
