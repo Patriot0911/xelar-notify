@@ -6,8 +6,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter, ResponseInterceptor } from './shared';
 import { ConfigService } from '@nestjs/config';
 import { AppConfig } from '@libs/config';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { MicroserviceOptions, TcpOptions, Transport } from '@nestjs/microservices';
 import { Queues } from '@libs/queue';
+import { RpcExceptionFilter, RpcResponseInterceptor } from '@libs/rpc';
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiModule);
@@ -20,6 +21,14 @@ async function bootstrap() {
     config.get('RABBIT_PORT')!,
     config.get('RABBIT_VHOST')!,
   );
+
+  app.connectMicroservice<TcpOptions>({
+    transport: Transport.TCP,
+    options: {
+      host: '0.0.0.0',
+      port: Number(config.get('API_TCP_PORT')) ?? 3010,
+    },
+  });
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
@@ -68,8 +77,14 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useGlobalInterceptors(new ResponseInterceptor());
-  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalInterceptors(
+    new ResponseInterceptor(),
+    new RpcResponseInterceptor(),
+  );
+  app.useGlobalFilters(
+    new AllExceptionsFilter(),
+    new RpcExceptionFilter(),
+  );
 
   app.useGlobalPipes(
     new ValidationPipe({

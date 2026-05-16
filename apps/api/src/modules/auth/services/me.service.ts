@@ -4,7 +4,7 @@ import { AuthMapper } from '../mappers';
 import { UserEntity } from '@libs/database';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DiscordGuildService } from '../../discord';
+import { DiscordGuildService } from '../../discord/services';
 
 @Injectable()
 export class MeService {

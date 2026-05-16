@@ -10,6 +10,7 @@ import { TwitchEventsModule } from './modules/streamer-events';
 import { CryptoModule } from '@libs/shared';
 import { AdminModule } from './modules/admin';
 import { NotificationPayloadModule } from './modules/notification-payload';
+import { DiscordHandlerModule } from './modules/discord-handler';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { NotificationPayloadModule } from './modules/notification-payload';
     AdminModule,
     TwitchEventsModule,
     NotificationPayloadModule,
+    DiscordHandlerModule,
   ],
 })
 export class ApiModule {}

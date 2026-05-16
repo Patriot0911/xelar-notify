@@ -5,7 +5,7 @@ import { IRefreshTokenPayloadWithToken, IAccessTokenPayload, IAuthResponse, IUse
 import { ApiGenericResponses, Feature, FeatureGuard } from '../../../shared';
 import { AuthResponseDto, LoginByEmailDto, RegistrationByEmailDto, UserPayloadDto } from '../dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { DiscordAuthService } from '../../discord';
+import { DiscordAuthService } from '../../discord/services';
 
 @ApiTags('Auth')
 @Controller('api/auth')

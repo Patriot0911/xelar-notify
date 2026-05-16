@@ -20,13 +20,16 @@ async function bootstrap() {
       transport: Transport.RMQ,
       options: {
         urls: [url],
-        queue: 'notifications.discord',
+        queue: 'discord.notifications',
         queueOptions: {
           durable: true,
         },
       },
     },
   );
+
+  app.enableShutdownHooks();
+
   await app.listen();
 }
 bootstrap();

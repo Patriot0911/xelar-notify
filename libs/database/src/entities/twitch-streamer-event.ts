@@ -24,19 +24,19 @@ export class TwitchStreamerEventEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ name: 'streamer_id' })
   streamerId: string;
 
-  @Column()
+  @Column({ name: 'twitch_app_id' })
   twitchAppId: string;
 
-  @Column({ unique: true, type: 'varchar', nullable: true })
+  @Column({ name: 'subscription_id', unique: true, type: 'varchar', nullable: true })
   subscriptionId?: string | null;
 
   @Column({ enum: TwitchStreamerEvents })
   event: TwitchStreamerEvents;
 
-  @Column({ enum: TwitchEventStatuses })
+  @Column({ name: 'event_status', enum: TwitchEventStatuses })
   eventStatus: TwitchEventStatuses;
 
   @ManyToOne(() => TwitchStreamerEntity, (streamer) => streamer.eventSubscriptions)
@@ -54,6 +54,6 @@ export class TwitchStreamerEventEntity {
   )
   discordDestinations: DiscordNotificationDestinationEntity[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

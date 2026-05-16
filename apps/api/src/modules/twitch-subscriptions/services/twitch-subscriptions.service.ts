@@ -23,19 +23,6 @@ export class TwitchSubscriptionService {
   ) {}
 
   async registerSubscription(broadcasterId: string, event: TwitchStreamerEvents): Promise<TwitchStreamerEventEntity> {
-    const existingSubscription = await this.twitchStreamerEventsRepository.findOne({
-      where: {
-        event,
-        streamer: { broadcasterId, },
-      },
-    });
-
-    if (!!existingSubscription) {
-      throw new BadRequestException(
-        `Twitch event "${event}" already exists`
-      );
-    }
-
     const app = await this.getTwitchAppForBroadcaster(broadcasterId);
 
     if (!app) {
@@ -45,11 +32,13 @@ export class TwitchSubscriptionService {
     const streamer = await this.getOrCreateStreamer(broadcasterId);
 
     const newEvent = this.twitchStreamerEventsRepository.create({
-      event: TwitchStreamerEvents.STREAM_ONLINE,
+      event,
       twitchAppId: app.id,
       streamerId: streamer.id,
       eventStatus: TwitchEventStatuses.PENDING,
     });
+
+    console.log({ newEvent })
 
     const createdEvent = await this.twitchStreamerEventsRepository.save(newEvent);
 
@@ -102,17 +91,25 @@ export class TwitchSubscriptionService {
     }
   }
 
-  async getOrCreateEvent(broadcasterId: string, event: TwitchStreamerEvents): Promise<TwitchStreamerEventEntity> {
-    const eventRecord = await this.twitchStreamerEventsRepository.findOne({
-      where: {
-        streamer: { broadcasterId, },
-        event,
-      },
-      relations: { streamer: true, },
+  async getOrCreateEvent(
+    broadcasterId: string,
+    event: TwitchStreamerEvents,
+  ): Promise<TwitchStreamerEventEntity> {
+    const streamer = await this.twitchStreamerRepository.findOne({
+      where: { broadcasterId },
     });
 
-    if (!!eventRecord) {
-      return eventRecord;
+    if (streamer) {
+      const eventRecord = await this.twitchStreamerEventsRepository.findOne({
+        where: {
+          streamerId: streamer.id,
+          event,
+        },
+      });
+
+      if (eventRecord) {
+        return eventRecord;
+      }
     }
 
     return this.registerSubscription(broadcasterId, event);
@@ -122,6 +119,8 @@ export class TwitchSubscriptionService {
     const existingStreamer = await this.twitchStreamerRepository.findOne({
       where: { broadcasterId, }
     });
+
+    console.log({ existingStreamer })
 
     if (!!existingStreamer) {
       return existingStreamer;

@@ -81,6 +81,7 @@ services:
         APP: api
     ports:
       - "${API_PORT}:${API_PORT}"
+      - "${API_TCP_PORT}:${API_TCP_PORT}"
     env_file: .env
     depends_on:
       migrate:
@@ -119,16 +120,16 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  telegram-bot:
-    build:
-      context: .
-      args:
-        APP: telegram-bot
-    env_file: .env
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-    restart: unless-stopped
+  # telegram-bot:
+  #   build:
+  #     context: .
+  #     args:
+  #       APP: telegram-bot
+  #   env_file: .env
+  #   depends_on:
+  #     rabbitmq:
+  #       condition: service_healthy
+  #   restart: unless-stopped
 
 volumes:
   pgdata:

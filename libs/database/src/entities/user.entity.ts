@@ -7,33 +7,28 @@ export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ name: 'display_name' })
   displayName: string;
 
-  // usage for public events (stream.online etc)
-  @Column({ default: 0, type: 'int' })
-  publicCreditsUsed: number;
-
-  // usage for personal events as an account owner
-  @Column({ default: 0, type: 'int' })
-  privateCreditsUsed: number;
+  @Column({ name: 'credits_used', default: 0, type: 'int' })
+  creditsUsed: number;
 
   @Column({ unique: true, nullable: true, type: 'varchar' })
   email?: string | null;
 
-  @Column({ unique: true, nullable: true, type: 'varchar' })
+  @Column({ name: 'discord_id', unique: true, nullable: true, type: 'varchar' })
   discordId?: string | null;
 
   @Column({ nullable: true, type: 'varchar' })
   password?: string | null;
 
-  @Column({ nullable: true, type: 'varchar' })
+  @Column({ name: 'refresh_token', nullable: true, type: 'varchar' })
   refreshToken?: string | null;
 
-  @Column({ nullable: true, type: 'varchar' })
+  @Column({ name: 'discord_access_token', nullable: true, type: 'varchar' })
   discordAccessToken?: string | null;
 
-  @Column({ nullable: true, type: 'varchar' })
+  @Column({ name: 'discord_refresh_token', nullable: true, type: 'varchar' })
   discordRefreshToken?: string | null; // Todo: add refresh in auth api
 
   @OneToMany(
@@ -57,6 +52,6 @@ export class UserEntity {
   // @Column({ unique: true, nullable: true })
   // twitchId?: string | null;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

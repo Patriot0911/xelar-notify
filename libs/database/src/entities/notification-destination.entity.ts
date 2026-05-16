@@ -13,7 +13,7 @@ export class DiscordNotificationDestinationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ name: 'streamer_event_id' })
   streamerEventId: string;
 
   @ManyToOne(
@@ -26,22 +26,22 @@ export class DiscordNotificationDestinationEntity {
   @Column({ type: 'varchar', name: 'credit_owner_id' })
   creditOwnerId: string;
 
-  @Column({ type: 'decimal', precision: 3, scale: 1 })
+  @Column({ name: 'credit_cost', type: 'decimal', precision: 3, scale: 1 })
   creditCost: number;
 
   @Column({ type: 'enum', enum: NotificationPlatform })
   type: NotificationPlatform;
 
   // discord_bot
-  @Column({ nullable: true, type: 'varchar' })
+  @Column({ name: 'channel_id', nullable: true, type: 'varchar' })
   channelId?: string | null;
 
   // discord_bot
-  @Column({ nullable: true, type: 'varchar' })
+  @Column({ name: 'guild_id', nullable: true, type: 'varchar' })
   guildId?: string | null;
 
   // discord_webhook
-  @Column({ nullable: true, select: false, type: 'varchar' })
+  @Column({ name: 'webhook_url', nullable: true, select: false, type: 'varchar' })
   webhookUrl?: string | null;
 
   @ManyToOne(
@@ -51,9 +51,9 @@ export class DiscordNotificationDestinationEntity {
   @JoinColumn({ name: 'streamer_event_id' })
   streamerEvent: TwitchStreamerEventEntity;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ name: 'message_payload', type: 'jsonb', nullable: true })
   messagePayload: TDiscordWebhookPayload | null;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

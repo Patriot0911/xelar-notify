@@ -18,30 +18,30 @@ export class TwitchAppEntity {
   @Column({ enum: TwitchAppStatus, default: TwitchAppStatus.Active })
   status: TwitchAppStatus;
 
-  @Column({ unique: true })
+  @Column({ name: 'client_id', unique: true })
   clientId: string;
 
   @Column({ name: 'client_secret' })
   clientSecret: string;
 
-  @Column()
+  @Column({ name: 'webhook_secret' })
   webhookSecret: string;
 
-  @Column({ nullable: true, type: 'varchar', name: 'access_token' })
+  @Column({ name: 'access_token', nullable: true, type: 'varchar' })
   accessToken?: string | null;
 
-  @Column({ nullable: true, })
+  @Column({ name: 'token_expires_at', nullable: true })
   tokenExpiresAt?: Date;
 
-  @Column({ default: 0 })
+  @Column({ name: 'current_cost', default: 0 })
   currentCost: number;
 
-  @Column({ default: 9000 })
+  @Column({ name: 'max_cost', default: 9000 })
   maxCost: number;
 
   @OneToMany(() => TwitchStreamerEventEntity, (streamerEvent) => streamerEvent.twitchApp)
   twitchStreamerEvents: TwitchStreamerEventEntity[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

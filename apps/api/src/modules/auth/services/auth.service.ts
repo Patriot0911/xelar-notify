@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { ConfigType } from '@nestjs/config';
 import { AuthMapper } from '../mappers';
 import { authConfig } from '@libs/config';
-import { DiscordAuthService } from '../../discord';
+import { DiscordAuthService } from '../../discord/services';
 
 @Injectable()
 export class AuthService {

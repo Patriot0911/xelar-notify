@@ -93,6 +93,7 @@
       "<rootDir>/libs/"
     ],
     "moduleNameMapper": {
+      "^@app/rpc(|/.*)$": "<rootDir>/libs/rpc/src/$1",
       "^@lib/database(|/.*)$": "<rootDir>/libs/database/src/$1",
       "^@libs/queue/queue(|/.*)$": "<rootDir>/libs/queue/src/$1",
       "^@libs/shared/shared(|/.*)$": "<rootDir>/libs/shared/src/$1",

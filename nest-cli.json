@@ -66,6 +66,15 @@
         "tsConfigPath": "libs/redis/tsconfig.lib.json"
       }
     },
+    "rpc": {
+      "type": "library",
+      "root": "libs/rpc",
+      "entryFile": "index",
+      "sourceRoot": "libs/rpc/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/rpc/tsconfig.lib.json"
+      }
+    },
     "shared": {
       "type": "library",
       "root": "libs/shared",

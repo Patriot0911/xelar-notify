@@ -7,6 +7,8 @@ import { DiscordPayloadService } from './services';
   providers: [
     DiscordPayloadService,
   ],
-  exports: [],
+  exports: [
+    DiscordPayloadService,
+  ],
 })
 export class NotificationPayloadModule {}

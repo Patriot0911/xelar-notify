@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { AddStreamOnlineSubscriptionDto, GetTwitchSubscriptionsDto } from '../dto';
+import { TwitchStreamerEvents } from '@libs/database';
 
 @Injectable()
 export class AdminService {
@@ -9,7 +10,7 @@ export class AdminService {
   ) {}
 
   async addTwitchEventStreamOnline(dto: AddStreamOnlineSubscriptionDto) {
-    return this.twitchSubscriptionService.registerSubscription(dto.broadcasterId);
+    return this.twitchSubscriptionService.registerSubscription(dto.broadcasterId, TwitchStreamerEvents.STREAM_ONLINE);
   }
 
   async getTwitchEvents(query: GetTwitchSubscriptionsDto) {
