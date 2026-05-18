@@ -2,8 +2,7 @@ import { Injectable, Inject, OnModuleDestroy } from '@nestjs/common';
 import { API_RPC_CLIENT } from './rpc.constants';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom, timeout } from 'rxjs';
-import { TRpcCallResultModel } from './rpc-call-result.model';
-import { IErrorResponse } from '@libs/shared';
+import { TRpcCallResultModel } from '@libs/shared';
 
 @Injectable()
 export class RpcService implements OnModuleDestroy {
@@ -32,16 +31,23 @@ export class RpcService implements OnModuleDestroy {
     return response;
   }
 
-  async callSafe<TResult, TInput = unknown, TErrorData = unknown>(
+  async callSafe<TResult, TInput = unknown, TErrorData = Record<string, unknown>>(
     pattern: string,
     data: TInput,
     timeoutMs = 8000,
   ): Promise<TRpcCallResultModel<TResult, TErrorData>> {
     try {
       const result = await this.call<TResult, TInput>(pattern, data, timeoutMs);
-      return { status: true, data: result };
+      return {
+        status: true,
+        data: result,
+      };
     } catch (e) {
-      return { status: false, error: e as IErrorResponse<TErrorData> };
+      return {
+        status: false,
+        message: '',
+        data: e as TErrorData,
+      };
     }
   }
 }

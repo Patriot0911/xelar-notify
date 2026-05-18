@@ -1,10 +1,10 @@
-import { IGenericRpcResponse, RpcBusinessException, RpcError, } from '@libs/shared/models';
+import { RpcBusinessException, RpcError, TRpcCallResultModel, } from '@libs/shared/models';
 import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
 import { Observable, of } from 'rxjs';
 
 @Catch()
 export class RpcExceptionFilter implements ExceptionFilter {
-  catch(exception: any, host: ArgumentsHost): Observable<IGenericRpcResponse<any>> {
+  catch(exception: any, host: ArgumentsHost): Observable<TRpcCallResultModel<any>> {
     if (host.getType() !== 'rpc') {
       throw exception;
     }

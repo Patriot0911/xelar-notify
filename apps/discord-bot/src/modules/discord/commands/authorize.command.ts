@@ -23,18 +23,18 @@ export class AuthorizeCommand {
     );
 
     if (!res.status) {
-      return interaction.editReply(buildRpcErrorReply(res.error));
+      if (res.data?.isRegistered) {
+        return interaction.editReply({
+          embeds: [{
+            title: '✅ Account connected',
+            description: 'Your Discord account is already linked to Xelar Notify.',
+            color: 0x00b894,
+          }],
+        });
+      }
+      return interaction.editReply(buildRpcErrorReply(res));
     }
 
-    if (res.data.isRegistered) {
-      return interaction.editReply({
-        embeds: [{
-          title: '✅ Account connected',
-          description: 'Your Discord account is already linked to Xelar Notify.',
-          color: 0x00b894,
-        }],
-      });
-    }
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()

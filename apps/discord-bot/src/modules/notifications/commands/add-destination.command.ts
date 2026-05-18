@@ -34,7 +34,7 @@ export class AddDestinationCommand {
     );
 
     if (!res.status) {
-      return interaction.editReply(buildRpcErrorReply(res.error));
+      return interaction.editReply(buildRpcErrorReply(res));
     }
 
     return interaction.editReply({

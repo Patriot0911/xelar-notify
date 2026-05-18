@@ -1,5 +1,3 @@
-import { IGenericRpcResponse } from './rpc-result.model';
-
 export interface IAddDestinationPayload {
   discordId: string;
   guildId: string;

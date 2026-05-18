@@ -1,6 +1,3 @@
-export type IGenericRpcResponse<T = unknown, E = Record<string, unknown>> =
-  ISuccessResponse<T> | IErrorResponse<E>;
-
 export type ISuccessResponse<T> = {
   status: true;
   data: T;
@@ -11,6 +8,11 @@ export type IErrorResponse<E> = {
   message: string;
   data?: E;
 };
+
+export type TRpcCallResultModel<T, E = Record<string, unknown>> =
+  | { status: true; data: T; }
+  | IErrorResponse<E>;
+
 
 export enum RpcError {
   NOT_REGISTERED = 'NOT_REGISTERED',
