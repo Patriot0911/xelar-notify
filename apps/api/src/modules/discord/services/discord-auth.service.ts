@@ -1,11 +1,12 @@
 import { discordConfig } from '@libs/config';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { IDiscordApiMeModel, IDiscordApiTokensModel, IDiscordMeModel, IDiscordTokensModel } from '../models';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { DiscordAuthMapper } from '../mappers';
 import { DiscordBaseService } from './discord-base.service';
+import { AxiosError } from 'axios';
 
 @Injectable()
 export class DiscordAuthService {
@@ -31,24 +32,32 @@ export class DiscordAuthService {
 
   async exchangeCodeForTokens(code: string): Promise<IDiscordTokensModel> {
     const { clientId, redirectUri, clientSecret } = this.discordConfigService;
-    const { data, } = await firstValueFrom(
-      this.httpService.post<IDiscordApiTokensModel>(
-        'oauth2/token',
-        new URLSearchParams({
-          client_id:     clientId,
-          client_secret: clientSecret,
-          grant_type:    'authorization_code',
-          code,
-          redirect_uri:  redirectUri,
-        }).toString(),
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+    try {
+      const { data, } = await firstValueFrom(
+        this.httpService.post<IDiscordApiTokensModel>(
+          'oauth2/token',
+          new URLSearchParams({
+            client_id:     clientId,
+            client_secret: clientSecret,
+            grant_type:    'authorization_code',
+            code,
+            redirect_uri:  redirectUri,
+          }).toString(),
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
           },
-        },
-      ),
-    );
-    return this.discordAuthMapper.ApiToTokensModel(data);
+        ),
+      );
+      return this.discordAuthMapper.ApiToTokensModel(data);
+    } catch(e) {
+      const { message, status } = <AxiosError> e;
+      console.error(message);
+      throw new InternalServerErrorException(
+        `Something went wrong with Twitch API. Please contact administrator for more information [${status}]`
+      );
+    }
   }
 
   async getDiscordMeByUserId(userId: string): Promise<IDiscordMeModel> {
