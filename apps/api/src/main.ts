@@ -78,12 +78,12 @@ async function bootstrap() {
   });
 
   app.useGlobalInterceptors(
-    new ResponseInterceptor(),
     new RpcResponseInterceptor(),
+    new ResponseInterceptor(),
   );
   app.useGlobalFilters(
-    new AllExceptionsFilter(),
     new RpcExceptionFilter(),
+    new AllExceptionsFilter(),
   );
 
   app.useGlobalPipes(
