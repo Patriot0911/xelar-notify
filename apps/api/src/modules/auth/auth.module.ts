@@ -8,6 +8,7 @@ import { AuthMapper } from './mappers';
 import { AuthController } from './controllers';
 import { JwtAccessStrategy, JwtRefreshStrategy } from './strategies';
 import { DiscordModule } from '../discord';
+import { RolesModule } from '../roles';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { DiscordModule } from '../discord';
     PassportModule,
     JwtModule,
     DiscordModule,
+    RolesModule,
   ],
   controllers: [
     AuthController,

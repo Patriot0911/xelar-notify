@@ -8,6 +8,7 @@ import {
   TwitchStreamerEventEntity,
   TwitchAppEntity,
   UserEntity,
+  RoleEntity,
 } from './entities';
 
 @Module({
@@ -26,6 +27,7 @@ import {
           TwitchStreamerEventEntity,
           TwitchStreamerEntity,
           UserEntity,
+          RoleEntity,
           TwitchAppEntity,
         ],
         migrations: [__dirname + '/migrations/*{.ts,.js}'],

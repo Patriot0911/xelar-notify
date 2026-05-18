@@ -1,5 +1,5 @@
 import { IAccessTokenPayload, IAuthResponse, ILoginByEmailModel, IRefreshTokenPayload, IRegisterByEmailModel, TokenType } from '../models';
-import { UserEntity } from '@libs/database/entities';
+import { Permission, UserEntity } from '@libs/database/entities';
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
@@ -9,6 +9,8 @@ import type { ConfigType } from '@nestjs/config';
 import { AuthMapper } from '../mappers';
 import { authConfig } from '@libs/config';
 import { DiscordAuthService } from '../../discord/services';
+import { RolesMapper } from '../../roles/mappers';
+import { RolesService } from '../../roles/services';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +19,8 @@ export class AuthService {
     private readonly passwordService: PasswordService,
     private readonly jwtService: JwtService,
     private readonly authMapper: AuthMapper,
+    private readonly rolesMapper: RolesMapper,
+    private readonly rolesService: RolesService,
     @Inject(authConfig.KEY)
     private authConfigService: ConfigType<typeof authConfig>,
     @InjectRepository(UserEntity)
@@ -50,8 +54,12 @@ export class AuthService {
       }
     }
 
+    const { permissions, roles, } = await this.rolesService.getRolesAccessesForUser(userData.id);
+
     const tokens = await this.generateTokens(
       userData.id,
+      permissions,
+      roles,
     );
     await this.updateRefreshToken(userData.id, tokens.refreshToken);
 
@@ -75,8 +83,12 @@ export class AuthService {
       throw new BadRequestException('Invalid credentials');
     }
 
+    const { permissions, roles, } = await this.rolesService.getRolesAccessesForUser(userData.id);
+
     const tokens = await this.generateTokens(
       userData.id,
+      permissions,
+      roles,
     );
     await this.updateRefreshToken(userData.id, tokens.refreshToken);
     return this.authMapper.toAuthResponse(userData, tokens);
@@ -96,8 +108,13 @@ export class AuthService {
       password: hashedPassword,
     });
     const createdUser = await this.usersRepository.save(newUser);
+
+    const { permissions, roles, } = this.rolesMapper.rolesToAccess(createdUser.roles ?? []);
+
     const tokens = await this.generateTokens(
       createdUser.id,
+      permissions,
+      roles
     );
     await this.updateRefreshToken(createdUser.id, tokens.refreshToken);
     return this.authMapper.toAuthResponse(createdUser, tokens);
@@ -117,8 +134,12 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
+    const { permissions, roles, } = await this.rolesService.getRolesAccessesForUser(userData.id);
+
     const tokens = await this.generateTokens(
       userId,
+      permissions,
+      roles,
     );
     await this.updateRefreshToken(userId, tokens.refreshToken);
     return this.authMapper.toAuthResponse(userData, tokens);
@@ -132,10 +153,16 @@ export class AuthService {
     return !!updatedUser.affected;
   }
 
-  async generateTokens(userId: string) { // todo: roles / permissions
+  async generateTokens(
+    userId: string,
+    permissions: Permission[],
+    roles: string[]
+  ) {
     const accessPayload: IAccessTokenPayload = {
       use: TokenType.Access,
       sub: userId,
+      permissions,
+      roles,
     };
     const refreshPayload: IRefreshTokenPayload = {
       use: TokenType.Refresh,

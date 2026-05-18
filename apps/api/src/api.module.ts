@@ -11,6 +11,7 @@ import { CryptoModule } from '@libs/shared';
 import { AdminModule } from './modules/admin';
 import { NotificationPayloadModule } from './modules/notification-payload';
 import { DiscordHandlerModule } from './modules/discord-handler';
+import { RolesModule } from './modules/roles';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { DiscordHandlerModule } from './modules/discord-handler';
     TwitchEventsModule,
     NotificationPayloadModule,
     DiscordHandlerModule,
+    RolesModule,
   ],
 })
 export class ApiModule {}
