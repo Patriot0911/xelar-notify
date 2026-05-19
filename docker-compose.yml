@@ -120,17 +120,6 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # telegram-bot:
-  #   build:
-  #     context: .
-  #     args:
-  #       APP: telegram-bot
-  #   env_file: .env
-  #   depends_on:
-  #     rabbitmq:
-  #       condition: service_healthy
-  #   restart: unless-stopped
-
 volumes:
   pgdata:
   redis_data:

@@ -48,6 +48,15 @@
         "webpackConfigPath": "apps/discord-bot/webpack.config.js"
       }
     },
+    "notification-worker": {
+      "type": "application",
+      "root": "apps/notification-worker",
+      "entryFile": "main",
+      "sourceRoot": "apps/notification-worker/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notification-worker/tsconfig.app.json"
+      }
+    },
     "queue": {
       "type": "library",
       "root": "libs/queue",
@@ -82,15 +91,6 @@
       "sourceRoot": "libs/shared/src",
       "compilerOptions": {
         "tsConfigPath": "libs/shared/tsconfig.lib.json"
-      }
-    },
-    "telegram-bot": {
-      "type": "application",
-      "root": "apps/telegram-bot",
-      "entryFile": "main",
-      "sourceRoot": "apps/telegram-bot/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/telegram-bot/tsconfig.app.json"
       }
     },
     "webhook-receiver": {

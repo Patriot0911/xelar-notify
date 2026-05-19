@@ -4,6 +4,15 @@ export const QueuePatterns = {
       verified: 'twitch.subscriptions.verified',
       revoked: 'twitch.subscriptions.revoked',
     },
-    events: {}
+    events: {
+      stream: {
+        online: 'twitch.events.stream.online',
+      },
+    },
+  },
+  discord: {
+    notifications: {
+      send: 'discord.notifications.send',
+    },
   },
 } as const;

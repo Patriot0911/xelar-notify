@@ -49,6 +49,8 @@ export const configSchema = z.object({
   RABBIT_DISCORD_PASSWORD:  z.string(),
   RABBIT_TELEGRAM_USER:     z.string(),
   RABBIT_TELEGRAM_PASSWORD: z.string(),
+  RABBIT_WORKER_USER:       z.string(),
+  RABBIT_WORKER_PASSWORD:   z.string(),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;

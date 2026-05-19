@@ -14,19 +14,16 @@
     "start:dev:api": "nest start api --watch",
     "start:dev:webhook-receiver": "nest start webhook-receiver --watch",
     "start:dev:discord-bot": "nest start discord-bot --watch",
-    "start:dev:telegram-bot": "nest start telegram-bot --watch",
     "start:dev:docker": "docker compose -f docker-compose.dev.yml up -d",
-    "start:dev": "concurrently -n api,receiver,discord,telegram -c blue,green,magenta,cyan \"npm run start:dev:api\" \"npm run start:dev:webhook-receiver\" \"npm run start:dev:discord-bot\" \"npm run start:dev:telegram-bot\"",
+    "start:dev": "concurrently -n api,receiver,discord -c blue,green,magenta,cyan \"npm run start:dev:api\" \"npm run start:dev:webhook-receiver\" \"npm run start:dev:discord-bot\" \"npm run start:dev:telegram-bot\"",
     "build:api": "nest build api",
     "build:webhook-receiver": "nest build webhook-receiver",
     "build:discord-bot": "nest build discord-bot",
-    "build:telegram-bot": "nest build telegram-bot",
     "build:migrate": "nest build migrate",
-    "build:all": "npm run build:api && npm run build:webhook-receiver && npm run build:discord-bot && npm run build:telegram-bot",
+    "build:all": "npm run build:api && npm run build:webhook-receiver && npm run build:discord-bot",
     "start:api": "node dist/apps/api/main",
     "start:webhook-receiver": "node dist/apps/webhook-receiver/main",
-    "start:discord-bot": "node dist/apps/discord-bot/main",
-    "start:telegram-bot": "node dist/apps/telegram-bot/main"
+    "start:discord-bot": "node dist/apps/discord-bot/main"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

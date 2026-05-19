@@ -38,14 +38,14 @@ create_user "$API_USER" "$API_PASSWORD" \
   ".*" \
   ".*"
 
-create_user "$DISCORD_USER" "$DISCORD_PASSWORD" \
-  "discord\.(notifications|requests)" \
-  "discord\.requests" \
-  "discord\.(notifications|requests)"
+create_user "$WORKER_USER" "$WORKER_PASSWORD" \
+  "discord\.notifications.*" \
+  "discord\.notifications.*|amq\.default" \
+  "stream\.events.*"
 
-create_user "$TELEGRAM_USER" "$TELEGRAM_PASSWORD" \
-  "telegram\.(notifications|requests)" \
-  "telegram\.requests" \
-  "telegram\.(notifications|requests)"
+create_user "$DISCORD_USER" "$DISCORD_PASSWORD" \
+  "" \
+  "" \
+  "discord\.notifications.*"
 
 echo "Users created successfully"

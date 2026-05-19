@@ -23,12 +23,6 @@
     "noFallthroughCasesInSwitch": false,
     "strictPropertyInitialization": false,
     "paths": {
-      "@libs/rpc": [
-        "libs/rpc/src"
-      ],
-      "@libs/rpc/*": [
-        "libs/rpc/src/*"
-      ],
       "@libs/config": [
         "libs/config/src"
       ],
@@ -52,6 +46,12 @@
       ],
       "@libs/redis/*": [
         "libs/redis/src/*"
+      ],
+      "@libs/rpc": [
+        "libs/rpc/src"
+      ],
+      "@libs/rpc/*": [
+        "libs/rpc/src/*"
       ],
       "@libs/shared": [
         "libs/shared/src"
