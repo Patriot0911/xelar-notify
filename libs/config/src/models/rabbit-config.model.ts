@@ -1,5 +1,5 @@
 
-export type TRabbitUser = 'api' | 'receiver' | 'discord' | 'telegram';
+export type TRabbitUser = 'api' | 'receiver' | 'discord' | 'worker';
 
 export interface IRabbitConfigModel {
   host: string;

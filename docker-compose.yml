@@ -46,8 +46,8 @@ services:
       - DISCORD_PASSWORD=${RABBIT_DISCORD_PASSWORD}
       - DISCORD_USER=${RABBIT_DISCORD_USER}
 
-      - TELEGRAM_PASSWORD=${RABBIT_TELEGRAM_PASSWORD}
-      - TELEGRAM_USER=${RABBIT_TELEGRAM_USER}
+      - WORKER_PASSWORD=${RABBIT_WORKER_PASSWORD}
+      - WORKER_USER=${RABBIT_WORKER_USER}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     ports:
@@ -56,7 +56,7 @@ services:
       test: |
         rabbitmq-diagnostics ping && \
         rabbitmqctl list_users | grep -q "${RABBIT_DISCORD_USER}" && \
-        rabbitmqctl list_users | grep -q "${RABBIT_TELEGRAM_USER}" && \
+        rabbitmqctl list_users | grep -q "${RABBIT_WORKER_USER}" && \
         rabbitmqctl list_users | grep -q "${RABBIT_RECEIVER_USER}" && \
         rabbitmqctl list_users | grep -q "${RABBIT_API_USER}"
       interval: 10s
@@ -88,6 +88,19 @@ services:
         condition: service_completed_successfully
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  notification-worker:
+    build:
+      context: .
+      args:
+        APP: notification-worker
+    env_file: .env
+    depends_on:
       redis:
         condition: service_healthy
       rabbitmq:

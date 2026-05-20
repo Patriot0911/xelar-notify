@@ -22,10 +22,6 @@ export const rabbitConfig = registerAs<IRabbitConfigModel>(RABBIT_KEY, () => ({
       user: process.env.RABBIT_DISCORD_USER!,
       password: process.env.RABBIT_DISCORD_PASSWORD!,
     },
-    telegram: {
-      user: process.env.RABBIT_TELEGRAM_USER!,
-      password: process.env.RABBIT_TELEGRAM_PASSWORD!,
-    },
     worker: {
       user: process.env.RABBIT_WORKER_USER!,
       password: process.env.RABBIT_WORKER_PASSWORD!,
