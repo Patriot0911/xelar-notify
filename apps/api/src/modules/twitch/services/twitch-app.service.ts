@@ -34,10 +34,22 @@ export class TwitchAppService {
 
     return {
       items: appsData.map(
-        (s) => this.twitchAppsMapper.EntityToListItem(s)
+        (s) => this.twitchAppsMapper.entityToListItem(s)
       ),
       meta: { count: total, },
     };
+  }
+
+  async getById(id: string) {
+    const twitchApp = await this.twitchAppsRepository.findOne({
+      where: { id, }
+    });
+
+    if (!twitchApp) {
+      throw new BadRequestException(`Cannot find Twitch App with id "${id}"`);
+    }
+
+    return this.twitchAppsMapper.entityToListItem(twitchApp);
   }
 
   async addTwitchApp(dto: AddTwitchAppDto): Promise<ITwitchAppShortModel> {
@@ -63,7 +75,7 @@ export class TwitchAppService {
       tokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000)
     });
 
-    return this.twitchAppsMapper.EntityToListItem(twitchApp);
+    return this.twitchAppsMapper.entityToListItem(twitchApp);
   }
 
   async editTwitchApp(appId: string, dto: EditTwitchAppDto): Promise<ITwitchAppShortModel> {
@@ -85,7 +97,7 @@ export class TwitchAppService {
     }
     Object.assign(twitchApp, dto);
     const savedApp = await this.twitchAppsRepository.saveApp(twitchApp);
-    return this.twitchAppsMapper.EntityToListItem(savedApp);
+    return this.twitchAppsMapper.entityToListItem(savedApp);
   }
 
   async deleteTwitchApp(appId: string): Promise<boolean> {

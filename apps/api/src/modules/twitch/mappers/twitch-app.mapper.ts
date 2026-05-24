@@ -4,7 +4,7 @@ import { ITwitchAppShortModel } from '../models';
 
 @Injectable()
 export class TwitchAppMapper {
-  EntityToListItem(twitchApp: TwitchAppEntity): ITwitchAppShortModel {
+  entityToListItem(twitchApp: TwitchAppEntity): ITwitchAppShortModel {
     return {
       id: twitchApp.id,
       name: twitchApp.name,

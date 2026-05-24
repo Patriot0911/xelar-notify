@@ -20,6 +20,11 @@ export class TwitchAppController {
     return await this.twitchAppService.getAllTwitchApps(params);
   }
 
+  @Get(':appId')
+  async getApp(@Param('appId') appId: string): Promise<ITwitchAppShortModel> {
+    return await this.twitchAppService.getById(appId);
+  }
+
   @Post()
   async addTwitchApp(@Body() body: AddTwitchAppDto): Promise<ITwitchAppShortModel> {
     return await this.twitchAppService.addTwitchApp(body);

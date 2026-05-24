@@ -55,9 +55,14 @@ export class RolesService {
   }
 
   async getById(id: string) {
-    const role = await this.rolesRepository.findOneOrFail({
+    const role = await this.rolesRepository.findOne({
       where: { id, }
     });
+
+    if (!role) {
+      throw new BadRequestException(`Cannot find Role with id "${id}"`);
+    }
+
     return this.rolesMapper.entityToItem(role);
   }
 
