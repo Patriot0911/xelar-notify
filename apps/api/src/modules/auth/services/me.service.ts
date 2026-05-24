@@ -18,11 +18,12 @@ export class MeService {
   async getMe(userId: string): Promise<IUserPayload> {
     const userData = await this.usersRepository.findOneOrFail({
       where: { id: userId, },
+      relations: { roles: true, },
     });
     if (!userData) {
       throw new UnauthorizedException();
     }
-    return this.authMapper.toMeDto(userData);
+    return this.authMapper.toUserPayload(userData);
   }
 
   async getUserDiscordGuilds(userId: string, limit: number = 20, beginWithGuildId?: string): Promise<any> {

@@ -36,6 +36,9 @@ export class AuthService {
         { email: discordMe.email, },
         { discordId: discordMe.id, },
       ],
+      relations: {
+        roles: true,
+      },
     });
 
     if (!userData) {
@@ -44,6 +47,7 @@ export class AuthService {
         displayName: discordMe.globalName,
         discordId: discordMe.id,
         discordAccessToken: accessToken,
+        roles: [],
       });
       userData = await this.usersRepository.save(newUser);
     } else {
@@ -71,6 +75,9 @@ export class AuthService {
       where: {
         email: data.email,
         password: Not(IsNull()),
+      },
+      relations: {
+        roles: true,
       },
     });
 
@@ -106,6 +113,7 @@ export class AuthService {
       email: data.email,
       displayName: data.displayName,
       password: hashedPassword,
+      roles: [],
     });
     const createdUser = await this.usersRepository.save(newUser);
 
@@ -122,7 +130,10 @@ export class AuthService {
 
   async refreshToken(userId: string, refreshToken: string) {
     const userData = await this.usersRepository.findOne({
-      where: { id: userId, }
+      where: { id: userId, },
+      relations: {
+        roles: true,
+      },
     });
 
     if (!userData || !userData.refreshToken) {
