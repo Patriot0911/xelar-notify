@@ -3,7 +3,7 @@ import { ITwitchApiChannelModel, ITwitchApiChannelNormalizedModel, ITwitchApiUse
 
 @Injectable()
 export class TwitchApiMapper {
-  TwitchApiChannelToNormalized(channel: ITwitchApiChannelModel): ITwitchApiChannelNormalizedModel {
+  twitchApiChannelToNormalized(channel: ITwitchApiChannelModel): ITwitchApiChannelNormalizedModel {
     return {
       broadcasterId: channel.id,
       broadcasterLogin: channel.broadcaster_login,
@@ -20,7 +20,7 @@ export class TwitchApiMapper {
     };
   }
 
-  TwitchApiUserToNormalized(broadcaster: ITwitchApiUserModel): ITwitchApiUserNormalizedModel {
+  twitchApiUserToNormalized(broadcaster: ITwitchApiUserModel): ITwitchApiUserNormalizedModel {
     return {
       broadcasterId: broadcaster.id,
       broadcasterType: broadcaster.broadcaster_type,

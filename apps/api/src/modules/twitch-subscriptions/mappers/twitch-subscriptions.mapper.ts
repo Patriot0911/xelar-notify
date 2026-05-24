@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class TwitchSubscriptionMapper {
-  EntityToDto(twEvent: TwitchStreamerEventEntity) {
+  entityToDto(twEvent: TwitchStreamerEventEntity) {
     return {
       ...twEvent,
     };

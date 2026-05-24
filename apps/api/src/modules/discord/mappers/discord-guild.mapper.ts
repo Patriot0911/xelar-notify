@@ -25,7 +25,7 @@ export class DiscordGuildMapper {
   ApiToMemberModel(data: IDiscordApiGuildMemberModel): IDiscordGuildMemberModel {
     return {
       user: data.user
-        ? this.discordAuthMapper.ApiToMeModel(data.user)
+        ? this.discordAuthMapper.apiToMeModel(data.user)
         : undefined,
       nick: data.nick,
       avatar: data.avatar,

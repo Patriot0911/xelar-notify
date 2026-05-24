@@ -85,7 +85,7 @@ export class TwitchSubscriptionService {
 
     return {
       items: localSubscriptions.map(
-        (ls) => this.twitchSubscriptionMapper.EntityToDto(ls)
+        (ls) => this.twitchSubscriptionMapper.entityToDto(ls)
       ),
       meta: { count: total, },
     }

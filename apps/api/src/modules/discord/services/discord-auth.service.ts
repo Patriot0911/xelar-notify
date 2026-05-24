@@ -50,7 +50,7 @@ export class DiscordAuthService {
           },
         ),
       );
-      return this.discordAuthMapper.ApiToTokensModel(data);
+      return this.discordAuthMapper.apiToTokensModel(data);
     } catch(e) {
       const { message, status } = <AxiosError> e;
       console.error(message);
@@ -72,6 +72,6 @@ export class DiscordAuthService {
         this.discordBaseService.getRequestHeadersWithDiscordToken(accessToken)
       ),
     );
-    return this.discordAuthMapper.ApiToMeModel(data);
+    return this.discordAuthMapper.apiToMeModel(data);
   }
 }

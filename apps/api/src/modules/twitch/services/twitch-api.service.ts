@@ -41,7 +41,7 @@ export class TwitchApiService {
 
     return {
       items: data.map(
-        (c) => this.twitchApiMapper.TwitchApiChannelToNormalized(c)
+        (c) => this.twitchApiMapper.twitchApiChannelToNormalized(c)
       ),
       meta: pagination,
     };
@@ -68,7 +68,7 @@ export class TwitchApiService {
         }),
       );
       return data.map(
-        (d) => this.twitchApiMapper.TwitchApiUserToNormalized(d)
+        (d) => this.twitchApiMapper.twitchApiUserToNormalized(d)
       );
     } catch(e: unknown) {
       const { message, status } = <AxiosError> e;

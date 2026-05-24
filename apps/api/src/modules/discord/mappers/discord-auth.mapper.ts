@@ -3,7 +3,7 @@ import { IDiscordApiMeModel, IDiscordApiTokensModel, IDiscordMeModel, IDiscordTo
 
 @Injectable()
 export class DiscordAuthMapper {
-  ApiToMeModel(data: IDiscordApiMeModel): IDiscordMeModel {
+  apiToMeModel(data: IDiscordApiMeModel): IDiscordMeModel {
     return {
       id: data.id,
       userName: data.username,
@@ -14,7 +14,7 @@ export class DiscordAuthMapper {
     };
   }
 
-  ApiToTokensModel(data: IDiscordApiTokensModel): IDiscordTokensModel {
+  apiToTokensModel(data: IDiscordApiTokensModel): IDiscordTokensModel {
     return {
       accessToken: data.access_token,
       tokenType: data.token_type,
