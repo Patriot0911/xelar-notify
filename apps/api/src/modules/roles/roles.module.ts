@@ -1,4 +1,4 @@
-import { RoleEntity } from '@libs/database/entities';
+import { RoleEntity, UserEntity } from '@libs/database/entities';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RolesMapper } from './mappers';
@@ -9,6 +9,7 @@ import { RolesController } from './controllers';
   imports: [
     TypeOrmModule.forFeature([
       RoleEntity,
+      UserEntity,
     ]),
   ],
   controllers: [RolesController],

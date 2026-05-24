@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsEnum, IsNumber, IsOptional, IsString, Max, Min, MinLength } from "class-validator";
-import { Permission } from "../../../shared/models/permission.enum";
 import { IEditRoleModel } from "../models/edit-role.model";
+import { Permission } from '@libs/database';
 
 export class EditRoleRequestDto implements IEditRoleModel {
   @ApiProperty({ example: 'admin' })

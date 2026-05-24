@@ -1,7 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { RolesService } from '../services';
-import { IAccessTokenPayload, JwtAccessGuard, PermissionsGuard } from '../../auth';
+import { JwtAccessGuard, PermissionsGuard } from '../../auth/guards';
+import { IAccessTokenPayload } from '../../auth/models';
 import { Permission } from '@libs/database';
 import { IGenericListPayloadResponse } from 'apps/api/src/shared';
 import { IRoleItemModel, IRoleListItemModel } from '../models';
