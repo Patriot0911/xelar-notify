@@ -2,26 +2,26 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { ITwitchTokenResponseModel } from '../models';
-import { TwitchTokenManager } from '../twitch-token.manager';
-import { TwitchAppsRepository } from '../repositories';
+import { TwitchAppTokenManager } from '../twitch-token.manager';
 import { AxiosError } from 'axios';
+import { TwitchAppsRepository } from '../repositories';
 
 @Injectable()
-export class TwitchAuthService {
+export class TwitchAppAuthService {
   private authBaseUrl = 'https://id.twitch.tv';
 
   constructor(
     private readonly httpService: HttpService,
-    private readonly tokenManager: TwitchTokenManager,
+    private readonly appTokenManager: TwitchAppTokenManager,
     private readonly twitchAppsRepository: TwitchAppsRepository,
   ) {}
 
   async getTokenForApp(clientId: string, forceRefresh = false): Promise<string> {
     if (forceRefresh) {
-      this.tokenManager.invalidate(clientId);
+      this.appTokenManager.invalidate(clientId);
     }
 
-    return this.tokenManager.getOrRefresh(clientId, async () => {
+    return this.appTokenManager.getOrRefresh(clientId, async () => {
       const app = await this.twitchAppsRepository.findOne({
         where: { clientId },
       }, true, { clientSecret: true });
@@ -31,7 +31,7 @@ export class TwitchAuthService {
       }
 
       const tokenData = await this.fetchToken(app.clientId, app.clientSecret);
-      this.tokenManager.setToken(clientId, tokenData.access_token, tokenData.expires_in);
+      this.appTokenManager.setToken(clientId, tokenData.access_token, tokenData.expires_in);
       return tokenData.access_token;
     });
   }

@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AdminService, TwitchAdminAppService } from './services';
+import { AdminService } from './services';
 import { AdminController } from './controllers';
 import { TwitchSubscriptionsModule } from '../twitch-subscriptions';
 import { TwitchModule } from '../twitch';
@@ -17,7 +17,6 @@ import { TwitchStreamerEventEntity } from '@libs/database';
   controllers: [AdminController],
   providers: [
     AdminService,
-    TwitchAdminAppService,
   ]
 })
 export class AdminModule {}

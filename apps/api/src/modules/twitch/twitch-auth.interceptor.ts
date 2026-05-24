@@ -7,13 +7,13 @@ import {
 import { HttpService } from '@nestjs/axios';
 import { Observable } from 'rxjs';
 import { AxiosError } from 'axios';
-import { TwitchAuthService } from './services';
+import { TwitchAppAuthService } from './services';
 import { ITwitchHttpConfigModel } from './models';
 
 @Injectable()
 export class TwitchAuthInterceptor implements NestInterceptor {
   constructor(
-    private readonly twitchAuthService: TwitchAuthService,
+    private readonly twitchAuthService: TwitchAppAuthService,
   ) {}
 
   intercept(_: ExecutionContext, next: CallHandler): Observable<any> {

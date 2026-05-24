@@ -3,7 +3,7 @@ import { ITwitchTokenModel } from './models';
 import { TwitchAppsRepository } from './repositories';
 
 @Injectable()
-export class TwitchTokenManager {
+export class TwitchAppTokenManager {
   constructor(
     private readonly twitchAppsRepository: TwitchAppsRepository,
   ) {}

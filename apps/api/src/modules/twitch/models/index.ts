@@ -6,3 +6,4 @@ export * from './twitch-api-pagination.model';
 export * from './shared-response.model';
 export * from './twitch-subscriptions-api.model';
 export * from './twitch-app.model';
+export * from './get-twitch-apps-filter.model';

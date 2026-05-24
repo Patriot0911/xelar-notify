@@ -1,13 +1,20 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
-import { TwitchAppsRepository } from '../repositories';
-import { ITwitchApiUserModel, ITwitchApiUserNormalizedModel, ITwitchChannelsApiResponseModel, ITwitchEventRegistrationResponseModel, ITwitchGetUsersApiResponseModel, ITwitchHttpConfigModel, TSearchTwitchChannelsResponseModel } from '../models';
+import {
+  ITwitchApiUserNormalizedModel,
+  ITwitchChannelsApiResponseModel,
+  ITwitchEventRegistrationResponseModel,
+  ITwitchGetUsersApiResponseModel,
+  ITwitchHttpConfigModel,
+  TSearchTwitchChannelsResponseModel,
+} from '../models';
 import { TwitchApiMapper } from '../mappers';
 import { TwitchStreamerEvents } from '@libs/database';
 import { AxiosError } from 'axios';
-import { ITwitchGetSubscriptionsApiResponseModel, TTwitchSubscriptionStatus } from '../models/twitch-api/twitch-subscription.model';
+import { ITwitchGetSubscriptionsApiResponseModel } from '../models/twitch-api';
 import { IGetTwitchSubscriptionParamsModel } from '../models/twitch-params.model';
+import { TwitchAppsRepository } from '../repositories';
 
 @Injectable()
 export class TwitchApiService {

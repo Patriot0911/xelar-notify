@@ -2,15 +2,15 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TwitchAppEntity, TwitchStreamerEventEntity } from '@libs/database';
-import { TwitchAuthService, TwitchApiService } from './services';
-import { TwitchTokenManager } from './twitch-token.manager';
+import { TwitchAppAuthService, TwitchApiService, TwitchAppService } from './services';
+import { TwitchAppTokenManager } from './twitch-token.manager';
 import { TwitchAuthInterceptor } from './twitch-auth.interceptor';
+import { TwitchController } from './controllers/twitch.controller';
 import { TwitchApiMapper, TwitchAppMapper } from './mappers';
 import { TwitchAppsRepository } from './repositories';
 import { DataSource } from 'typeorm';
-import { TwitchController } from './controllers/twitch.controller';
 import { CryptoService } from '@libs/shared';
-import { TwitchAppService } from './services/twitch-app.service';
+import { TwitchAppController } from './controllers';
 
 @Module({
   imports: [
@@ -25,10 +25,11 @@ import { TwitchAppService } from './services/twitch-app.service';
   ],
   controllers: [
     TwitchController,
+    TwitchAppController,
   ],
   providers: [
-    TwitchAuthService,
-    TwitchTokenManager,
+    TwitchAppAuthService,
+    TwitchAppTokenManager,
     TwitchApiService,
     TwitchAuthInterceptor,
     TwitchAppMapper,
@@ -43,7 +44,7 @@ import { TwitchAppService } from './services/twitch-app.service';
     }
   ],
   exports: [
-    TwitchAuthService,
+    TwitchAppAuthService,
     TwitchAppsRepository,
     TwitchAppMapper,
     TwitchApiService,
