@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RolesMapper } from './mappers';
 import { RolesService } from './services';
+import { RolesController } from './controllers';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { RolesService } from './services';
       RoleEntity,
     ]),
   ],
+  controllers: [RolesController],
   providers: [
     RolesMapper,
     RolesService,

@@ -44,7 +44,7 @@ create_user "$WORKER_USER" "$WORKER_PASSWORD" \
   "stream\.events.*"
 
 create_user "$DISCORD_USER" "$DISCORD_PASSWORD" \
-  "" \
+  "discord\.notifications.*" \
   "" \
   "discord\.notifications.*"
 

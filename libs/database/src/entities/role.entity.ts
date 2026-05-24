@@ -6,6 +6,9 @@ export enum Permission {
 
   READ_APPS = 'read_apps',
   MANAGE_APPS = 'manage_apps',
+
+  READ_ROLES = 'read_roles',
+  MANAGE_ROLES = 'manage_roles',
 };
 
 @Entity('roles')

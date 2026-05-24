@@ -16,7 +16,7 @@
     "start:dev:notification-worker": "nest start notification-worker --watch",
     "start:dev:discord-bot": "nest start discord-bot --watch",
     "start:dev:docker": "docker compose -f docker-compose.dev.yml up -d",
-    "start:dev": "concurrently -n api,receiver,discord,notification-worker -c blue,green,magenta,cyan \"npm run start:dev:api\" \"npm run start:dev:webhook-receiver\" \"npm run start:dev:discord-bot\" \"npm run start:dev:telegram-bot\"",
+    "start:dev": "concurrently -n api,receiver,discord,notification-worker -c blue,green,magenta,cyan \"npm run start:dev:api\" \"npm run start:dev:webhook-receiver\" \"npm run start:dev:discord-bot\" \"npm run start:dev:notification-worker\"",
     "build:api": "nest build api",
     "build:webhook-receiver": "nest build webhook-receiver",
     "build:notification-worker": "nest build notification-worker",
