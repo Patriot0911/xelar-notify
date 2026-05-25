@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { AuthorizeCommand } from '../discord/commands';
+import { AuthorizeCommand } from './commands';
 
 @Module({
   providers: [AuthorizeCommand],
