@@ -54,7 +54,7 @@ async function bootstrap() {
   if (config.get('NODE_ENV') !== 'production') {
     const options = new DocumentBuilder()
       .addBearerAuth()
-      .setTitle('Med Scheduler API')
+      .setTitle('Xelar Notify API')
       .setDescription('')
       .setVersion('1.0')
       .build();
