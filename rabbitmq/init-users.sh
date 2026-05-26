@@ -39,7 +39,7 @@ create_user "$API_USER" "$API_PASSWORD" \
   ".*"
 
 create_user "$WORKER_USER" "$WORKER_PASSWORD" \
-  "discord\.notifications.*" \
+  "discord\.notifications.*|stream\.events.*" \
   "discord\.notifications.*|amq\.default" \
   "stream\.events.*"
 

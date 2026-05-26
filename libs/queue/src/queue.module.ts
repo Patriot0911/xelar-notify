@@ -8,7 +8,7 @@ import { QueueService } from './queue.service';
 export class QueueModule {
   static forRootAsync(options: IQueueOptions): DynamicModule {
     return {
-      module:    QueueModule,
+      module: QueueModule,
       providers: [
         buildChannelProvider(options),
         QueueService,
