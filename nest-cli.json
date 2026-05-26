@@ -3,9 +3,7 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "apps/api/src",
   "compilerOptions": {
-    "deleteOutDir": true,
-    "webpack": true,
-    "tsConfigPath": "apps/api/tsconfig.app.json"
+    "deleteOutDir": true
   },
   "monorepo": true,
   "root": "apps/api",
@@ -16,7 +14,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/api/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/api/tsconfig.app.json"
+        "tsConfigPath": "apps/api/tsconfig.app.json",
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "config": {
@@ -25,7 +25,9 @@
       "entryFile": "index",
       "sourceRoot": "libs/config/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/config/tsconfig.lib.json"
+        "tsConfigPath": "libs/config/tsconfig.lib.json",
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "database": {
@@ -34,7 +36,9 @@
       "entryFile": "index",
       "sourceRoot": "libs/database/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/database/tsconfig.lib.json"
+        "tsConfigPath": "libs/database/tsconfig.lib.json",
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "discord-bot": {
@@ -44,8 +48,8 @@
       "sourceRoot": "apps/discord-bot/src",
       "compilerOptions": {
         "tsConfigPath": "apps/discord-bot/tsconfig.app.json",
-        "webpack": true,
-        "webpackConfigPath": "apps/discord-bot/webpack.config.js"
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "notification-worker": {
@@ -54,7 +58,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/notification-worker/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/notification-worker/tsconfig.app.json"
+        "tsConfigPath": "apps/notification-worker/tsconfig.app.json",
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "queue": {
@@ -63,7 +69,9 @@
       "entryFile": "index",
       "sourceRoot": "libs/queue/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/queue/tsconfig.lib.json"
+        "tsConfigPath": "libs/queue/tsconfig.lib.json",
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "redis": {
@@ -72,7 +80,9 @@
       "entryFile": "index",
       "sourceRoot": "libs/redis/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/redis/tsconfig.lib.json"
+        "tsConfigPath": "libs/redis/tsconfig.lib.json",
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "rpc": {
@@ -81,7 +91,9 @@
       "entryFile": "index",
       "sourceRoot": "libs/rpc/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/rpc/tsconfig.lib.json"
+        "tsConfigPath": "libs/rpc/tsconfig.lib.json",
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "shared": {
@@ -90,7 +102,9 @@
       "entryFile": "index",
       "sourceRoot": "libs/shared/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/shared/tsconfig.lib.json"
+        "tsConfigPath": "libs/shared/tsconfig.lib.json",
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "webhook-receiver": {
@@ -99,7 +113,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/webhook-receiver/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/webhook-receiver/tsconfig.app.json"
+        "tsConfigPath": "apps/webhook-receiver/tsconfig.app.json",
+        "builder": "swc",
+        "typeCheck": true
       }
     }
   }
