@@ -6,6 +6,7 @@ module.exports = (options) => {
       'zlib-sync',
       'bufferutil',
       'utf-8-validate',
+      'fast-deep-equal',
     ],
   };
 };
