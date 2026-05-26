@@ -1,6 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TwitchStreamerEventEntity } from './twitch-streamer-event';
-import { TDiscordWebhookPayload } from 'apps/api/src/modules/notification-payload/schemas';
 import { UserEntity } from './user.entity';
 
 export enum NotificationPlatform {
@@ -52,7 +51,7 @@ export class DiscordNotificationDestinationEntity {
   streamerEvent: TwitchStreamerEventEntity;
 
   @Column({ name: 'message_payload', type: 'jsonb', nullable: true })
-  messagePayload: TDiscordWebhookPayload | null;
+  messagePayload: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

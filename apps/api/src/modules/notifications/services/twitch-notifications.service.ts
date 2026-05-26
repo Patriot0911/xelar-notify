@@ -30,7 +30,7 @@ export class TwitchNotificationsService {
       streamerEventId: subscription.id,
       type: dto.type,
       guildId: dto.guildId,
-      messagePayload: dto.payload,
+      messagePayload: dto.payload as any,
       creditOwnerId: ownerId,
       creditCost: 1,
     });
