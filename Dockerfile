@@ -33,6 +33,6 @@ RUN if [ -f apps/${APP}/package.json ]; then \
       cd apps/${APP} && npm ci --omit=dev; \
     fi
 
-COPY --from=builder /app/dist/apps/${APP} ./dist
+COPY --from=builder /app/dist ./dist
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/apps/${APP}/main"]
