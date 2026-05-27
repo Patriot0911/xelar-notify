@@ -35,4 +35,4 @@ RUN if [ -f apps/${APP}/package.json ]; then \
 
 COPY --from=builder /app/dist ./dist
 
-CMD ["node", "dist/apps/${APP}/main"]
+CMD sh -c "node dist/apps/${APP}/main"
