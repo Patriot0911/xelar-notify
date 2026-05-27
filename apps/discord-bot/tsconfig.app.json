@@ -2,8 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declaration": false,
-    "outDir": "../../dist/apps/discord-bot"
+    "outDir": "../../dist/apps/discord-bot",
+    "rootDir": "src"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "../../libs/**/*"
+  ],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

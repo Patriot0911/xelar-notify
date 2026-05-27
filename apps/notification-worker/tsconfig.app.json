@@ -2,8 +2,12 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declaration": false,
-    "outDir": "../../dist/apps/notification-worker"
+    "outDir": "../../dist/apps/notification-worker",
+    "rootDir": "src"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "../../libs/**/*"
+  ],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }
