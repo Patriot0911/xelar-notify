@@ -18,6 +18,8 @@ WORKDIR /app
 ARG APP
 ENV APP=${APP}
 
+COPY --from=deps /app/package*.json ./
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps ./apps
 
