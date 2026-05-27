@@ -16,7 +16,8 @@
       "entryFile": "main",
       "sourceRoot": "apps/api/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/api/tsconfig.app.json"
+        "tsConfigPath": "apps/api/tsconfig.app.json",
+        "webpackConfigPath": "webpack.config.js"
       }
     },
     "config": {
@@ -45,7 +46,7 @@
       "compilerOptions": {
         "tsConfigPath": "apps/discord-bot/tsconfig.app.json",
         "webpack": true,
-        "webpackConfigPath": "apps/discord-bot/webpack.config.js"
+        "webpackConfigPath": "webpack.config.js"
       }
     },
     "notification-worker": {
@@ -54,7 +55,8 @@
       "entryFile": "main",
       "sourceRoot": "apps/notification-worker/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/notification-worker/tsconfig.app.json"
+        "tsConfigPath": "apps/notification-worker/tsconfig.app.json",
+        "webpackConfigPath": "webpack.config.js"
       }
     },
     "queue": {
@@ -99,7 +101,8 @@
       "entryFile": "main",
       "sourceRoot": "apps/webhook-receiver/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/webhook-receiver/tsconfig.app.json"
+        "tsConfigPath": "apps/webhook-receiver/tsconfig.app.json",
+        "webpackConfigPath": "webpack.config.js"
       }
     }
   }
