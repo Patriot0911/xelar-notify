@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "declaration": false,
-    "outDir": "../../dist/apps",
+    "outDir": "../../dist/apps/webhook-receiver",
     "rootDirs": [
       "src",
       "../../libs"
