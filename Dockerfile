@@ -9,7 +9,7 @@ COPY apps/webhook-receiver/package.json ./apps/webhook-receiver/
 COPY apps/notification-worker/package.json ./apps/notification-worker/
 COPY apps/discord-bot/package.json ./apps/discord-bot/
 
-RUN npm ci --workspace=apps/${APP} --include-workspace-root
+RUN npm install --workspace=apps/${APP} --include-workspace-root
 
 FROM node:20-alpine AS builder
 WORKDIR /app
@@ -39,7 +39,7 @@ COPY apps/webhook-receiver/package.json ./apps/webhook-receiver/
 COPY apps/notification-worker/package.json ./apps/notification-worker/
 COPY apps/discord-bot/package.json ./apps/discord-bot/
 
-RUN npm ci --omit=dev --workspace=apps/${APP} --include-workspace-root
+RUN npm install --omit=dev --workspace=apps/${APP} --include-workspace-root
 
 COPY --from=builder /app/dist/apps/${APP} ./dist
 
