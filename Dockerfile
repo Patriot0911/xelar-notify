@@ -1,17 +1,14 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
-ARG APP
-ENV APP=${APP}
-
 COPY package.json package-lock.json ./
 COPY nest-cli.json tsconfig*.json ./
-
 COPY apps/**/package.json ./apps/
 COPY libs/**/package.json ./libs/
 
-# 3. install full workspace graph
 RUN npm ci --workspaces --include-workspace-root
+
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 ARG APP
