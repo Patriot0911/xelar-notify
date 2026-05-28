@@ -15,8 +15,7 @@
       "sourceRoot": "apps/api/src",
       "compilerOptions": {
         "tsConfigPath": "apps/api/tsconfig.app.json",
-        "builder": "swc",
-        "typeCheck": true
+        "webpackConfigPath": "webpack.config.js"
       }
     },
     "config": {
@@ -48,8 +47,8 @@
       "sourceRoot": "apps/discord-bot/src",
       "compilerOptions": {
         "tsConfigPath": "apps/discord-bot/tsconfig.app.json",
-        "builder": "swc",
-        "typeCheck": true
+        "webpack": true,
+        "webpackConfigPath": "webpack.config.js"
       }
     },
     "notification-worker": {
@@ -59,8 +58,7 @@
       "sourceRoot": "apps/notification-worker/src",
       "compilerOptions": {
         "tsConfigPath": "apps/notification-worker/tsconfig.app.json",
-        "builder": "swc",
-        "typeCheck": true
+        "webpackConfigPath": "webpack.config.js"
       }
     },
     "queue": {
@@ -114,8 +112,7 @@
       "sourceRoot": "apps/webhook-receiver/src",
       "compilerOptions": {
         "tsConfigPath": "apps/webhook-receiver/tsconfig.app.json",
-        "builder": "swc",
-        "typeCheck": true
+        "webpackConfigPath": "webpack.config.js"
       }
     }
   }

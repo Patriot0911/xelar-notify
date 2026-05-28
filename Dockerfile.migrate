@@ -2,10 +2,11 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
 
-COPY libs/database ./libs/database
-COPY scripts/migrate.ts ./scripts/
-COPY tsconfig.json ./
+RUN npm ci --workspaces=false
 
-CMD ["npx", "ts-node", "-r", "tsconfig-paths/register", "scripts/migrate.ts"]
+COPY tsconfig*.json ./
+COPY libs ./libs
+COPY scripts ./scripts
+
+CMD ["npm", "run", "migration:run"]

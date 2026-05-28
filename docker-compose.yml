@@ -128,6 +128,8 @@ services:
       args:
         APP: discord-bot
     env_file: .env
+    deploy:
+      replicas: 1
     depends_on:
       rabbitmq:
         condition: service_healthy

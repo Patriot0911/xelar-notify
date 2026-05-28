@@ -1,5 +1,5 @@
 {
-  "name": "@xelar/discord-bot",
+  "name": "@xelar/notification-worker",
   "private": true,
   "version": "1.0.0",
   "main": "index.js",
@@ -10,6 +10,5 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "discord.js": "^14.26.3"
   }
 }
