@@ -34,10 +34,8 @@ ARG APP
 ENV APP=${APP}
 ENV NODE_ENV=production
 
-COPY package.json package-lock.json ./
-
-RUN npm ci --omit=dev
-
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./package.json
 
-CMD sh -c "node dist/apps/${APP}/src/main"
+CMD ["node", "dist/apps/${APP}/src/main"]
