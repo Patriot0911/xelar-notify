@@ -1,12 +1,16 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-COPY nest-cli.json tsconfig*.json ./
-COPY apps/**/package.json ./apps/
-COPY libs/**/package.json ./libs/
+ARG APP
+ENV APP=${APP}
 
-RUN npm ci --workspaces --include-workspace-root
+COPY package*.json ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/webhook-receiver/package.json ./apps/webhook-receiver/
+COPY apps/notification-worker/package.json ./apps/notification-worker/
+COPY apps/discord-bot/package.json ./apps/discord-bot/
+
+RUN npm ci --workspace=apps/${APP} --include-workspace-root
 
 FROM node:20-alpine AS builder
 WORKDIR /app
@@ -14,13 +18,14 @@ WORKDIR /app
 ARG APP
 ENV APP=${APP}
 
+COPY --from=deps /app/package*.json ./
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps ./apps
-COPY --from=deps /app/libs ./libs
-COPY --from=deps /app/package.json ./package.json
-COPY --from=deps /app/package-lock.json ./package-lock.json
-COPY --from=deps /app/nest-cli.json ./nest-cli.json
-COPY --from=deps /app/tsconfig*.json ./
+
+COPY tsconfig*.json nest-cli.json ./
+COPY libs ./libs
+COPY apps/${APP}/ ./apps/${APP}/
 
 RUN npm run build:${APP}
 
@@ -31,8 +36,15 @@ ARG APP
 ENV APP=${APP}
 ENV NODE_ENV=production
 
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
+COPY package*.json ./
+COPY apps/${APP}/package.json ./apps/${APP}/
 
-CMD ["node", "dist/apps/${APP}/src/main"]
+RUN npm ci --omit=dev --workspace=apps/${APP} --include-workspace-root
+
+RUN if [ -d /app/apps/${APP}/node_modules ]; then \
+      cp -rn /app/apps/${APP}/node_modules/. /app/node_modules/ 2>/dev/null || true; \
+    fi
+
+COPY --from=builder /app/dist/apps/${APP} ./dist
+
+CMD ["node", "dist/main"]
