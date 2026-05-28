@@ -39,7 +39,7 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
           push: true
-          tags: ghcr.io/patriot0911/xelar-backend/${{ matrix.app }}:latest
+          tags: ghcr.io/patriot0911/xelar-notify/${{ matrix.app }}:latest
           build-args: ${{ matrix.build_args }}
           cache-from: type=gha,scope=${{ matrix.app }}
           cache-to: type=gha,mode=max,scope=${{ matrix.app }}
@@ -57,6 +57,6 @@ jobs:
           script_stop: true
           script: |
             cd /app/xelar/xelar-back
-            docker compose pull
-            docker compose up -d
+            docker compose -f docker-compose.yml pull
+            docker compose -f docker-compose.yml up -d
             docker image prune -f
