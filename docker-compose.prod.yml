@@ -1,0 +1,121 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "127.0.0.1:${DB_PORT}:5432"
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    ports:
+      - "127.0.0.1:${REDIS_PORT}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+    restart: unless-stopped
+
+  rabbitmq:
+    image: ghcr.io/patriot0911/xelar-notify/rabbitmq:latest
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBIT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBIT_PASSWORD}
+      - RABBITMQ_DEFAULT_VHOST=${RABBIT_VHOST}
+      - RABBIT_VHOST=${RABBIT_VHOST}
+      - API_PASSWORD=${RABBIT_API_PASSWORD}
+      - API_USER=${RABBIT_API_USER}
+      - RECEIVER_PASSWORD=${RABBIT_RECEIVER_PASSWORD}
+      - RECEIVER_USER=${RABBIT_RECEIVER_USER}
+      - DISCORD_PASSWORD=${RABBIT_DISCORD_PASSWORD}
+      - DISCORD_USER=${RABBIT_DISCORD_USER}
+      - WORKER_PASSWORD=${RABBIT_WORKER_PASSWORD}
+      - WORKER_USER=${RABBIT_WORKER_USER}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    ports:
+      - "127.0.0.1:${RABBIT_PORT}:5672"
+    healthcheck:
+      test: |
+        rabbitmq-diagnostics ping && \
+        rabbitmqctl list_users | grep -q "${RABBIT_DISCORD_USER}" && \
+        rabbitmqctl list_users | grep -q "${RABBIT_WORKER_USER}" && \
+        rabbitmqctl list_users | grep -q "${RABBIT_RECEIVER_USER}" && \
+        rabbitmqctl list_users | grep -q "${RABBIT_API_USER}"
+      interval: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  migrate:
+    image: ghcr.io/patriot0911/xelar-notify/migrate:latest
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  api:
+    image: ghcr.io/patriot0911/xelar-notify/api:latest
+    ports:
+      - "${API_PORT}:${API_PORT}"
+      - "${API_TCP_PORT}:${API_TCP_PORT}"
+    env_file: .env
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  notification-worker:
+    image: ghcr.io/patriot0911/xelar-notify/notification-worker:latest
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  webhook-receiver:
+    image: ghcr.io/patriot0911/xelar-notify/webhook-receiver:latest
+    ports:
+      - "${WEBHOOK_RECEIVER_PORT}:${WEBHOOK_RECEIVER_PORT}"
+    env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  discord-bot:
+    image: ghcr.io/patriot0911/xelar-notify/discord-bot:latest
+    env_file: .env
+    deploy:
+      replicas: 1
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  redis_data:
+  rabbitmq_data:
