@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, ExtractJwt } from "passport-jwt";
 import { IAccessTokenPayload, TokenType } from '../models';
+import { accessTokenBlackList, RedisService } from '@libs/redis';
 
 @Injectable({
   scope: Scope.DEFAULT,
@@ -11,6 +12,7 @@ import { IAccessTokenPayload, TokenType } from '../models';
 export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwt-access',) {
   constructor(
     private readonly configService: ConfigService<AppConfig, true>,
+    private readonly redisService: RedisService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -22,6 +24,10 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'jwt-access',)
   async validate(payload: IAccessTokenPayload): Promise<IAccessTokenPayload> {
     if (payload.use != TokenType.Access) {
       throw new UnauthorizedException('Access denied');
+    }
+    const isBlacklisted = await this.redisService.exists(accessTokenBlackList(payload.jti));
+    if (isBlacklisted) {
+      throw new UnauthorizedException('Token has been revoked');
     }
     return payload;
   }

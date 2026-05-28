@@ -12,6 +12,7 @@ import { AdminModule } from './modules/admin';
 import { NotificationPayloadModule } from './modules/notification-payload';
 import { DiscordHandlerModule } from './modules/discord-handler';
 import { RolesModule } from './modules/roles';
+import { RedisModule } from '@libs/redis';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { RolesModule } from './modules/roles';
     NotificationPayloadModule,
     DiscordHandlerModule,
     RolesModule,
+    RedisModule,
   ],
 })
 export class ApiModule {}

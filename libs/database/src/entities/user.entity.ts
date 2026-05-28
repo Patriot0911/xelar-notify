@@ -2,6 +2,12 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToOne, Joi
 import { TwitchStreamerEntity } from './twitch-streamer';
 import { DiscordNotificationDestinationEntity } from './notification-destination.entity';
 import { RoleEntity } from './role.entity';
+import { UserSessionEntity } from './user-session.entity';
+
+export enum AccountStatus {
+  ACTIVE = 'active',
+  BLOCKED = 'blocked',
+}
 
 @Entity('users')
 export class UserEntity {
@@ -23,14 +29,21 @@ export class UserEntity {
   @Column({ nullable: true, type: 'varchar' })
   password?: string | null;
 
-  @Column({ name: 'refresh_token', nullable: true, type: 'varchar' })
-  refreshToken?: string | null;
+  @Column({
+    type: 'enum',
+    enum: AccountStatus,
+    default: AccountStatus.ACTIVE,
+  })
+  status: AccountStatus;
 
   @Column({ name: 'discord_access_token', nullable: true, type: 'varchar' })
   discordAccessToken?: string | null;
 
   @Column({ name: 'discord_refresh_token', nullable: true, type: 'varchar' })
-  discordRefreshToken?: string | null; // Todo: add refresh in auth api
+  discordRefreshToken?: string | null;
+
+  @OneToMany(() => UserSessionEntity, (session) => session.user, { cascade: true })
+  sessions: UserSessionEntity[];
 
   @OneToMany(
     () => DiscordNotificationDestinationEntity,
@@ -54,12 +67,6 @@ export class UserEntity {
     inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
   })
   roles: RoleEntity[];
-
-  // @Column({ unique: true, nullable: true })
-  // telegramId?: string | null;
-
-  // @Column({ unique: true, nullable: true })
-  // twitchId?: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

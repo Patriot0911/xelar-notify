@@ -1,5 +1,4 @@
-import { twitchWebhookMessage } from '@libs/redis';
-import { RedisService } from '@libs/redis/redis.service';
+import { twitchWebhookMessage, RedisService } from '@libs/redis';
 import { Injectable } from '@nestjs/common';
 
 interface WebhookRecord {

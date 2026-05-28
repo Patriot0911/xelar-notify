@@ -8,6 +8,7 @@ import {
   TwitchStreamerEventEntity,
   TwitchAppEntity,
   UserEntity,
+  UserSessionEntity,
   RoleEntity,
 } from './entities';
 
@@ -27,6 +28,7 @@ import {
           TwitchStreamerEventEntity,
           TwitchStreamerEntity,
           UserEntity,
+          UserSessionEntity,
           RoleEntity,
           TwitchAppEntity,
         ],

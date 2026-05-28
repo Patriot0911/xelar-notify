@@ -1,4 +1,4 @@
-import { UserEntity } from '@libs/database/entities';
+import { UserEntity, UserSessionEntity } from '@libs/database/entities';
 import { Module } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -14,6 +14,7 @@ import { RolesModule } from '../roles';
   imports: [
     TypeOrmModule.forFeature([
       UserEntity,
+      UserSessionEntity,
     ]),
     PassportModule,
     JwtModule,

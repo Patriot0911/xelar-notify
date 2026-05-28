@@ -11,7 +11,6 @@ import { ConfigService } from '@nestjs/config';
   imports: [
     TwitchReceiverModule,
     AppConfigModule,
-    RedisModule,
     DatabaseModule,
     CryptoModule,
     RedisModule,

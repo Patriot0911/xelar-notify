@@ -6,3 +6,5 @@ export * from './user-payload.model';
 export * from './token.model';
 export * from './auth-response.model';
 export * from './login-by-email.model';
+export * from './session.model';
+export * from './update-profile.model';
