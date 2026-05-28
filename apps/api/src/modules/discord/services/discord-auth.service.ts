@@ -55,7 +55,7 @@ export class DiscordAuthService {
       const { message, status } = <AxiosError> e;
       console.error(message);
       throw new InternalServerErrorException(
-        `Something went wrong with Twitch API. Please contact administrator for more information [${status}]`
+        `Something went wrong with Discord API. Please contact administrator for more information [${status}]`
       );
     }
   }
