@@ -3,9 +3,7 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "apps/api/src",
   "compilerOptions": {
-    "deleteOutDir": true,
-    "webpack": true,
-    "tsConfigPath": "apps/api/tsconfig.app.json"
+    "deleteOutDir": true
   },
   "monorepo": true,
   "root": "apps/api",
@@ -28,7 +26,8 @@
       "sourceRoot": "libs/config/src",
       "compilerOptions": {
         "tsConfigPath": "libs/config/tsconfig.lib.json",
-        "webpack": true
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "database": {
@@ -38,7 +37,8 @@
       "sourceRoot": "libs/database/src",
       "compilerOptions": {
         "tsConfigPath": "libs/database/tsconfig.lib.json",
-        "webpack": true
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "discord-bot": {
@@ -70,7 +70,8 @@
       "sourceRoot": "libs/queue/src",
       "compilerOptions": {
         "tsConfigPath": "libs/queue/tsconfig.lib.json",
-        "webpack": true
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "redis": {
@@ -80,7 +81,8 @@
       "sourceRoot": "libs/redis/src",
       "compilerOptions": {
         "tsConfigPath": "libs/redis/tsconfig.lib.json",
-        "webpack": true
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "rpc": {
@@ -90,7 +92,8 @@
       "sourceRoot": "libs/rpc/src",
       "compilerOptions": {
         "tsConfigPath": "libs/rpc/tsconfig.lib.json",
-        "webpack": true
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "shared": {
@@ -100,7 +103,8 @@
       "sourceRoot": "libs/shared/src",
       "compilerOptions": {
         "tsConfigPath": "libs/shared/tsconfig.lib.json",
-        "webpack": true
+        "builder": "swc",
+        "typeCheck": true
       }
     },
     "webhook-receiver": {
