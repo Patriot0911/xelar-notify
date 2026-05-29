@@ -194,7 +194,10 @@ export class AuthService {
     const discordMe = await this.discordAuthService.getDiscordMeByToken(accessToken);
 
     const conflicting = await this.usersRepository.findOne({
-      where: { discordId: discordMe.id },
+      where: [
+        { discordId: discordMe.id },
+        { email: discordMe.email },
+      ],
     });
     if (conflicting && conflicting.id !== userId) {
       // todo: notify admin
