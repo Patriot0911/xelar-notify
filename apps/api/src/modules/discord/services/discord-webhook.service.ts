@@ -9,18 +9,15 @@ export class DiscordWebhookiService {
     private readonly httpService: HttpService,
   ) {}
 
-  async validateWebhook(webhook: string, guildId: string): Promise<boolean> {
-    const webhookRegex = /^https:\/\/discord.com\/api\/webhooks\/\d+\/[\w-]+$/;
-    if (!webhookRegex.test(webhook)) {
+  async validateWebhookUrl(url: string): Promise<void> {
+    const webhookRegex = /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/;
+    if (!webhookRegex.test(url)) {
       throw new BadRequestException('Invalid Discord webhook URL format');
     }
     try {
-      const { data } = await firstValueFrom(
-        this.httpService.get<IDiscordApiWebhookModel>(webhook)
-      );
-      return data.guildId === guildId;
-    } catch (error) {
-      throw new BadRequestException('Failed to validate Discord webhook URL');
+      await firstValueFrom(this.httpService.get<IDiscordApiWebhookModel>(url));
+    } catch {
+      throw new BadRequestException('Discord webhook URL is not accessible');
     }
   }
 

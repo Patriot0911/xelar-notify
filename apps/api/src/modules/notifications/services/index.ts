@@ -1,1 +1,1 @@
-export * from './twitch-notifications.service';
+export * from './notifications.service';

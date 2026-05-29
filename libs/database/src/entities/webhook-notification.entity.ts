@@ -1,6 +1,7 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TwitchStreamerEventEntity } from './twitch-streamer-event';
 import { UserEntity } from './user.entity';
+import { NotificationCostType } from './discord-notification.entity';
 
 export enum WebhookType {
   DISCORD = 'discord',
@@ -27,8 +28,8 @@ export class WebhookNotificationEntity {
   @Column({ name: 'cost', type: 'decimal', precision: 3, scale: 1 })
   cost: number;
 
-  @Column({ name: 'is_credited', type: 'boolean', default: false })
-  isCredited: boolean;
+  @Column({ name: 'cost_type', type: 'enum', enum: NotificationCostType, enumName: 'webhook_notifications_cost_type_enum' })
+  costType: NotificationCostType;
 
   @Column({ type: 'enum', enum: WebhookType })
   type: WebhookType;

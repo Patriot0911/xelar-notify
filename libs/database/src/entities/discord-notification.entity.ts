@@ -3,7 +3,7 @@ import { TwitchStreamerEventEntity } from './twitch-streamer-event';
 import { UserEntity } from './user.entity';
 import { DiscordGuildEntity } from './discord-guild.entity';
 
-export enum DiscordNotificationCostType {
+export enum NotificationCostType {
   Personal = 'personal',
   Credit = 'credit',
   Guild = 'guild',
@@ -40,8 +40,8 @@ export class DiscordNotificationEntity {
   })
   status: DiscordNotificationStatus;
 
-  @Column({ name: 'cost_type', type: 'enum', enum: DiscordNotificationCostType })
-  costType: DiscordNotificationCostType;
+  @Column({ name: 'cost_type', type: 'enum', enum: NotificationCostType, enumName: 'discord_notifications_cost_type_enum' })
+  costType: NotificationCostType;
 
   @Column({ name: 'channel_id', type: 'varchar' })
   channelId: string;
