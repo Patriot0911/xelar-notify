@@ -1,14 +1,23 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TwitchStreamerEventEntity } from './twitch-streamer-event';
 import { UserEntity } from './user.entity';
+import { DiscordGuildEntity } from './discord-guild.entity';
+
+export enum DiscordNotificationCostType {
+  Personal = 'personal',
+  Credit = 'credit',
+  Guild = 'guild',
+};
+
+export enum DiscordNotificationStatus {
+  Active = 'active',
+  Suspended = 'suspended',
+};
 
 @Entity('discord_notifications')
 export class DiscordNotificationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  @Column({ name: 'streamer_event_id' })
-  streamerEventId: string;
 
   @ManyToOne(
     () => UserEntity,
@@ -23,14 +32,32 @@ export class DiscordNotificationEntity {
   @Column({ name: 'cost', type: 'decimal', precision: 3, scale: 1 })
   cost: number;
 
-  @Column({ name: 'is_credited', type: 'boolean', default: false })
-  isCredited: boolean;
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: DiscordNotificationStatus,
+    default: DiscordNotificationStatus.Active,
+  })
+  status: DiscordNotificationStatus;
 
-  @Column({ name: 'channel_id', nullable: true, type: 'varchar' })
-  channelId?: string | null;
+  @Column({ name: 'cost_type', type: 'enum', enum: DiscordNotificationCostType })
+  costType: DiscordNotificationCostType;
 
-  @Column({ name: 'guild_id', nullable: true, type: 'varchar' })
-  guildId?: string | null;
+  @Column({ name: 'channel_id', type: 'varchar' })
+  channelId: string;
+
+  @Column({ name: 'guild_id', type: 'varchar' })
+  guildId: string;
+
+  @ManyToOne(
+    () => DiscordGuildEntity,
+    (event) => event.notifications,
+  )
+  @JoinColumn({ name: 'guild_id' })
+  discordGuild: DiscordGuildEntity;
+
+  @Column({ name: 'streamer_event_id' })
+  streamerEventId: string;
 
   @ManyToOne(
     () => TwitchStreamerEventEntity,

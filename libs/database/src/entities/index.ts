@@ -5,3 +5,5 @@ export * from './twitch-streamer';
 export * from './twitch-streamer-event';
 export * from './discord-notification.entity';
 export * from './role.entity';
+export * from './discord-guild.entity';
+export * from './webhook-notification.entity';

@@ -10,6 +10,8 @@ import {
   UserEntity,
   UserSessionEntity,
   RoleEntity,
+  WebhookNotificationEntity,
+  DiscordGuildEntity,
 } from './entities';
 
 @Module({
@@ -25,8 +27,10 @@ import {
         database: config.get('DB_NAME',     { infer: true }),
         entities: [
           DiscordNotificationEntity,
+          WebhookNotificationEntity,
           TwitchStreamerEventEntity,
           TwitchStreamerEntity,
+          DiscordGuildEntity,
           UserEntity,
           UserSessionEntity,
           RoleEntity,

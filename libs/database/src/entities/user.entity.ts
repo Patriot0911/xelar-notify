@@ -43,6 +43,18 @@ export class UserEntity {
   @Column({ name: 'discord_refresh_token', nullable: true, type: 'varchar' })
   discordRefreshToken?: string | null;
 
+  @Column({ name: 'discord_token_expires_at', nullable: true, type: 'date' })
+  discordTokenExpiresAt?: Date | null;
+
+  @Column({ name: 'twitch_access_token', nullable: true, type: 'varchar' })
+  twitchAccessToken?: string | null;
+
+  @Column({ name: 'twitch_refresh_token', nullable: true, type: 'varchar' })
+  twitchRefreshToken?: string | null;
+
+  @Column({ name: 'twitch_token_expires_at', nullable: true, type: 'date' })
+  twitchTokenExpiresAt?: Date | null;
+
   @OneToMany(() => UserSessionEntity, (session) => session.user, { cascade: true })
   sessions: UserSessionEntity[];
 
