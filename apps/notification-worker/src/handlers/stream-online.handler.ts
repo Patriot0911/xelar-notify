@@ -26,7 +26,7 @@ export class StreamOnlineHandler {
 
       if (!event) return channel.ack(message);
 
-      for (const dest of event.discordDestinations) {
+      for (const dest of event.discordNotifications) {
         await this.queue.emit(
           Queues.DISCORD_NOTIFICATIONS,
           QueuePatterns.discord.notifications.send,

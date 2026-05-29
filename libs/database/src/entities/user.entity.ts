@@ -1,13 +1,14 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, OneToOne, JoinColumn, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { TwitchStreamerEntity } from './twitch-streamer';
-import { DiscordNotificationDestinationEntity } from './notification-destination.entity';
+import { DiscordNotificationEntity } from './discord-notification.entity';
 import { RoleEntity } from './role.entity';
 import { UserSessionEntity } from './user-session.entity';
+import { WebhookNotificationEntity } from './webhook-notification.entity';
 
 export enum AccountStatus {
   ACTIVE = 'active',
   BLOCKED = 'blocked',
-}
+};
 
 @Entity('users')
 export class UserEntity {
@@ -17,8 +18,8 @@ export class UserEntity {
   @Column({ name: 'display_name' })
   displayName: string;
 
-  @Column({ name: 'credits_used', default: 0, type: 'int' })
-  creditsUsed: number;
+  @Column({ name: 'balance', precision: 3, scale: 1, type: 'decimal' })
+  balance: number;
 
   @Column({ unique: true, nullable: true, type: 'varchar' })
   email?: string | null;
@@ -46,11 +47,18 @@ export class UserEntity {
   sessions: UserSessionEntity[];
 
   @OneToMany(
-    () => DiscordNotificationDestinationEntity,
-    (dest) => dest.creditOwner,
+    () => DiscordNotificationEntity,
+    (dest) => dest.owner,
     { cascade: true }
   )
-  discordNotifications: DiscordNotificationDestinationEntity[];
+  discordNotifications: DiscordNotificationEntity[];
+
+  @OneToMany(
+    () => WebhookNotificationEntity,
+    (dest) => dest.owner,
+    { cascade: true }
+  )
+  webhookNotifications: WebhookNotificationEntity[];
 
   @OneToOne(
     () => TwitchStreamerEntity,

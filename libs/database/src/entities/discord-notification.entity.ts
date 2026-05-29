@@ -2,13 +2,8 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGenerat
 import { TwitchStreamerEventEntity } from './twitch-streamer-event';
 import { UserEntity } from './user.entity';
 
-export enum NotificationPlatform {
-  DISCORD_BOT     = 'discord_bot',
-  DISCORD_WEBHOOK = 'discord_webhook',
-};
-
-@Entity('discord_notification_destinations')
-export class DiscordNotificationDestinationEntity {
+@Entity('discord_notifications')
+export class DiscordNotificationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -19,33 +14,27 @@ export class DiscordNotificationDestinationEntity {
     () => UserEntity,
     (user) => user.discordNotifications,
   )
-  @JoinColumn({ name: 'credit_owner_id' })
-  creditOwner: UserEntity;
+  @JoinColumn({ name: 'owner_id' })
+  owner: UserEntity;
 
-  @Column({ type: 'varchar', name: 'credit_owner_id' })
-  creditOwnerId: string;
+  @Column({ type: 'varchar', name: 'owner_id' })
+  onwerId: string;
 
-  @Column({ name: 'credit_cost', type: 'decimal', precision: 3, scale: 1 })
-  creditCost: number;
+  @Column({ name: 'cost', type: 'decimal', precision: 3, scale: 1 })
+  cost: number;
 
-  @Column({ type: 'enum', enum: NotificationPlatform })
-  type: NotificationPlatform;
+  @Column({ name: 'is_credited', type: 'boolean', default: false })
+  isCredited: boolean;
 
-  // discord_bot
   @Column({ name: 'channel_id', nullable: true, type: 'varchar' })
   channelId?: string | null;
 
-  // discord_bot
   @Column({ name: 'guild_id', nullable: true, type: 'varchar' })
   guildId?: string | null;
 
-  // discord_webhook
-  @Column({ name: 'webhook_url', nullable: true, select: false, type: 'varchar' })
-  webhookUrl?: string | null;
-
   @ManyToOne(
     () => TwitchStreamerEventEntity,
-    (event) => event.discordDestinations,
+    (event) => event.discordNotifications,
   )
   @JoinColumn({ name: 'streamer_event_id' })
   streamerEvent: TwitchStreamerEventEntity;

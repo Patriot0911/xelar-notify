@@ -36,7 +36,7 @@ export class TwitchAppEntity {
   @Column({ name: 'current_cost', default: 0 })
   currentCost: number;
 
-  @Column({ name: 'max_cost', default: 9000 })
+  @Column({ name: 'max_cost', default: 9500 })
   maxCost: number;
 
   @OneToMany(() => TwitchStreamerEventEntity, (streamerEvent) => streamerEvent.twitchApp)

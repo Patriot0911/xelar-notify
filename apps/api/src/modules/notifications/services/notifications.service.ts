@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
-import { DiscordNotificationDestinationEntity, NotificationPlatform, TwitchStreamerEvents, UserEntity } from '@libs/database';
+import { DiscordNotificationEntity, NotificationPlatform, TwitchStreamerEvents, UserEntity } from '@libs/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AddDiscordNotificationDto } from '../dto';

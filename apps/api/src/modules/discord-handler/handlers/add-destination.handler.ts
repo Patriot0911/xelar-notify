@@ -82,7 +82,7 @@ export class AddDestinationHandler {
     return {
       channelId: discordNotification.channelId!,
       eventType: discordNotification.streamerEvent.event,
-      cost: discordNotification.creditCost,
+      cost: discordNotification.cost,
       // remainingCredits: this.calculateRemainingCredits(user, discordNotification.creditCost, data.eventType!),
     };
   }

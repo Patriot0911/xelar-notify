@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
-import { DiscordNotificationDestinationEntity, NotificationPlatform, TwitchStreamerEvents, UserEntity } from '@libs/database';
+import { DiscordNotificationEntity, NotificationPlatform, TwitchStreamerEvents, UserEntity } from '@libs/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AddDiscordNotificationDto } from '../dto';
@@ -17,11 +17,11 @@ export class TwitchNotificationsService {
     private readonly twitchSubscriptionService: TwitchSubscriptionService,
     private readonly discordPayloadService: DiscordPayloadService,
     private readonly discordApiService: DiscordWebhookiService,
-    @InjectRepository(DiscordNotificationDestinationEntity)
-    private discordNotificationDestinationsRepository: Repository<DiscordNotificationDestinationEntity>,
+    @InjectRepository(DiscordNotificationEntity)
+    private discordNotificationDestinationsRepository: Repository<DiscordNotificationEntity>,
   ) {}
 
-  async addDiscordNotification(dto: AddDiscordNotificationDto, ownerId: string): Promise<DiscordNotificationDestinationEntity> {
+  async addDiscordNotification(dto: AddDiscordNotificationDto, ownerId: string): Promise<DiscordNotificationEntity> {
     const subscription = await this.twitchSubscriptionService.getOrCreateEvent(dto.broadcasterId, dto.event);
 
     this.discordPayloadService.validatePayload(dto.payload);
@@ -31,8 +31,8 @@ export class TwitchNotificationsService {
       type: dto.type,
       guildId: dto.guildId,
       messagePayload: dto.payload as any,
-      creditOwnerId: ownerId,
-      creditCost: 1,
+      onwerId: ownerId,
+      cost: 1,
     });
 
     if (dto.type === NotificationPlatform.DISCORD_BOT) {
