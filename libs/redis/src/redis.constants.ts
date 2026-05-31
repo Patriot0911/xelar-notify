@@ -8,3 +8,9 @@ export const twitchWebhookMessage = (messageId: string) =>
 
 export const accessTokenBlackList = (jti: string) =>
   `blacklist:access:${jti}`;
+
+export const botGuildIds = () =>
+  'discord:bot:guild_ids';
+
+export const userGuilds = (userId: string) =>
+  `discord:users:${userId}:guild_ids`;

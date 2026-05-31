@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DiscordNotificationEntity, TwitchStreamerEvents, WebhookNotificationEntity, } from '@libs/database';
+import { DiscordNotificationEntity, NotificationCostType, TwitchStreamerEvents, WebhookNotificationEntity, } from '@libs/database';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
-import { DiscordWebhookiService } from '../../discord/services';
+import { DiscordGuildService, DiscordWebhookiService } from '../../discord/services';
 import { CreateDiscordNotificationDto, CreateWebhookNotificationDto } from '../dto';
 import { NotificationsService } from './notifications.service';
 
@@ -19,6 +19,7 @@ export class TwitchNotificationsService {
     private readonly discordPayloadService: DiscordPayloadService,
     private readonly discordWebhookService: DiscordWebhookiService,
     private readonly notificationsService: NotificationsService,
+    private readonly discordGuildService: DiscordGuildService,
     @InjectRepository(DiscordNotificationEntity)
     private readonly discordNotificationRepository: Repository<DiscordNotificationEntity>,
     @InjectRepository(WebhookNotificationEntity)
@@ -29,7 +30,8 @@ export class TwitchNotificationsService {
     dto: CreateDiscordNotificationDto,
     ownerId: string,
   ): Promise<DiscordNotificationEntity> {
-    await this.assertCanCreateEvent(ownerId, dto.broadcasterId, dto.event);
+    await this.assertCanCreate(ownerId, dto.broadcasterId, dto.event);
+    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType);
 
     const subscription = await this.twitchSubscriptionService.getOrCreateEvent(
       dto.broadcasterId,
@@ -41,11 +43,12 @@ export class TwitchNotificationsService {
     const cost = this.notificationsService.resolveCost(dto.costType);
 
     // todo: apply cost to user / guild / free
-    // todo: add guild creation
+
+    const guild = await this.discordGuildService.getOrCreateGuild(dto.guildId);
 
     const notification = this.discordNotificationRepository.create({
       streamerEventId: subscription.id,
-      guildId: dto.guildId,
+      guildId: guild.id,
       channelId: dto.channelId,
       messagePayload: dto.payload as any,
       onwerId: ownerId,
@@ -59,8 +62,10 @@ export class TwitchNotificationsService {
   async createWebhookNotification(
     dto: CreateWebhookNotificationDto,
     ownerId: string,
+    guildId?: string
   ): Promise<WebhookNotificationEntity> {
-    await this.assertCanCreateEvent(ownerId, dto.broadcasterId, dto.event);
+    await this.assertCanCreate(ownerId, dto.broadcasterId, dto.event);
+    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType);
 
     const subscription = await this.twitchSubscriptionService.getOrCreateEvent(
       dto.broadcasterId,
@@ -69,11 +74,8 @@ export class TwitchNotificationsService {
 
     const webhookType = this.notificationsService.detectWebhookType(dto.webhookUrl);
     this.notificationsService.validateWebhookPayload(webhookType, dto.payload);
-    await this.discordWebhookService.validateWebhookUrl(dto.webhookUrl);
 
     const cost = this.notificationsService.resolveCost(dto.costType);
-
-    // todo: apply cost to user / guild / free
 
     const notification = this.webhookNotificationRepository.create({
       streamerEventId: subscription.id,
@@ -85,14 +87,30 @@ export class TwitchNotificationsService {
       cost,
     });
 
+    if (guildId) {
+      await this.discordWebhookService.validateWebhookUrl(dto.webhookUrl);
+      // todo: check if user associated with guild
+      const guild = await this.discordGuildService.getOrCreateGuild(guildId);
+      notification.discordGuildId = guild.id;
+    }
+
+    // todo: apply cost to user / guild / free
+
     return this.webhookNotificationRepository.save(notification);
   }
 
-  async assertCanCreateEvent(
+  async assertCanCreate(
     userId: string,
     broadcasterId: string,
     event: TwitchStreamerEvents
   ) {
     // todo: add check for public events etc
+  }
+
+  async assertCanAfford(
+    userId: string,
+    broadcasterId: string,
+    costType: NotificationCostType
+  ) {
   }
 }

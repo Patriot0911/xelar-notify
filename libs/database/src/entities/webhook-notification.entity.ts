@@ -2,6 +2,7 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGenerat
 import { TwitchStreamerEventEntity } from './twitch-streamer-event';
 import { UserEntity } from './user.entity';
 import { NotificationCostType } from './discord-notification.entity';
+import { DiscordGuildEntity } from './discord-guild.entity';
 
 export enum WebhookType {
   DISCORD = 'discord',
@@ -36,6 +37,16 @@ export class WebhookNotificationEntity {
 
   @Column({ name: 'webhook_url', nullable: true, select: false, type: 'varchar' })
   webhookUrl?: string | null;
+
+  @Column({ name: 'discord_guild_id', nullable: true, type: 'varchar',  })
+  discordGuildId?: string | null;
+
+  @ManyToOne(
+    () => DiscordGuildEntity,
+    (guild) => guild.webhookNotifications,
+  )
+  @JoinColumn({ name: 'discord_guild_id' })
+  discordGuild?: DiscordGuildEntity;
 
   @ManyToOne(
     () => TwitchStreamerEventEntity,

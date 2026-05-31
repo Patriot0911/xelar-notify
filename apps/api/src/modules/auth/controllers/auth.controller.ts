@@ -14,7 +14,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { JwtRefreshGuard, JwtAccessGuard } from '../guards';
+import { JwtRefreshGuard, JwtAccessGuard, DiscordGuard } from '../guards';
 import { AuthService, MeService } from '../services';
 import {
   IRefreshTokenPayloadWithToken,
@@ -85,6 +85,15 @@ export class AuthController {
     return await this.authService.refreshToken(sub, sessionId, refreshToken);
   }
 
+  @Post('refresh/discord')
+  @ApiBearerAuth()
+  @UseGuards(JwtAccessGuard)
+  @HttpCode(HttpStatus.OK)
+  async refreshDiscord(@Req() request): Promise<boolean> {
+    const { sub } = <IAccessTokenPayload>request.user;
+    return await this.authService.refreshDiscordToken(sub);
+  }
+
   @Post('logout')
   @ApiBearerAuth()
   @UseGuards(JwtAccessGuard)
@@ -121,13 +130,22 @@ export class AuthController {
     return await this.authService.getSessions(sub);
   }
 
-  @Get('me/guilds')
+  @Get('me/guilds-with-bot')
   @ApiBearerAuth()
-  @UseGuards(JwtAccessGuard)
+  @UseGuards(JwtAccessGuard, DiscordGuard)
+  @ApiGenericResponses({ [HttpStatus.OK]: UserPayloadDto })
+  async getMeGuildsWithBot(@Req() request): Promise<IUserPayload> {
+    const { sub } = <IAccessTokenPayload>request.user;
+    return await this.meService.getUserGuildsWithBot(sub);
+  }
+
+  @Get('me/guilds-with-bot')
+  @ApiBearerAuth()
+  @UseGuards(JwtAccessGuard, DiscordGuard)
   @ApiGenericResponses({ [HttpStatus.OK]: UserPayloadDto })
   async getMeGuilds(@Req() request): Promise<IUserPayload> {
     const { sub } = <IAccessTokenPayload>request.user;
-    return await this.meService.getUserDiscordGuilds(sub);
+    return await this.meService.getUserGuildsWithBot(sub);
   }
 
   @Delete('sessions/:sessionId')

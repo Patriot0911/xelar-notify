@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
-import { DiscordWebhookiService, DiscordAuthService, DiscordBaseService, DiscordGuildService } from './services';
+import { DiscordWebhookiService, DiscordAuthService, DiscordBaseService, DiscordGuildService, DiscordApiService, DiscordTokenService } from './services';
 import { DiscordAuthMapper, DiscordGuildMapper } from './mappers';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@libs/database';
+import { DiscordGuildEntity, UserEntity } from '@libs/database';
 
 @Module({
   imports: [
@@ -13,6 +13,7 @@ import { UserEntity } from '@libs/database';
     }),
     TypeOrmModule.forFeature([
       UserEntity,
+      DiscordGuildEntity,
     ]),
   ],
   providers: [
@@ -22,12 +23,16 @@ import { UserEntity } from '@libs/database';
     DiscordAuthMapper,
     DiscordGuildMapper,
     DiscordWebhookiService,
+    DiscordApiService,
+    DiscordTokenService,
   ],
   exports: [
     DiscordAuthService,
     DiscordBaseService,
     DiscordGuildService,
     DiscordWebhookiService,
+    DiscordApiService,
+    DiscordTokenService,
   ],
 })
 export class DiscordModule {}

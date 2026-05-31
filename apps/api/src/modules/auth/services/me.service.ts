@@ -28,8 +28,13 @@ export class MeService {
     return this.authMapper.toUserPayload(userData);
   }
 
-  async getUserDiscordGuilds(userId: string, limit: number = 20, beginWithGuildId?: string): Promise<any> {
-    const discordGuilds = await this.discordGuildService.getDiscordUserGuilds(userId, limit, false, beginWithGuildId);
+  async getUserGuildsWithBot(userId: string): Promise<any> {
+    const discordGuilds = await this.discordGuildService.getUserGuildsWithBot(userId);
+    return discordGuilds;
+  }
+
+  async getUserGuilds(userId: string): Promise<any> {
+    const discordGuilds = await this.discordGuildService.getUserGuilds(userId);
     return discordGuilds;
   }
 

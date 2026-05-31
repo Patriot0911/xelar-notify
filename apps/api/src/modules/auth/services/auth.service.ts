@@ -5,7 +5,6 @@ import {
   IRefreshTokenPayload,
   IRegisterByEmailModel,
   ISessionModel,
-  IUpdateProfileModel,
   TokenType,
 } from '../models';
 import { AccountStatus, Permission, UserEntity, UserSessionEntity } from '@libs/database/entities';
@@ -24,7 +23,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { ConfigType } from '@nestjs/config';
 import { AuthMapper } from '../mappers';
 import { authConfig } from '@libs/config';
-import { DiscordAuthService } from '../../discord/services';
+import { DiscordApiService, DiscordAuthService, DiscordTokenService } from '../../discord/services';
 import { RolesMapper } from '../../roles/mappers';
 import { RolesService } from '../../roles/services';
 import { accessTokenBlackList, RedisService } from '@libs/redis';
@@ -34,6 +33,8 @@ import { randomUUID } from 'crypto';
 export class AuthService {
   constructor(
     private readonly discordAuthService: DiscordAuthService,
+    private readonly discordApiService: DiscordApiService,
+    private readonly discordTokenService: DiscordTokenService,
     private readonly passwordService: PasswordService,
     private readonly jwtService: JwtService,
     private readonly authMapper: AuthMapper,
@@ -50,7 +51,7 @@ export class AuthService {
 
   async authByDiscordCode(code: string): Promise<IAuthResponse> {
     const { accessToken, } = await this.discordAuthService.exchangeCodeForTokens(code);
-    const discordMe = await this.discordAuthService.getDiscordMeByToken(accessToken);
+    const discordMe = await this.discordApiService.fetchMeUserByToken(accessToken);
 
     let userData = await this.usersRepository.findOne({
       where: [
@@ -157,6 +158,11 @@ export class AuthService {
     return this.authMapper.toAuthResponse(userData, tokens);
   }
 
+  async refreshDiscordToken(userId: string): Promise<boolean> {
+    await this.discordTokenService.validateConnection(userId);
+    return true;
+  }
+
   async logout(userId: string, sessionId: string, accessJti: string, accessExp: number): Promise<boolean> {
     const session = await this.sessionsRepository.findOne({
       where: { id: sessionId, userId },
@@ -191,7 +197,7 @@ export class AuthService {
 
   async linkDiscord(userId: string, code: string): Promise<void> {
     const { accessToken } = await this.discordAuthService.exchangeCodeForTokens(code);
-    const discordMe = await this.discordAuthService.getDiscordMeByToken(accessToken);
+    const discordMe = await this.discordApiService.fetchMeUserByToken(accessToken);
 
     const conflicting = await this.usersRepository.findOne({
       where: [
