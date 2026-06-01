@@ -24,7 +24,7 @@ export class StreamOnlineHandler {
     private readonly queue: QueueService,
   ) {}
 
-  @EventPattern(QueuePatterns.twitch.events.stream.online)
+  @EventPattern(QueuePatterns.twitch.events.online)
   async handle(@Payload() data: IStreamOnlineMessage, @Ctx() ctx: RmqContext) {
     const channel = ctx.getChannelRef();
     const message = ctx.getMessage();

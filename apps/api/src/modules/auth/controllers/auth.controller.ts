@@ -15,7 +15,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtRefreshGuard, JwtAccessGuard } from '../guards';
-import { DiscordGuard } from '../../discord/guards';
 import { AuthService, MeService } from '../services';
 import {
   IRefreshTokenPayloadWithToken,
