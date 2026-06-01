@@ -3,12 +3,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { AppConfig } from '@libs/config';
 import {
-  DiscordNotificationDestinationEntity,
+  DiscordNotificationEntity,
   TwitchStreamerEntity,
   TwitchStreamerEventEntity,
   TwitchAppEntity,
   UserEntity,
+  UserSessionEntity,
   RoleEntity,
+  WebhookNotificationEntity,
+  DiscordGuildEntity,
 } from './entities';
 
 @Module({
@@ -23,10 +26,13 @@ import {
         password: config.get('DB_PASSWORD', { infer: true }),
         database: config.get('DB_NAME',     { infer: true }),
         entities: [
-          DiscordNotificationDestinationEntity,
+          DiscordNotificationEntity,
+          WebhookNotificationEntity,
           TwitchStreamerEventEntity,
           TwitchStreamerEntity,
+          DiscordGuildEntity,
           UserEntity,
+          UserSessionEntity,
           RoleEntity,
           TwitchAppEntity,
         ],

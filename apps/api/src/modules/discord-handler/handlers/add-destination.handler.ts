@@ -1,14 +1,15 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { RpcPatterns } from '@libs/rpc/patterns';
-import { NotificationPlatform, TwitchStreamerEntity, TwitchStreamerEvents, UserEntity } from '@libs/database';
+import { NotificationCostType, TwitchStreamerEntity, TwitchStreamerEvents, UserEntity } from '@libs/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AddDestinationDto } from '../dto';
 import { IAddDestinationResult, RpcBusinessException, RpcError } from '@libs/shared';
 import { RpcPayload } from '@libs/rpc';
-import { TwitchNotificationsService } from '../../notifications/services';
+import { NotificationsService } from '../../notifications/services';
 import { DiscordAuthService } from '../../discord/services';
+import { TwitchNotificationsService } from '../../notifications/services/twitch-notifications.service';
 
 @Controller()
 export class AddDestinationHandler {
@@ -17,6 +18,7 @@ export class AddDestinationHandler {
     private usersRepository: Repository<UserEntity>,
     @InjectRepository(TwitchStreamerEntity)
     private readonly twitchStreamerRepository: Repository<TwitchStreamerEntity>,
+    private readonly notificationsService: NotificationsService,
     private readonly twitchNotificationsService: TwitchNotificationsService,
     private readonly discordAuthService: DiscordAuthService,
   ) {}
@@ -41,12 +43,7 @@ export class AddDestinationHandler {
       where: { broadcasterId: data.broadcasterId },
     });
 
-    const canAfford = await this.twitchNotificationsService.canAffordNotification(
-      user,
-      eventType,
-      streamer?.userId === user.id,
-      !!streamer?.userId
-    );
+    const canAfford = true;
 
     if (!canAfford) {
       throw new RpcBusinessException(
@@ -56,34 +53,32 @@ export class AddDestinationHandler {
     }
 
     const payload = {
-      content: '${streamer} is now live!',
+      content: '${streamer_name} is now live!',
       embeds: [
         {
-          title: '${streamer} is now live!',
-          description: 'Click [here](${url}) to watch the stream.',
+          title: '${streamer_name} is now live!',
+          description: 'Watch the stream live!',
           color: 0x9146FF,
         },
       ],
     };
 
-    const notificationData = {
-      broadcasterId: data.broadcasterId,
-      channelId: data.channelId,
-      guildId: data.guildId,
-      type: NotificationPlatform.DISCORD_BOT,
-      event: eventType,
-      payload,
-    };
-
-    const discordNotification = await this.twitchNotificationsService.addDiscordNotification(notificationData, user.id);
-
-    console.log({ discordNotification });
+    const discordNotification = await this.twitchNotificationsService.createDiscordNotification(
+      {
+        broadcasterId: data.broadcasterId,
+        channelId: data.channelId,
+        guildId: data.guildId,
+        event: eventType,
+        payload,
+        costType: NotificationCostType.Personal,
+      },
+      user.id,
+    );
 
     return {
-      channelId: discordNotification.channelId!,
-      eventType: discordNotification.streamerEvent.event,
-      cost: discordNotification.creditCost,
-      // remainingCredits: this.calculateRemainingCredits(user, discordNotification.creditCost, data.eventType!),
+      channelId: discordNotification.channelId,
+      eventType: discordNotification.streamerEvent?.event ?? eventType,
+      cost: discordNotification.cost,
     };
   }
 }

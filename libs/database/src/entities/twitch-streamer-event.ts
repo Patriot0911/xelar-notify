@@ -1,7 +1,8 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { DiscordNotificationDestinationEntity } from './notification-destination.entity';
+import { DiscordNotificationEntity } from './discord-notification.entity';
 import { TwitchStreamerEntity } from './twitch-streamer';
 import { TwitchAppEntity } from './twitch-app.entity';
+import { WebhookNotificationEntity } from './webhook-notification.entity';
 
 export enum TwitchStreamerEvents {
   STREAM_ONLINE     = 'stream.online',
@@ -30,6 +31,9 @@ export class TwitchStreamerEventEntity {
   @Column({ name: 'twitch_app_id' })
   twitchAppId: string;
 
+  @Column({ name: 'app_cost', type: 'decimal', precision: 3, scale: 1, default: 1 })
+  appCost: number;
+
   @Column({ name: 'subscription_id', unique: true, type: 'varchar', nullable: true })
   subscriptionId?: string | null;
 
@@ -48,11 +52,18 @@ export class TwitchStreamerEventEntity {
   twitchApp: TwitchAppEntity;
 
   @OneToMany(
-    () => DiscordNotificationDestinationEntity,
+    () => DiscordNotificationEntity,
     (dest) => dest.streamerEvent,
     { cascade: true }
   )
-  discordDestinations: DiscordNotificationDestinationEntity[];
+  discordNotifications: DiscordNotificationEntity[];
+
+  @OneToMany(
+    () => WebhookNotificationEntity,
+    (dest) => dest.streamerEvent,
+    { cascade: true }
+  )
+  webhookNotifications: WebhookNotificationEntity[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

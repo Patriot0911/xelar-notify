@@ -16,6 +16,9 @@ export class TwitchStreamerEntity {
   @Column({ name: 'display_name' })
   displayName: string;
 
+  @Column({ name: 'is_partner', default: false })
+  isPartner: boolean;
+
   @Column({ name: 'user_id' })
   userId?: string;
 

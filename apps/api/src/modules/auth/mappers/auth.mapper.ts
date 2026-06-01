@@ -1,6 +1,6 @@
-import { UserEntity } from '@libs/database';
+import { UserEntity, UserSessionEntity } from '@libs/database';
 import { Injectable } from '@nestjs/common';
-import { IAuthResponse, ITokenModel, IUserPayload } from '../models';
+import { IAuthResponse, ISessionModel, ITokenModel, IUserPayload } from '../models';
 import { RolesMapper } from '../../roles/mappers';
 
 @Injectable()
@@ -25,6 +25,14 @@ export class AuthMapper {
       discordId: user.discordId,
       permissions,
       roles,
+    };
+  }
+
+  toSessionDto(session: UserSessionEntity): ISessionModel {
+    return {
+      id: session.id,
+      createdAt: session.createdAt,
+      expiresAt: session.expiresAt,
     };
   }
 }

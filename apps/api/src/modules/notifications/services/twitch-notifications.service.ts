@@ -1,62 +1,152 @@
-import { ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
-import { DiscordNotificationDestinationEntity, NotificationPlatform, TwitchStreamerEvents, UserEntity } from '@libs/database';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AddDiscordNotificationDto } from '../dto';
-import { DiscordWebhookiService } from '../../discord/services';
+import { DiscordNotificationEntity, NotificationCostType, TwitchStreamerEvents, WebhookNotificationEntity, WebhookType, } from '@libs/database';
+import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
-import { NOTIFICATION_COST, NOTIFICATION_MAX_COST, NOTIFICATION_PARTNER_COST } from '../notifications.constants';
+import { DiscordGuildService, DiscordWebhookiService } from '../../discord/services';
+import { CreateDiscordNotificationDto, CreateWebhookNotificationDto } from '../dto';
+import { NotificationsService } from './notifications.service';
 
 @Injectable()
 export class TwitchNotificationsService {
-  private readonly publicAllowedEvents = [
+  readonly publicStreamerEvents: TwitchStreamerEvents[] = [
     TwitchStreamerEvents.STREAM_ONLINE,
   ];
+
   constructor(
     private readonly twitchSubscriptionService: TwitchSubscriptionService,
     private readonly discordPayloadService: DiscordPayloadService,
-    private readonly discordApiService: DiscordWebhookiService,
-    @InjectRepository(DiscordNotificationDestinationEntity)
-    private discordNotificationDestinationsRepository: Repository<DiscordNotificationDestinationEntity>,
+    private readonly discordWebhookService: DiscordWebhookiService,
+    private readonly notificationsService: NotificationsService,
+    private readonly discordGuildService: DiscordGuildService,
+    @InjectRepository(DiscordNotificationEntity)
+    private readonly discordNotificationRepository: Repository<DiscordNotificationEntity>,
+    @InjectRepository(WebhookNotificationEntity)
+    private readonly webhookNotificationRepository: Repository<WebhookNotificationEntity>,
   ) {}
 
-  async addDiscordNotification(dto: AddDiscordNotificationDto, ownerId: string): Promise<DiscordNotificationDestinationEntity> {
-    const subscription = await this.twitchSubscriptionService.getOrCreateEvent(dto.broadcasterId, dto.event);
+  async createDiscordNotification(
+    dto: CreateDiscordNotificationDto,
+    ownerId: string,
+  ): Promise<DiscordNotificationEntity> {
+    await this.assertCanCreate(ownerId, dto.broadcasterId, dto.event);
+    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType);
 
-    this.discordPayloadService.validatePayload(dto.payload);
+    const subscription = await this.twitchSubscriptionService.getOrCreateEvent(
+      dto.broadcasterId,
+      dto.event,
+    );
 
-    const notification = this.discordNotificationDestinationsRepository.create({
+    this.discordPayloadService.validateBotPayload(dto.payload);
+
+    const cost = this.notificationsService.resolveCost(dto.costType);
+
+    // todo: apply cost to user / guild / free
+
+    const guild = await this.discordGuildService.getOrCreateGuild(dto.guildId);
+
+    const notification = this.discordNotificationRepository.create({
       streamerEventId: subscription.id,
-      type: dto.type,
-      guildId: dto.guildId,
+      guildId: guild.id,
+      channelId: dto.channelId,
       messagePayload: dto.payload as any,
-      creditOwnerId: ownerId,
-      creditCost: 1,
+      onwerId: ownerId,
+      costType: dto.costType,
+      cost,
     });
 
-    if (dto.type === NotificationPlatform.DISCORD_BOT) {
-      notification.channelId = dto.channelId;
-    } else {
-      await this.discordApiService.validateWebhook(dto.webhookUrl!, dto.guildId);
-      notification.webhookUrl = dto.webhookUrl;
-    }
-
-    const createdNotification = await this.discordNotificationDestinationsRepository.save(notification);
-    return createdNotification;
+    return this.discordNotificationRepository.save(notification);
   }
 
-  async canAffordNotification(
-    user: UserEntity,
-    event: TwitchStreamerEvents,
-    isStreamer: boolean,
-    isPartnerStreamer = false,
-  ): Promise<boolean> {
-    const eventCost = NOTIFICATION_COST * (isPartnerStreamer ? NOTIFICATION_PARTNER_COST : 1);
-    const isAllowedByCredits = user.creditsUsed + eventCost <= NOTIFICATION_MAX_COST;
-    if (!this.publicAllowedEvents.includes(event)) {
-      return isStreamer && isAllowedByCredits;
+  async createWebhookNotification(
+    dto: CreateWebhookNotificationDto,
+    ownerId: string,
+    guildId?: string
+  ): Promise<WebhookNotificationEntity> {
+    await this.assertCanCreate(ownerId, dto.broadcasterId, dto.event);
+    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType);
+
+    const subscription = await this.twitchSubscriptionService.getOrCreateEvent(
+      dto.broadcasterId,
+      dto.event,
+    );
+
+    const webhookType = this.notificationsService.detectWebhookType(dto.webhookUrl);
+    if (webhookType === WebhookType.DISCORD) {
+      this.discordPayloadService.validateWebhookPayload(dto.payload);
     }
-    return isAllowedByCredits;
+
+    const cost = this.notificationsService.resolveCost(dto.costType);
+
+    const notification = this.webhookNotificationRepository.create({
+      streamerEventId: subscription.id,
+      type: webhookType,
+      webhookUrl: dto.webhookUrl,
+      messagePayload: dto.payload as any,
+      onwerId: ownerId,
+      costType: dto.costType,
+      cost,
+    });
+
+    if (guildId) {
+      await this.discordWebhookService.validateWebhookUrl(dto.webhookUrl);
+      // todo: check if user associated with guild
+      const guild = await this.discordGuildService.getOrCreateGuild(guildId);
+      notification.discordGuildId = guild.id;
+    }
+
+    // todo: apply cost to user / guild / free
+
+    return this.webhookNotificationRepository.save(notification);
+  }
+
+  async getGuildNotifications(ownerId: string, discordGuildId: string) {
+    const [bot, webhook] = await Promise.all([
+      this.discordNotificationRepository
+        .createQueryBuilder('n')
+        .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.guildId = :discordGuildId', { discordGuildId })
+        .leftJoinAndSelect('n.streamerEvent', 'event')
+        .leftJoinAndSelect('event.streamer', 'streamer')
+        .where('n.onwerId = :ownerId', { ownerId })
+        .getMany(),
+      this.webhookNotificationRepository
+        .createQueryBuilder('n')
+        .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.guildId = :discordGuildId', { discordGuildId })
+        .leftJoinAndSelect('n.streamerEvent', 'event')
+        .leftJoinAndSelect('event.streamer', 'streamer')
+        .where('n.onwerId = :ownerId', { ownerId })
+        .getMany(),
+    ]);
+    return { bot, webhook };
+  }
+
+  async getUserNotifications(ownerId: string) {
+    const [bot, webhook] = await Promise.all([
+      this.discordNotificationRepository.find({
+        where: { onwerId: ownerId },
+        relations: ['streamerEvent', 'streamerEvent.streamer', 'discordGuild'],
+      }),
+      this.webhookNotificationRepository.find({
+        where: { onwerId: ownerId },
+        relations: ['streamerEvent', 'streamerEvent.streamer'],
+      }),
+    ]);
+    return { bot, webhook };
+  }
+
+  async assertCanCreate(
+    userId: string,
+    broadcasterId: string,
+    event: TwitchStreamerEvents
+  ) {
+    // todo: add check for public events etc
+  }
+
+  async assertCanAfford(
+    userId: string,
+    broadcasterId: string,
+    costType: NotificationCostType
+  ) {
   }
 }

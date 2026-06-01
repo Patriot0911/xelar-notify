@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DiscordNotificationDestinationEntity, UserEntity } from '@libs/database';
-import { TwitchNotificationsService } from './services';
+import { DiscordNotificationEntity, UserEntity, WebhookNotificationEntity } from '@libs/database';
+import { NotificationsService } from './services';
+import { DiscordNotificationsController } from './controllers';
 import { TwitchSubscriptionsModule } from '../twitch-subscriptions';
 import { DiscordModule } from '../discord';
 import { NotificationPayloadModule } from '../notification-payload';
+import { TwitchNotificationsService } from './services/twitch-notifications.service';
 
 @Module({
   imports: [
@@ -13,14 +15,17 @@ import { NotificationPayloadModule } from '../notification-payload';
     DiscordModule,
     TypeOrmModule.forFeature([
       UserEntity,
-      DiscordNotificationDestinationEntity,
+      DiscordNotificationEntity,
+      WebhookNotificationEntity,
     ]),
   ],
-  controllers: [],
+  controllers: [DiscordNotificationsController],
   providers: [
+    NotificationsService,
     TwitchNotificationsService,
   ],
   exports: [
+    NotificationsService,
     TwitchNotificationsService,
   ],
 })
