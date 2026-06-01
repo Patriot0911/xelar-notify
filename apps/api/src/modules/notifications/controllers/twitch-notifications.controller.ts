@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { IAccessTokenPayload, JwtAccessGuard } from '../../auth';
 import { DiscordGuard } from '../../discord/guards';
@@ -72,5 +72,19 @@ export class DiscordNotificationsController {
   ) {
     const { sub } = <IAccessTokenPayload>request.user;
     return this.twitchNotificationsService.updateWebhookNotification(id, body, sub);
+  }
+
+  @Delete('discord/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteDiscordNotification(@Req() request: any, @Param('id') id: string) {
+    const { sub } = <IAccessTokenPayload>request.user;
+    return this.twitchNotificationsService.deleteDiscordNotification(id, sub);
+  }
+
+  @Delete('webhook/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  deleteWebhookNotification(@Req() request: any, @Param('id') id: string) {
+    const { sub } = <IAccessTokenPayload>request.user;
+    return this.twitchNotificationsService.deleteWebhookNotification(id, sub);
   }
 }
