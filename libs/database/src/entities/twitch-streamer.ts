@@ -19,8 +19,8 @@ export class TwitchStreamerEntity {
   @Column({ name: 'is_partner', default: false })
   isPartner: boolean;
 
-  @Column({ name: 'user_id' })
-  userId?: string;
+  @Column({ name: 'user_id', nullable: true })
+  userId?: string | null;
 
   @OneToOne(() => UserEntity, (user) => user.twitchAccount)
   @JoinColumn({ name: 'user_id' })
