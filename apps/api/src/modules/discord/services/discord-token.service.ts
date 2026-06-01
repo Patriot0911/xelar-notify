@@ -62,9 +62,10 @@ export class DiscordTokenService {
     }
   }
 
-  isExpired(expiresAt: Date | null): boolean {
+  isExpired(expiresAt: Date | null | string): boolean {
     if (!expiresAt) return true;
-    return new Date() >= new Date(expiresAt.getTime() - 5 * 60 * 1000);
+    const expireDate = new Date(expiresAt);
+    return new Date() >= new Date(expireDate.getTime() - 5 * 60 * 1000);
   }
 
   private async getUserWithTokens(userId: string): Promise<UserEntity> {

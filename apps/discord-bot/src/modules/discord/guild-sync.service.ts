@@ -11,8 +11,12 @@ export class GuildSyncService implements OnModuleInit {
     private readonly redis: RedisService,
   ) {}
 
-  async onModuleInit() {
-    this.client.once('ready', () => this.syncGuilds());
+  onModuleInit() {
+    if (!this.client.isReady()) {
+      this.client.once('ready', () => this.syncGuilds());
+    } else {
+      this.syncGuilds();
+    }
   }
 
   async syncGuilds(): Promise<void> {

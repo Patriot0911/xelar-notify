@@ -14,7 +14,8 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { JwtRefreshGuard, JwtAccessGuard, DiscordGuard } from '../guards';
+import { JwtRefreshGuard, JwtAccessGuard } from '../guards';
+import { DiscordGuard } from '../../discord/guards';
 import { AuthService, MeService } from '../services';
 import {
   IRefreshTokenPayloadWithToken,
@@ -128,24 +129,6 @@ export class AuthController {
   async getSessions(@Req() request): Promise<ISessionModel[]> {
     const { sub } = <IAccessTokenPayload>request.user;
     return await this.authService.getSessions(sub);
-  }
-
-  @Get('me/guilds-with-bot')
-  @ApiBearerAuth()
-  @UseGuards(JwtAccessGuard, DiscordGuard)
-  @ApiGenericResponses({ [HttpStatus.OK]: UserPayloadDto })
-  async getMeGuildsWithBot(@Req() request): Promise<IUserPayload> {
-    const { sub } = <IAccessTokenPayload>request.user;
-    return await this.meService.getUserGuildsWithBot(sub);
-  }
-
-  @Get('me/guilds-with-bot')
-  @ApiBearerAuth()
-  @UseGuards(JwtAccessGuard, DiscordGuard)
-  @ApiGenericResponses({ [HttpStatus.OK]: UserPayloadDto })
-  async getMeGuilds(@Req() request): Promise<IUserPayload> {
-    const { sub } = <IAccessTokenPayload>request.user;
-    return await this.meService.getUserGuildsWithBot(sub);
   }
 
   @Delete('sessions/:sessionId')

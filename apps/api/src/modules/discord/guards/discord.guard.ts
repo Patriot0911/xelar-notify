@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { DiscordTokenService } from '../../discord/services';
+import { DiscordTokenService } from '../services';
 
 @Injectable()
 export class DiscordGuard implements CanActivate {

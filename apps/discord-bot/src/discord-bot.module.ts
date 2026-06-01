@@ -3,6 +3,7 @@ import { AccountModule, DiscordModule, NotificationsModule } from './modules';
 import { Module } from '@nestjs/common';
 import { RpcModule } from '@libs/rpc';
 import { ConfigService } from '@nestjs/config';
+import { RedisModule } from '@libs/redis';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
     AccountModule,
     DiscordModule,
     NotificationsModule,
+    RedisModule,
     RpcModule.forRootAsync({
       inject:     [ConfigService],
       useFactory: (config: ConfigService<AppConfig>) => ({

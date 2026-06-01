@@ -101,6 +101,40 @@ export class TwitchNotificationsService {
     return this.webhookNotificationRepository.save(notification);
   }
 
+  async getGuildNotifications(ownerId: string, discordGuildId: string) {
+    const [bot, webhook] = await Promise.all([
+      this.discordNotificationRepository
+        .createQueryBuilder('n')
+        .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.guildId = :discordGuildId', { discordGuildId })
+        .leftJoinAndSelect('n.streamerEvent', 'event')
+        .leftJoinAndSelect('event.streamer', 'streamer')
+        .where('n.onwerId = :ownerId', { ownerId })
+        .getMany(),
+      this.webhookNotificationRepository
+        .createQueryBuilder('n')
+        .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.guildId = :discordGuildId', { discordGuildId })
+        .leftJoinAndSelect('n.streamerEvent', 'event')
+        .leftJoinAndSelect('event.streamer', 'streamer')
+        .where('n.onwerId = :ownerId', { ownerId })
+        .getMany(),
+    ]);
+    return { bot, webhook };
+  }
+
+  async getUserNotifications(ownerId: string) {
+    const [bot, webhook] = await Promise.all([
+      this.discordNotificationRepository.find({
+        where: { onwerId: ownerId },
+        relations: ['streamerEvent', 'streamerEvent.streamer', 'discordGuild'],
+      }),
+      this.webhookNotificationRepository.find({
+        where: { onwerId: ownerId },
+        relations: ['streamerEvent', 'streamerEvent.streamer'],
+      }),
+    ]);
+    return { bot, webhook };
+  }
+
   async assertCanCreate(
     userId: string,
     broadcasterId: string,

@@ -22,9 +22,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getResponse()['message'] || exception.message
         : exception.message || 'Internal server error';
 
+    const data =
+      exception instanceof HttpException
+        ? exception.getResponse()['data'] || null
+        : exception.data || null;
+
     response.status(status).json({
       status: false,
       message,
+      data,
     });
   }
 }

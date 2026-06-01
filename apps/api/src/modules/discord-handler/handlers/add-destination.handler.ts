@@ -9,6 +9,7 @@ import { IAddDestinationResult, RpcBusinessException, RpcError } from '@libs/sha
 import { RpcPayload } from '@libs/rpc';
 import { NotificationsService } from '../../notifications/services';
 import { DiscordAuthService } from '../../discord/services';
+import { TwitchNotificationsService } from '../../notifications/services/twitch-notifications.service';
 
 @Controller()
 export class AddDestinationHandler {
@@ -18,6 +19,7 @@ export class AddDestinationHandler {
     @InjectRepository(TwitchStreamerEntity)
     private readonly twitchStreamerRepository: Repository<TwitchStreamerEntity>,
     private readonly notificationsService: NotificationsService,
+    private readonly twitchNotificationsService: TwitchNotificationsService,
     private readonly discordAuthService: DiscordAuthService,
   ) {}
 
@@ -42,12 +44,6 @@ export class AddDestinationHandler {
     });
 
     const canAfford = true;
-    // await this.twitchNotificationsService.canAffordNotification(
-    //   user,
-    //   eventType,
-    //   streamer?.userId === user.id,
-    //   streamer?.isPartner ?? false,
-    // );
 
     if (!canAfford) {
       throw new RpcBusinessException(
@@ -67,7 +63,7 @@ export class AddDestinationHandler {
       ],
     };
 
-    const discordNotification = await this.notificationsService.createDiscordNotification(
+    const discordNotification = await this.twitchNotificationsService.createDiscordNotification(
       {
         broadcasterId: data.broadcasterId,
         channelId: data.channelId,

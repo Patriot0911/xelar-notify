@@ -4,14 +4,12 @@ import { AuthMapper } from '../mappers';
 import { UserEntity } from '@libs/database';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DiscordGuildService } from '../../discord/services';
 import { PasswordService } from './password.service';
 
 @Injectable()
 export class MeService {
   constructor(
     private readonly authMapper: AuthMapper,
-    private readonly discordGuildService: DiscordGuildService,
     private readonly passwordService: PasswordService,
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
@@ -26,16 +24,6 @@ export class MeService {
       throw new UnauthorizedException();
     }
     return this.authMapper.toUserPayload(userData);
-  }
-
-  async getUserGuildsWithBot(userId: string): Promise<any> {
-    const discordGuilds = await this.discordGuildService.getUserGuildsWithBot(userId);
-    return discordGuilds;
-  }
-
-  async getUserGuilds(userId: string): Promise<any> {
-    const discordGuilds = await this.discordGuildService.getUserGuilds(userId);
-    return discordGuilds;
   }
 
   async updateProfile(userId: string, data: IUpdateProfileModel): Promise<void> {

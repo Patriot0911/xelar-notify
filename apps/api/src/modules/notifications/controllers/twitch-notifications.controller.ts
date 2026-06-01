@@ -1,16 +1,33 @@
-import { Body, Controller, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { IAccessTokenPayload, JwtAccessGuard } from '../../auth';
+import { DiscordGuard } from '../../discord/guards';
 import { CreateDiscordNotificationDto, CreateWebhookNotificationDto } from '../dto';
 import { TwitchNotificationsService } from '../services/twitch-notifications.service';
 
-@Controller('twitch-notifications')
+@Controller('api/twitch-notifications')
 @UseGuards(JwtAccessGuard)
 @ApiBearerAuth()
 export class DiscordNotificationsController {
   constructor(
     private readonly twitchNotificationsService: TwitchNotificationsService,
   ) {}
+
+  @Get()
+  getUserNotifications(@Req() request) {
+    const { sub } = <IAccessTokenPayload>request.user;
+    return this.twitchNotificationsService.getUserNotifications(sub);
+  }
+
+  @Get('discord/:discordGuildId')
+  @UseGuards(DiscordGuard)
+  getGuildNotifications(
+    @Req() request,
+    @Param('discordGuildId') discordGuildId: string,
+  ) {
+    const { sub } = <IAccessTokenPayload>request.user;
+    return this.twitchNotificationsService.getGuildNotifications(sub, discordGuildId);
+  }
 
   @Post('discord')
   createDiscordNotification(@Req() request, @Body() body: CreateDiscordNotificationDto) {

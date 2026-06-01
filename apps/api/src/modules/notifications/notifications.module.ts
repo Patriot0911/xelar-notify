@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DiscordNotificationEntity, UserEntity, WebhookNotificationEntity } from '@libs/database';
 import { NotificationsService } from './services';
+import { DiscordNotificationsController } from './controllers';
 import { TwitchSubscriptionsModule } from '../twitch-subscriptions';
 import { DiscordModule } from '../discord';
 import { NotificationPayloadModule } from '../notification-payload';
@@ -18,7 +19,7 @@ import { TwitchNotificationsService } from './services/twitch-notifications.serv
       WebhookNotificationEntity,
     ]),
   ],
-  controllers: [],
+  controllers: [DiscordNotificationsController],
   providers: [
     NotificationsService,
     TwitchNotificationsService,

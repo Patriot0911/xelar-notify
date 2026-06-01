@@ -50,7 +50,7 @@ export class AuthService {
   ) {}
 
   async authByDiscordCode(code: string): Promise<IAuthResponse> {
-    const { accessToken, } = await this.discordAuthService.exchangeCodeForTokens(code);
+    const { accessToken, expiresIn, refreshToken, } = await this.discordAuthService.exchangeCodeForTokens(code);
     const discordMe = await this.discordApiService.fetchMeUserByToken(accessToken);
 
     let userData = await this.usersRepository.findOne({
@@ -67,15 +67,19 @@ export class AuthService {
       }
       if (userData.discordId !== discordMe.id) {
         userData.discordId = discordMe.id;
-        userData.discordAccessToken = accessToken;
-        await this.usersRepository.save(userData);
       }
+      userData.discordAccessToken = accessToken;
+      userData.discordRefreshToken = refreshToken;
+      userData.discordTokenExpiresAt = new Date(Date.now() + expiresIn * 1000);
+      await this.usersRepository.save(userData);
     } else {
       const newUser = this.usersRepository.create({
         email: discordMe.email,
         displayName: discordMe.globalName,
         discordId: discordMe.id,
         discordAccessToken: accessToken,
+        discordRefreshToken: refreshToken,
+        discordTokenExpiresAt: new Date(Date.now() + expiresIn * 1000),
         roles: [],
       });
       userData = await this.usersRepository.save(newUser);

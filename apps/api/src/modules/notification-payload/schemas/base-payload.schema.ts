@@ -20,7 +20,7 @@ export const EmbedSchema = z.object({
 export const NotificationPayloadObjectSchema = z.object({
   content: z.string().max(2000).optional(),
   embeds:  z.array(EmbedSchema).max(10).optional(),
-  actions: z.array(z.record(z.unknown())).optional(),
+  actions: z.array(z.record(z.string(), z.unknown())).optional(),
 });
 
 export const hasContentOrEmbeds = (

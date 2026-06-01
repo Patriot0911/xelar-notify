@@ -31,7 +31,10 @@ export class DiscordApiService {
     const { data } = await firstValueFrom(
       this.httpService.get<IDiscordApiGuildModel[]>(
         'https://discord.com/api/users/@me/guilds',
-        { headers: { Authorization: `Bearer ${token}` } },
+        {
+          params: { with_counts: true, },
+          headers: { Authorization: `Bearer ${token}` }
+        },
       ),
     );
 
