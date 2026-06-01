@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DiscordNotificationEntity, NotificationCostType, TwitchStreamerEvents, WebhookNotificationEntity, WebhookType, } from '@libs/database';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
 import { DiscordGuildService, DiscordWebhookiService } from '../../discord/services';
-import { CreateDiscordNotificationDto, CreateWebhookNotificationDto } from '../dto';
+import { CreateDiscordNotificationDto, CreateWebhookNotificationDto, UpdateDiscordNotificationDto, UpdateWebhookNotificationDto } from '../dto';
 import { NotificationsService } from './notifications.service';
 
 @Injectable()
@@ -133,6 +133,55 @@ export class TwitchNotificationsService {
       }),
     ]);
     return { bot, webhook };
+  }
+
+  async updateDiscordNotification(
+    id: string,
+    dto: UpdateDiscordNotificationDto,
+    ownerId: string,
+  ): Promise<DiscordNotificationEntity> {
+    const notification = await this.discordNotificationRepository.findOne({
+      where: { id, onwerId: ownerId },
+    });
+
+    if (!notification) throw new NotFoundException('Notification not found');
+
+    if (dto.payload !== undefined) {
+      this.discordPayloadService.validateBotPayload(dto.payload);
+      notification.messagePayload = dto.payload as any;
+    }
+
+    if (dto.costType !== undefined) notification.costType  = dto.costType;
+    if (dto.channelId !== undefined) notification.channelId = dto.channelId;
+
+    return this.discordNotificationRepository.save(notification);
+  }
+
+  async updateWebhookNotification(
+    id: string,
+    dto: UpdateWebhookNotificationDto,
+    ownerId: string,
+  ): Promise<WebhookNotificationEntity> {
+    const notification = await this.webhookNotificationRepository.findOne({
+      where: { id, onwerId: ownerId },
+      select: ['id', 'onwerId', 'costType', 'type', 'webhookUrl', 'messagePayload', 'discordGuildId', 'streamerEventId', 'cost'],
+    });
+
+    if (!notification) throw new NotFoundException('Notification not found');
+
+    if (dto.payload !== undefined) {
+      const resolvedUrl = dto.webhookUrl ?? notification.webhookUrl ?? '';
+      const webhookType = this.notificationsService.detectWebhookType(resolvedUrl);
+      if (webhookType === WebhookType.DISCORD) {
+        this.discordPayloadService.validateWebhookPayload(dto.payload);
+      }
+      notification.messagePayload = dto.payload as any;
+    }
+
+    if (dto.costType  !== undefined) notification.costType  = dto.costType;
+    if (dto.webhookUrl !== undefined) notification.webhookUrl = dto.webhookUrl;
+
+    return this.webhookNotificationRepository.save(notification);
   }
 
   async assertCanCreate(

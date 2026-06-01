@@ -120,25 +120,33 @@ export class TwitchSubscriptionService {
       where: { broadcasterId, }
     });
 
-    console.log({ existingStreamer })
-
-    if (!!existingStreamer) {
-      return existingStreamer;
-    }
-
     const streamerApiData = await this.twitchApiService.getUserById(broadcasterId);
 
     if (!streamerApiData) {
       throw new BadRequestException(`Cannot find streamer with Twitch Id "${broadcasterId}"`);
     }
 
+    if (existingStreamer) {
+      if (existingStreamer.profileImageUrl !== streamerApiData.profileImageUrl) {
+        const now = new Date();
+        await this.twitchStreamerRepository.update(
+          { id: existingStreamer.id },
+          { profileImageUrl: streamerApiData.profileImageUrl, profileImageUpdatedAt: now },
+        );
+        existingStreamer.profileImageUrl        = streamerApiData.profileImageUrl;
+        existingStreamer.profileImageUpdatedAt  = now;
+      }
+      return existingStreamer;
+    }
+
     const streamer = this.twitchStreamerRepository.create({
       broadcasterId,
-      twitchLogin: streamerApiData.login,
-      displayName: streamerApiData.displayName,
+      twitchLogin:            streamerApiData.login,
+      displayName:            streamerApiData.displayName,
+      profileImageUrl:        streamerApiData.profileImageUrl,
+      profileImageUpdatedAt:  new Date(),
     });
-    const createdStreamer = await this.twitchStreamerRepository.save(streamer);
-    return createdStreamer;
+    return this.twitchStreamerRepository.save(streamer);
   }
 
   private async getTwitchAppForBroadcaster(broadcasterId: string): Promise<TwitchAppEntity | null> {

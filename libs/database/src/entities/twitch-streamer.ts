@@ -16,6 +16,12 @@ export class TwitchStreamerEntity {
   @Column({ name: 'display_name' })
   displayName: string;
 
+  @Column({ name: 'profile_image_url', type: 'varchar', nullable: true })
+  profileImageUrl?: string | null;
+
+  @Column({ name: 'profile_image_updated_at', type: 'timestamptz', nullable: true })
+  profileImageUpdatedAt?: Date | null;
+
   @Column({ name: 'is_partner', default: false })
   isPartner: boolean;
 
