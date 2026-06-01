@@ -21,14 +21,47 @@ export class DiscordGuildService {
   }
 
   async getUserGuildsWithBot(userId: string) {
-    const [userGuilds, botGuildIds] = await Promise.all([
+    const [userGuilds, botGuildIdList] = await Promise.all([
       this.discordApiService.fetchUserGuilds(userId),
       this.getBotGuildIds(),
     ]);
 
-    const botGuildSet = new Set(botGuildIds);
+    const botGuildSet = new Set(botGuildIdList);
+    const filteredGuilds = userGuilds.filter((guild) => botGuildSet.has(guild.id));
 
-    return userGuilds.filter((guild) => botGuildSet.has(guild.id));
+    if (!filteredGuilds.length) return [];
+
+    const filteredGuildIds = filteredGuilds.map((g) => g.id);
+
+    const dbStats = await this.discordGuildRepository
+      .createQueryBuilder('guild')
+      .leftJoin('guild.notifications', 'botNotif', 'botNotif.onwerId = :userId', { userId })
+      .leftJoin('guild.webhookNotifications', 'webhookNotif', 'webhookNotif.onwerId = :userId', { userId })
+      .select('guild.guildId', 'guildId')
+      .addSelect('guild.balance', 'balance')
+      .addSelect(
+        'COUNT(DISTINCT botNotif.id) + COUNT(DISTINCT webhookNotif.id)',
+        'notificationCount',
+      )
+      .where('guild.guildId IN (:...guildIds)', { guildIds: filteredGuildIds })
+      .groupBy('guild.id, guild.guildId, guild.balance')
+      .getRawMany<{ guildId: string; balance: string; notificationCount: string }>();
+
+    const statsMap = new Map(
+      dbStats.map((row) => [
+        row.guildId,
+        {
+          balance: parseFloat(row.balance),
+          notificationCount: parseInt(row.notificationCount, 10),
+        },
+      ]),
+    );
+
+    return filteredGuilds.map((guild) => ({
+      ...guild,
+      balance: statsMap.get(guild.id)?.balance ?? 0,
+      notificationCount: statsMap.get(guild.id)?.notificationCount ?? 0,
+    }));
   }
 
   private async getBotGuildIds(): Promise<string[]> {

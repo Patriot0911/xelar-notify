@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
-import { DiscordWebhookiService, DiscordAuthService, DiscordBaseService, DiscordGuildService, DiscordApiService, DiscordTokenService } from './services';
+import { DiscordWebhookiService, DiscordAuthService, DiscordBaseService, DiscordGuildService, DiscordApiService, DiscordTokenService, DiscordChannelsService } from './services';
 import { DiscordGuard } from './guards';
 import { DiscordAuthMapper, DiscordGuildMapper } from './mappers';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -27,6 +27,7 @@ import { DiscordController } from './controllers';
     DiscordWebhookiService,
     DiscordApiService,
     DiscordTokenService,
+    DiscordChannelsService,
     DiscordGuard,
   ],
   controllers: [DiscordController],
@@ -37,6 +38,7 @@ import { DiscordController } from './controllers';
     DiscordWebhookiService,
     DiscordApiService,
     DiscordTokenService,
+    DiscordChannelsService,
     DiscordGuard,
   ],
 })

@@ -3,6 +3,7 @@ import { discordProvider } from './discord.provider';
 import { DiscordExplorer } from './discord.explorer';
 import { DiscoveryModule } from '@nestjs/core';
 import { GuildSyncService } from './guild-sync.service';
+import { ChannelSyncService } from './channel-sync.service';
 
 @Module({
   imports: [DiscoveryModule],
@@ -10,6 +11,7 @@ import { GuildSyncService } from './guild-sync.service';
     discordProvider,
     DiscordExplorer,
     GuildSyncService,
+    ChannelSyncService,
   ],
   exports: [
     discordProvider,

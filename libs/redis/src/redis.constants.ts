@@ -14,3 +14,6 @@ export const botGuildIds = () =>
 
 export const userGuilds = (userId: string) =>
   `discord:users:${userId}:guild_ids`;
+
+export const discordGuildChannels = (guildId: string) =>
+  `discord:guild:${guildId}:channels`;
