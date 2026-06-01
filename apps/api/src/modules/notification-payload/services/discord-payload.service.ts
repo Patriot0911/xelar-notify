@@ -1,10 +1,23 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { DiscordWebhookPayloadSchema, TDiscordWebhookPayload } from '../schemas';
+import {
+  DiscordBotPayloadSchema,
+  DiscordWebhookPayloadSchema,
+  TDiscordBotPayload,
+  TDiscordWebhookPayload,
+} from '../schemas';
 import z from 'zod';
 
 @Injectable()
 export class DiscordPayloadService {
-  validatePayload(payload: Record<string, unknown>): boolean {
+  validateBotPayload(payload: Record<string, unknown>): boolean {
+    const result = DiscordBotPayloadSchema.safeParse(payload);
+    if (!result.success) {
+      throw new BadRequestException(z.treeifyError(result.error));
+    }
+    return true;
+  }
+
+  validateWebhookPayload(payload: Record<string, unknown>): boolean {
     const result = DiscordWebhookPayloadSchema.safeParse(payload);
     if (!result.success) {
       throw new BadRequestException(z.treeifyError(result.error));
@@ -12,17 +25,25 @@ export class DiscordPayloadService {
     return true;
   }
 
-  interpolatePayload(
+  interpolateBotPayload(
+    payload: TDiscordBotPayload,
+    context: Record<string, string>,
+  ): TDiscordBotPayload {
+    return this.interpolate(payload, context);
+  }
+
+  interpolateWebhookPayload(
     payload: TDiscordWebhookPayload,
-    context: any, // todo: add proper typing for context
+    context: Record<string, string>,
   ): TDiscordWebhookPayload {
-    const raw = JSON.stringify(payload);
+    return this.interpolate(payload, context);
+  }
 
-    const interpolated = raw.replace(
-      /\{\{(\w+)\}\}/g,
-      (_, key) => context[key as keyof any] ?? '',
+  private interpolate<T>(payload: T, context: Record<string, string>): T {
+    const interpolated = JSON.stringify(payload).replace(
+      /\$\{(\w+)\}/g,
+      (_, key: string) => context[key] ?? `\${${key}}`,
     );
-
     return JSON.parse(interpolated);
   }
 }

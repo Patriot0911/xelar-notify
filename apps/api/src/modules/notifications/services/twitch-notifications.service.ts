@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DiscordNotificationEntity, NotificationCostType, TwitchStreamerEvents, WebhookNotificationEntity, } from '@libs/database';
+import { DiscordNotificationEntity, NotificationCostType, TwitchStreamerEvents, WebhookNotificationEntity, WebhookType, } from '@libs/database';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
 import { DiscordGuildService, DiscordWebhookiService } from '../../discord/services';
@@ -38,7 +38,7 @@ export class TwitchNotificationsService {
       dto.event,
     );
 
-    this.discordPayloadService.validatePayload(dto.payload);
+    this.discordPayloadService.validateBotPayload(dto.payload);
 
     const cost = this.notificationsService.resolveCost(dto.costType);
 
@@ -73,7 +73,9 @@ export class TwitchNotificationsService {
     );
 
     const webhookType = this.notificationsService.detectWebhookType(dto.webhookUrl);
-    this.notificationsService.validateWebhookPayload(webhookType, dto.payload);
+    if (webhookType === WebhookType.DISCORD) {
+      this.discordPayloadService.validateWebhookPayload(dto.payload);
+    }
 
     const cost = this.notificationsService.resolveCost(dto.costType);
 
