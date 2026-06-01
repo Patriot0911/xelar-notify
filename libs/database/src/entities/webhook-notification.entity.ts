@@ -51,6 +51,7 @@ export class WebhookNotificationEntity {
   @ManyToOne(
     () => TwitchStreamerEventEntity,
     (event) => event.webhookNotifications,
+    { onDelete: 'CASCADE' },
   )
   @JoinColumn({ name: 'streamer_event_id' })
   streamerEvent: TwitchStreamerEventEntity;
