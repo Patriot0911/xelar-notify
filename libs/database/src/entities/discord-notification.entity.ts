@@ -62,6 +62,7 @@ export class DiscordNotificationEntity {
   @ManyToOne(
     () => TwitchStreamerEventEntity,
     (event) => event.discordNotifications,
+    { onDelete: 'CASCADE' },
   )
   @JoinColumn({ name: 'streamer_event_id' })
   streamerEvent: TwitchStreamerEventEntity;
