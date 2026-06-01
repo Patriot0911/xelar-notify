@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
-import { AddStreamOnlineSubscriptionDto, GetTwitchSubscriptionsDto } from '../dto';
+import { AddStreamOnlineSubscriptionDto, DeleteTwitchSubscriptionDto, GetRawTwitchSubscriptionsDto, GetTwitchSubscriptionsDto } from '../dto';
 import { TwitchStreamerEvents } from '@libs/database';
 
 @Injectable()
@@ -15,5 +15,17 @@ export class AdminService {
 
   async getTwitchEvents(query: GetTwitchSubscriptionsDto) {
     return this.twitchSubscriptionService.getAllTwitchSubscriptions(query);
+  }
+
+  async deleteLocalTwitchEvent(id: string) {
+    return this.twitchSubscriptionService.deleteLocalSubscription(id);
+  }
+
+  async getRawTwitchSubscriptions(query: GetRawTwitchSubscriptionsDto) {
+    return this.twitchSubscriptionService.getRawTwitchSubscriptions(query.clientId, query.after);
+  }
+
+  async deleteTwitchOnlySubscription(dto: DeleteTwitchSubscriptionDto) {
+    return this.twitchSubscriptionService.deleteTwitchOnlySubscription(dto.subscriptionId, dto.clientId);
   }
 }

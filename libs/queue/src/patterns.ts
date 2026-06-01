@@ -5,9 +5,7 @@ export const QueuePatterns = {
       revoked: 'twitch.subscriptions.revoked',
     },
     events: {
-      stream: {
-        online: 'twitch.events.stream.online',
-      },
+      online: 'stream.events.online',
     },
   },
   discord: {

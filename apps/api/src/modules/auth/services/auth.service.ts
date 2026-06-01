@@ -29,6 +29,8 @@ import { RolesService } from '../../roles/services';
 import { accessTokenBlackList, RedisService } from '@libs/redis';
 import { randomUUID } from 'crypto';
 
+export const BASE_BALANCE = 10;
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -78,6 +80,7 @@ export class AuthService {
         displayName: discordMe.globalName,
         discordId: discordMe.id,
         discordAccessToken: accessToken,
+        balance: BASE_BALANCE,
         discordRefreshToken: refreshToken,
         discordTokenExpiresAt: new Date(Date.now() + expiresIn * 1000),
         roles: [],
@@ -124,6 +127,7 @@ export class AuthService {
       email: data.email,
       displayName: data.displayName,
       password: hashedPassword,
+      balance: BASE_BALANCE,
       roles: [],
     });
     const createdUser = await this.usersRepository.save(newUser);
