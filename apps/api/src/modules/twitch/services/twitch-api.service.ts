@@ -156,6 +156,26 @@ export class TwitchApiService {
     }
   }
 
+  async deleteSubscription(subscriptionId: string, clientId: string): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.httpService.delete(
+          'helix/eventsub/subscriptions',
+          <ITwitchHttpConfigModel> {
+            params: { id: subscriptionId },
+            twitchClientId: clientId,
+          },
+        ),
+      );
+    } catch(e: unknown) {
+      const { message, status } = <AxiosError> e;
+      console.error(message);
+      throw new InternalServerErrorException(
+        `Twitch subscription delete failed. Please contact administrator for more information [${status}]`
+      );
+    }
+  }
+
   private async getLeastLoadedApp() {
     const app = await this.twitchAppsRepository.findLeastLoaded();
     if (!app) {
