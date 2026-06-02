@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { DiscordBotModule } from './discord-bot.module';
 import { MicroserviceOptions, TcpOptions, Transport } from '@nestjs/microservices';
+import { Queues } from '@libs/queue';
 
 async function bootstrap() {
   const {
@@ -21,7 +22,7 @@ async function bootstrap() {
     transport: Transport.RMQ,
     options: {
       urls: [rmqUrl],
-      queue: 'discord.notifications',
+      queue: Queues.DISCORD_NOTIFICATIONS,
       queueOptions: { durable: true },
     },
   });
@@ -37,5 +38,6 @@ async function bootstrap() {
   app.enableShutdownHooks();
 
   await app.startAllMicroservices();
+  await app.init();
 }
 bootstrap();
