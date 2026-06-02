@@ -13,4 +13,4 @@ COPY tsconfig*.json ./
 COPY libs ./libs
 COPY scripts ./scripts
 
-CMD ["npm", "run", "migration:run"]
+CMD ["sh", "-c", "npm run migration:run && npm run seed:run"]

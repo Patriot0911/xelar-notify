@@ -184,6 +184,26 @@ export class TwitchNotificationsService {
     return this.webhookNotificationRepository.save(notification);
   }
 
+  async deleteDiscordNotification(id: string, ownerId: string): Promise<void> {
+    const notification = await this.discordNotificationRepository.findOne({
+      where: { id, onwerId: ownerId },
+    });
+
+    if (!notification) throw new NotFoundException('Notification not found');
+
+    await this.discordNotificationRepository.remove(notification);
+  }
+
+  async deleteWebhookNotification(id: string, ownerId: string): Promise<void> {
+    const notification = await this.webhookNotificationRepository.findOne({
+      where: { id, onwerId: ownerId },
+    });
+
+    if (!notification) throw new NotFoundException('Notification not found');
+
+    await this.webhookNotificationRepository.remove(notification);
+  }
+
   async assertCanCreate(
     userId: string,
     broadcasterId: string,

@@ -6,8 +6,11 @@ export const configSchema = z.object({
   API_PORT:              z.coerce.number().default(3000),
   API_TCP_PORT:          z.coerce.number().default(3010),
   API_HOST:              z.string().default('localhost'),
+  BOT_TCP_PORT:          z.coerce.number().default(3011),
+  BOT_HOST:              z.string().default('localhost'),
   WEBHOOK_RECEIVER_PORT: z.coerce.number().default(3001),
   ENCRYPTION_KEY:        z.string(),
+  ENCRYPTION_SALT:       z.string(),
   TWITCH_WEBHOOK_URL:    z.url(),
 
   // Auth

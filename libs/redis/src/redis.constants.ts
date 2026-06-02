@@ -17,3 +17,6 @@ export const userGuilds = (userId: string) =>
 
 export const discordGuildChannels = (guildId: string) =>
   `discord:guild:${guildId}:channels`;
+
+export const discordGuildRoles = (guildId: string) =>
+  `discord:guild:${guildId}:roles`;
