@@ -15,7 +15,8 @@ export class CryptoService {
 
   constructor(configService: ConfigService<AppConfig>) {
     const secret = configService.get<string>('ENCRYPTION_KEY');
-    this.key = crypto.scryptSync(secret!, 'salt', 32);
+    const salt = configService.get<string>('ENCRYPTION_SALT');
+    this.key = crypto.scryptSync(secret!, salt!, 32);
   }
 
   private isEncrypted(value: string): boolean {
