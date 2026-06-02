@@ -4,6 +4,7 @@ import type { IAccessTokenPayload } from '../../auth';
 import { JwtAccessGuard } from '../../auth/guards/jwt-access.guard';
 import { DiscordGuard } from '../guards';
 import { DiscordChannelsService, DiscordGuildService } from '../services';
+import { DiscordRolesService } from '../services/discord-roles.service';
 
 @Controller('api/discord')
 @ApiTags('Discord')
@@ -13,6 +14,7 @@ export class DiscordController {
   constructor(
     private readonly discordGuildService: DiscordGuildService,
     private readonly discordChannelsService: DiscordChannelsService,
+    private readonly discordRolesService: DiscordRolesService,
   ) {}
 
   @Get('guilds')
@@ -24,5 +26,10 @@ export class DiscordController {
   @Get('guilds/:guildId/channels')
   getGuildTextChannels(@Param('guildId') guildId: string) {
     return this.discordChannelsService.getGuildTextChannels(guildId);
+  }
+
+  @Get('guilds/:guildId/roles')
+  getGuildRoles(@Param('guildId') guildId: string) {
+    return this.discordRolesService.getGuildRoles(guildId);
   }
 }

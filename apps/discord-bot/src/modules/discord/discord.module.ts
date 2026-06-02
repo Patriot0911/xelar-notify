@@ -4,6 +4,7 @@ import { DiscordExplorer } from './discord.explorer';
 import { DiscoveryModule } from '@nestjs/core';
 import { GuildSyncService } from './guild-sync.service';
 import { ChannelSyncService } from './channel-sync.service';
+import { GetGuildRolesHandler } from './get-guild-roles.handler';
 
 @Module({
   imports: [DiscoveryModule],
@@ -13,6 +14,7 @@ import { ChannelSyncService } from './channel-sync.service';
     GuildSyncService,
     ChannelSyncService,
   ],
+  controllers: [GetGuildRolesHandler],
   exports: [
     discordProvider,
     DiscordExplorer,
