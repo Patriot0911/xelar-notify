@@ -40,17 +40,6 @@ async function bootstrap() {
     },
   });
 
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: [rabbitUrl],
-      queue: Queues.STREAM_EVENTS,
-      queueOptions: { durable: true },
-      wildcards: true,
-      noAck: false,
-    },
-  });
-
   if (config.get('NODE_ENV') !== 'production') {
     const options = new DocumentBuilder()
       .addBearerAuth()
