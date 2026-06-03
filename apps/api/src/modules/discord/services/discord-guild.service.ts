@@ -82,6 +82,21 @@ export class DiscordGuildService {
   //   return this.discordGuildMapper.ApiToMemberModel(data);
   // }
 
+  async getGuildInfo(discordGuildId: string): Promise<{ managerRoleId: string | null }> {
+    const guild = await this.discordGuildRepository.findOne({
+      where: { guildId: discordGuildId },
+      select: { managerRoleId: true },
+    });
+    return { managerRoleId: guild?.managerRoleId ?? null };
+  }
+
+  async setManagerRole(discordGuildId: string, roleId: string | null | undefined): Promise<void> {
+    await this.discordGuildRepository.update(
+      { guildId: discordGuildId },
+      { managerRoleId: roleId ?? null },
+    );
+  }
+
   async getOrCreateGuild(discordGuildId: string) {
     const guild = await this.discordGuildRepository.findOne({
       where: { guildId: discordGuildId, },

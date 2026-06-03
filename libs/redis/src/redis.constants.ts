@@ -20,3 +20,9 @@ export const discordGuildChannels = (guildId: string) =>
 
 export const discordGuildRoles = (guildId: string) =>
   `discord:guild:${guildId}:roles`;
+
+export const guildUserAccess = (guildId: string, userId: string) =>
+  `discord:guild_access:${guildId}:${userId}`;
+
+export const guildUserAccessPattern = (guildId: string) =>
+  `discord:guild_access:${guildId}:*`;

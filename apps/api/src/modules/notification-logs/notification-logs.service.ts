@@ -1,19 +1,19 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DiscordNotificationEntity, NotificationLogEntity, Permission } from '@libs/database';
+import { NotificationLogEntity } from '@libs/database';
 import { Repository } from 'typeorm';
 import { IGenericListPayloadResponse } from 'apps/api/src/shared';
 import { GetNotificationLogsDto } from './dto/get-notification-logs.dto';
 import { INotificationLogModel } from './models/notification-log.model';
 import { IAccessTokenPayload } from '../auth/models';
+import { DiscordGuildAccessService } from '../discord/services/discord-guild-access.service';
 
 @Injectable()
 export class NotificationLogsService {
   constructor(
     @InjectRepository(NotificationLogEntity)
     private readonly logsRepo: Repository<NotificationLogEntity>,
-    @InjectRepository(DiscordNotificationEntity)
-    private readonly discordNotifRepo: Repository<DiscordNotificationEntity>,
+    private readonly guildAccess: DiscordGuildAccessService,
   ) {}
 
   async getAll(params: GetNotificationLogsDto): Promise<IGenericListPayloadResponse<INotificationLogModel>> {
@@ -33,18 +33,7 @@ export class NotificationLogsService {
     user: IAccessTokenPayload,
     params: GetNotificationLogsDto,
   ): Promise<IGenericListPayloadResponse<INotificationLogModel>> {
-    const isAdmin = user.permissions.includes(Permission.ADMIN);
-
-    if (!isAdmin) {
-      const hasAccess = await this.discordNotifRepo.existsBy({
-        guildId,
-        onwerId: user.sub,
-      });
-
-      if (!hasAccess) {
-        throw new ForbiddenException('No access to this guild');
-      }
-    }
+    await this.guildAccess.assertAccess(user.sub, guildId);
 
     const qb = this.logsRepo
       .createQueryBuilder('log')
@@ -76,11 +65,11 @@ export class NotificationLogsService {
       notificationType: entity.notificationType,
       status:           entity.status,
       ownerId:          entity.ownerId,
-      guildId:          entity.guildId,
+      guildId:          entity.guildId ?? null,
       streamerLogin:    entity.streamerLogin,
       eventType:        entity.eventType,
-      requestPayload:   entity.requestPayload,
-      errorMessage:     entity.errorMessage,
+      requestPayload:   entity.requestPayload ?? null,
+      errorMessage:     entity.errorMessage ?? null,
       createdAt:        entity.createdAt,
     };
   }

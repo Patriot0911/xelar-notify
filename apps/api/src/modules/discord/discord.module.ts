@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DiscordWebhookService, DiscordAuthService, DiscordBaseService, DiscordGuildService, DiscordApiService, DiscordTokenService, DiscordChannelsService } from './services';
 import { DiscordRolesService } from './services/discord-roles.service';
+import { DiscordGuildAccessService } from './services/discord-guild-access.service';
 import { DiscordGuard } from './guards';
 import { DiscordAuthMapper, DiscordGuildMapper } from './mappers';
 import { DiscordGuildEntity, UserEntity } from '@libs/database';
@@ -47,6 +48,7 @@ import type { AppConfig } from '@libs/config';
     DiscordTokenService,
     DiscordChannelsService,
     DiscordRolesService,
+    DiscordGuildAccessService,
     DiscordGuard,
   ],
   controllers: [DiscordController],
@@ -59,6 +61,7 @@ import type { AppConfig } from '@libs/config';
     DiscordTokenService,
     DiscordChannelsService,
     DiscordRolesService,
+    DiscordGuildAccessService,
     DiscordGuard,
   ],
 })
