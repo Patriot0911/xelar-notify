@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { DiscordNotificationEntity, NotificationCostType, TwitchStreamerEvents, WebhookNotificationEntity, WebhookType, } from '@libs/database';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
-import { DiscordGuildService, DiscordWebhookiService } from '../../discord/services';
+import { DiscordGuildService, DiscordWebhookService } from '../../discord/services';
 import { CreateDiscordNotificationDto, CreateWebhookNotificationDto, UpdateDiscordNotificationDto, UpdateWebhookNotificationDto } from '../dto';
 import { NotificationsService } from './notifications.service';
 
@@ -17,7 +17,7 @@ export class TwitchNotificationsService {
   constructor(
     private readonly twitchSubscriptionService: TwitchSubscriptionService,
     private readonly discordPayloadService: DiscordPayloadService,
-    private readonly discordWebhookService: DiscordWebhookiService,
+    private readonly discordWebhookService: DiscordWebhookService,
     private readonly notificationsService: NotificationsService,
     private readonly discordGuildService: DiscordGuildService,
     @InjectRepository(DiscordNotificationEntity)
@@ -90,7 +90,7 @@ export class TwitchNotificationsService {
     });
 
     if (guildId) {
-      await this.discordWebhookService.validateWebhookUrl(dto.webhookUrl);
+      await this.discordWebhookService.validateWebhookUrl(dto.webhookUrl, guildId);
       // todo: check if user associated with guild
       const guild = await this.discordGuildService.getOrCreateGuild(guildId);
       notification.discordGuildId = guild.id;

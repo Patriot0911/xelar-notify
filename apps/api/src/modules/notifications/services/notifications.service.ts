@@ -16,7 +16,8 @@ export class NotificationsService {
 
   resolveCost(costType: NotificationCostType): number {
     if (costType === NotificationCostType.Credit) {
-      return NotificationPrice.FREE;
+      throw new BadRequestException('Credit-based notifications are not supported yet');
+      // return NotificationPrice.FREE;
     }
     return NotificationPrice.STANDARD;
   }

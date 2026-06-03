@@ -7,3 +7,4 @@ export * from './discord-notification.entity';
 export * from './role.entity';
 export * from './discord-guild.entity';
 export * from './webhook-notification.entity';
+export * from './notification-log.entity';

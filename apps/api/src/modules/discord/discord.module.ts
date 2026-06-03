@@ -3,7 +3,7 @@ import { HttpModule } from '@nestjs/axios';
 import { ClientsModule, TcpClientOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DiscordWebhookiService, DiscordAuthService, DiscordBaseService, DiscordGuildService, DiscordApiService, DiscordTokenService, DiscordChannelsService } from './services';
+import { DiscordWebhookService, DiscordAuthService, DiscordBaseService, DiscordGuildService, DiscordApiService, DiscordTokenService, DiscordChannelsService } from './services';
 import { DiscordRolesService } from './services/discord-roles.service';
 import { DiscordGuard } from './guards';
 import { DiscordAuthMapper, DiscordGuildMapper } from './mappers';
@@ -42,7 +42,7 @@ import type { AppConfig } from '@libs/config';
     DiscordAuthService,
     DiscordAuthMapper,
     DiscordGuildMapper,
-    DiscordWebhookiService,
+    DiscordWebhookService,
     DiscordApiService,
     DiscordTokenService,
     DiscordChannelsService,
@@ -54,7 +54,7 @@ import type { AppConfig } from '@libs/config';
     DiscordAuthService,
     DiscordBaseService,
     DiscordGuildService,
-    DiscordWebhookiService,
+    DiscordWebhookService,
     DiscordApiService,
     DiscordTokenService,
     DiscordChannelsService,
