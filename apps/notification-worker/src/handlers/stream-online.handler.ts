@@ -32,6 +32,7 @@ export class StreamOnlineHandler {
     try {
       const event = await this.eventsRepo
         .createQueryBuilder('event')
+        .leftJoinAndSelect('event.streamer', 'streamer')
         .leftJoinAndSelect('event.discordNotifications', 'discord')
         .leftJoinAndSelect('event.webhookNotifications', 'webhook')
         .addSelect('webhook.webhookUrl')
@@ -42,7 +43,7 @@ export class StreamOnlineHandler {
 
       if (!event) return channel.ack(message);
 
-      const vars = buildStreamOnlineVars(data.event);
+      const vars = buildStreamOnlineVars(data.event, event.streamer?.profileImageUrl);
 
       await this.dispatchDiscord(event, vars);
       await this.dispatchWebhooks(event, vars);
