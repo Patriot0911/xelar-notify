@@ -7,6 +7,7 @@ export const RpcPatterns = {
     getCredits:        'discord.get-credits',
   },
   bot: {
-    getGuildRoles: 'bot.discord.guild-roles',
+    getGuildRoles:       'bot.discord.guild-roles',
+    getGuildMemberRoles: 'bot.discord.guild-member-roles',
   },
 } as const;

@@ -3,8 +3,9 @@ import { HttpModule } from '@nestjs/axios';
 import { ClientsModule, TcpClientOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DiscordWebhookiService, DiscordAuthService, DiscordBaseService, DiscordGuildService, DiscordApiService, DiscordTokenService, DiscordChannelsService } from './services';
+import { DiscordWebhookService, DiscordAuthService, DiscordBaseService, DiscordGuildService, DiscordApiService, DiscordTokenService, DiscordChannelsService } from './services';
 import { DiscordRolesService } from './services/discord-roles.service';
+import { DiscordGuildAccessService } from './services/discord-guild-access.service';
 import { DiscordGuard } from './guards';
 import { DiscordAuthMapper, DiscordGuildMapper } from './mappers';
 import { DiscordGuildEntity, UserEntity } from '@libs/database';
@@ -42,11 +43,12 @@ import type { AppConfig } from '@libs/config';
     DiscordAuthService,
     DiscordAuthMapper,
     DiscordGuildMapper,
-    DiscordWebhookiService,
+    DiscordWebhookService,
     DiscordApiService,
     DiscordTokenService,
     DiscordChannelsService,
     DiscordRolesService,
+    DiscordGuildAccessService,
     DiscordGuard,
   ],
   controllers: [DiscordController],
@@ -54,11 +56,12 @@ import type { AppConfig } from '@libs/config';
     DiscordAuthService,
     DiscordBaseService,
     DiscordGuildService,
-    DiscordWebhookiService,
+    DiscordWebhookService,
     DiscordApiService,
     DiscordTokenService,
     DiscordChannelsService,
     DiscordRolesService,
+    DiscordGuildAccessService,
     DiscordGuard,
   ],
 })

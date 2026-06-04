@@ -6,7 +6,7 @@ export interface IDiscordGuildMemberModel {
   avatar?: string |null;
   premiumSince?: string | null;
   permissions?: string | null;
-  roles: never[];
+  roles: string[];
   joinedAt: string;
   deaf: boolean;
   mute: boolean;
@@ -18,7 +18,7 @@ export interface IDiscordApiGuildMemberModel {
   avatar?: string |null;
   premium_since?: string | null;
   permissions?: string | null;
-  roles: never[];
+  roles: string[];
   joined_at: string;
   deaf: boolean;
   mute: boolean;

@@ -37,4 +37,9 @@ export class RedisService {
     const result = await this.redis.set(key, serialized, 'EX', ttlSeconds, 'NX');
     return result === 'OK';
   }
+
+  async deleteByPattern(pattern: string): Promise<void> {
+    const keys = await this.redis.keys(pattern);
+    if (keys.length) await this.redis.del(keys);
+  }
 }

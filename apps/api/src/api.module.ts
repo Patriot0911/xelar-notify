@@ -13,6 +13,7 @@ import { NotificationPayloadModule } from './modules/notification-payload';
 import { DiscordHandlerModule } from './modules/discord-handler';
 import { RolesModule } from './modules/roles';
 import { RedisModule } from '@libs/redis';
+import { NotificationLogsModule } from './modules/notification-logs/notification-logs.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { RedisModule } from '@libs/redis';
     DiscordHandlerModule,
     RolesModule,
     RedisModule,
+    NotificationLogsModule,
   ],
 })
 export class ApiModule {}
