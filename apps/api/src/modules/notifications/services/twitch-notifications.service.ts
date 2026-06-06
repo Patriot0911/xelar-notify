@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DiscordNotificationEntity, NotificationCostType, TwitchStreamerEvents, WebhookNotificationEntity, WebhookType, } from '@libs/database';
+import { DiscordNotificationEntity, NotificationCostType, TwitchStreamerEvents, UserEntity, WebhookNotificationEntity, WebhookType, } from '@libs/database';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
 import { DiscordGuildService, DiscordWebhookService } from '../../discord/services';
@@ -24,6 +24,8 @@ export class TwitchNotificationsService {
     private readonly discordNotificationRepository: Repository<DiscordNotificationEntity>,
     @InjectRepository(WebhookNotificationEntity)
     private readonly webhookNotificationRepository: Repository<WebhookNotificationEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
 
   async createDiscordNotification(
@@ -31,7 +33,7 @@ export class TwitchNotificationsService {
     ownerId: string,
   ): Promise<DiscordNotificationEntity> {
     await this.assertCanCreate(ownerId, dto.broadcasterId, dto.event);
-    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType);
+    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType, dto.guildId);
 
     const subscription = await this.twitchSubscriptionService.getOrCreateEvent(
       dto.broadcasterId,
@@ -41,8 +43,7 @@ export class TwitchNotificationsService {
     this.discordPayloadService.validateBotPayload(dto.payload);
 
     const cost = this.notificationsService.resolveCost(dto.costType);
-
-    // todo: apply cost to user / guild / free
+    await this.applyCharge(ownerId, cost, dto.costType, dto.guildId);
 
     const guild = await this.discordGuildService.getOrCreateGuild(dto.guildId);
 
@@ -65,7 +66,7 @@ export class TwitchNotificationsService {
     guildId?: string
   ): Promise<WebhookNotificationEntity> {
     await this.assertCanCreate(ownerId, dto.broadcasterId, dto.event);
-    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType);
+    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType, guildId);
 
     const subscription = await this.twitchSubscriptionService.getOrCreateEvent(
       dto.broadcasterId,
@@ -96,7 +97,7 @@ export class TwitchNotificationsService {
       notification.discordGuildId = guild.id;
     }
 
-    // todo: apply cost to user / guild / free
+    await this.applyCharge(ownerId, cost, dto.costType, guildId);
 
     return this.webhookNotificationRepository.save(notification);
   }
@@ -215,7 +216,52 @@ export class TwitchNotificationsService {
   async assertCanAfford(
     userId: string,
     broadcasterId: string,
-    costType: NotificationCostType
-  ) {
+    costType: NotificationCostType,
+    guildId?: string,
+  ): Promise<void> {
+    const cost = this.notificationsService.resolveCost(costType);
+    if (cost <= 0) return;
+
+    if (costType === NotificationCostType.Personal) {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        select: { balance: true },
+      });
+      if (!user || Number(user.balance) < cost) {
+        throw new BadRequestException('Insufficient balance');
+      }
+    }
+
+    if (costType === NotificationCostType.Guild) {
+      if (!guildId) throw new BadRequestException('Guild ID required for guild-funded notifications');
+      await this.discordGuildService.assertGuildBalance(guildId, cost);
+    }
+  }
+
+  private async applyCharge(
+    userId: string,
+    cost: number,
+    costType: NotificationCostType,
+    guildId?: string,
+  ): Promise<void> {
+    if (cost <= 0) return;
+
+    if (costType === NotificationCostType.Personal) {
+      const result = await this.userRepository
+        .createQueryBuilder()
+        .update(UserEntity)
+        .set({ balance: () => 'balance - :amount' })
+        .where('id = :id AND balance >= :amount')
+        .setParameters({ id: userId, amount: cost })
+        .execute();
+
+      if (result.affected === 0) {
+        throw new BadRequestException('Insufficient balance');
+      }
+    }
+
+    if (costType === NotificationCostType.Guild && guildId) {
+      await this.discordGuildService.deductGuildBalance(guildId, cost);
+    }
   }
 }
