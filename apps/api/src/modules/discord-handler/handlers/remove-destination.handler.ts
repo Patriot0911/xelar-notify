@@ -1,0 +1,68 @@
+import { Controller } from '@nestjs/common';
+import { MessagePattern } from '@nestjs/microservices';
+import { RpcPatterns } from '@libs/rpc/patterns';
+import { DiscordNotificationEntity, UserEntity } from '@libs/database';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { RemoveDestinationDto } from '../dto';
+import { IRemoveDestinationResult, RpcBusinessException, RpcError } from '@libs/shared';
+import { RpcPayload } from '@libs/rpc';
+import { DiscordAuthService, DiscordGuildAccessService } from '../../discord/services';
+
+@Controller()
+export class RemoveDestinationHandler {
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly usersRepository: Repository<UserEntity>,
+    @InjectRepository(DiscordNotificationEntity)
+    private readonly notificationRepository: Repository<DiscordNotificationEntity>,
+    private readonly discordAuthService: DiscordAuthService,
+    private readonly discordGuildAccessService: DiscordGuildAccessService,
+  ) {}
+
+  @MessagePattern(RpcPatterns.discord.removeDestination)
+  async handle(@RpcPayload() data: RemoveDestinationDto): Promise<IRemoveDestinationResult> {
+    const user = await this.usersRepository.findOne({
+      where: { discordId: data.discordId },
+    });
+
+    if (!user) {
+      throw new RpcBusinessException(
+        RpcError.NOT_REGISTERED,
+        'User is not registered in the system',
+        { authUrl: this.discordAuthService.getDiscordAuthRedirectUri() },
+      );
+    }
+
+    const notification = await this.notificationRepository.findOne({
+      where: { id: data.notificationId },
+      relations: ['discordGuild'],
+    });
+
+    if (!notification) {
+      throw new RpcBusinessException(RpcError.NOT_FOUND, 'Notification not found');
+    }
+
+    const isOwner = notification.onwerId === user.id;
+
+    if (!isOwner) {
+      if (!data.guildId) {
+        throw new RpcBusinessException(RpcError.FORBIDDEN, 'No permission to remove this notification');
+      }
+
+      const notifGuildId = notification.discordGuild?.guildId;
+      if (notifGuildId !== data.guildId) {
+        throw new RpcBusinessException(RpcError.FORBIDDEN, 'Notification does not belong to this server');
+      }
+
+      const hasAccess = await this.discordGuildAccessService.canAccessGuild(user.id, data.guildId);
+      if (!hasAccess) {
+        throw new RpcBusinessException(RpcError.FORBIDDEN, 'No permission to manage this server');
+      }
+    }
+
+    await this.notificationRepository.remove(notification);
+
+    return { success: true };
+  }
+}

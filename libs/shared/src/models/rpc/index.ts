@@ -1,4 +1,6 @@
 export * from './add-destination.model';
+export * from './remove-destination.model';
+export * from './list-destinations.model';
 export * from './authenticate.model';
 export * from './rpc-result.model';
 export * from './rpc.exception';
