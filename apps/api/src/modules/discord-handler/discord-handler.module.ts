@@ -1,25 +1,24 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DiscordNotificationEntity, TwitchStreamerEntity, UserEntity } from '@libs/database';
+import { DiscordNotificationEntity, UserEntity } from '@libs/database';
 import { DiscordModule } from '../discord/discord.module';
 import { TwitchSubscriptionsModule } from '../twitch-subscriptions';
 import { NotificationsModule } from '../notifications/notifications.module';
-import { AddDestinationHandler, AuthenticateHandler } from './handlers';
-import { TwitchModule } from '../twitch';
+import { AddDestinationHandler, AuthenticateHandler, ListDestinationsHandler, RemoveDestinationHandler } from './handlers';
 
 @Module({
   imports: [
     DiscordModule,
     TwitchSubscriptionsModule,
     NotificationsModule,
-    TwitchModule,
-    TypeOrmModule.forFeature([
-      UserEntity,
-      DiscordNotificationEntity,
-      TwitchStreamerEntity,
-    ]),
+    TypeOrmModule.forFeature([UserEntity, DiscordNotificationEntity]),
   ],
-  controllers: [AddDestinationHandler, AuthenticateHandler],
+  controllers: [
+    AddDestinationHandler,
+    RemoveDestinationHandler,
+    ListDestinationsHandler,
+    AuthenticateHandler,
+  ],
   providers: [],
 })
 export class DiscordHandlerModule {}

@@ -1,7 +1,7 @@
-import { Controller } from '@nestjs/common';
+import { BadRequestException, Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { RpcPatterns } from '@libs/rpc/patterns';
-import { NotificationCostType, TwitchStreamerEntity, TwitchStreamerEvents, UserEntity } from '@libs/database';
+import { NotificationCostType, TwitchStreamerEvents, UserEntity } from '@libs/database';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AddDestinationDto } from '../dto';
@@ -16,8 +16,6 @@ export class AddDestinationHandler {
   constructor(
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
-    @InjectRepository(TwitchStreamerEntity)
-    private readonly twitchStreamerRepository: Repository<TwitchStreamerEntity>,
     private readonly notificationsService: NotificationsService,
     private readonly twitchNotificationsService: TwitchNotificationsService,
     private readonly discordAuthService: DiscordAuthService,
@@ -39,19 +37,6 @@ export class AddDestinationHandler {
 
     const eventType = data.eventType ?? TwitchStreamerEvents.STREAM_ONLINE;
 
-    const streamer = await this.twitchStreamerRepository.findOne({
-      where: { broadcasterId: data.broadcasterId },
-    });
-
-    const canAfford = true;
-
-    if (!canAfford) {
-      throw new RpcBusinessException(
-        RpcError.INSUFFICIENT_CREDITS,
-        'User cannot add this notification'
-      );
-    }
-
     const payload = {
       content: '${streamer_name} is now live!',
       embeds: [
@@ -63,22 +48,29 @@ export class AddDestinationHandler {
       ],
     };
 
-    const discordNotification = await this.twitchNotificationsService.createDiscordNotification(
-      {
-        broadcasterId: data.broadcasterId,
-        channelId: data.channelId,
-        guildId: data.guildId,
-        event: eventType,
-        payload,
-        costType: NotificationCostType.Personal,
-      },
-      user.id,
-    );
+    try {
+      const discordNotification = await this.twitchNotificationsService.createDiscordNotification(
+        {
+          broadcasterId: data.broadcasterId,
+          channelId: data.channelId,
+          guildId: data.guildId,
+          event: eventType,
+          payload,
+          costType: NotificationCostType.Personal,
+        },
+        user.id,
+      );
 
-    return {
-      channelId: discordNotification.channelId,
-      eventType: discordNotification.streamerEvent?.event ?? eventType,
-      cost: discordNotification.cost,
-    };
+      return {
+        channelId: discordNotification.channelId,
+        eventType,
+        cost: discordNotification.cost,
+      };
+    } catch (e) {
+      if (e instanceof BadRequestException && e.message.startsWith('Insufficient')) {
+        throw new RpcBusinessException(RpcError.INSUFFICIENT_CREDITS, e.message);
+      }
+      throw e;
+    }
   }
 }
