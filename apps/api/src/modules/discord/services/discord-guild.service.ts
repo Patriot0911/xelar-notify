@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DiscordGuildEntity } from '@libs/database';
 import { Repository } from 'typeorm';
@@ -95,6 +95,31 @@ export class DiscordGuildService {
       { guildId: discordGuildId },
       { managerRoleId: roleId ?? null },
     );
+  }
+
+  async assertGuildBalance(discordGuildId: string, amount: number): Promise<void> {
+    const guild = await this.discordGuildRepository.findOne({
+      where: { guildId: discordGuildId },
+      select: { balance: true },
+    });
+    if (!guild || Number(guild.balance) < amount) {
+      throw new BadRequestException('Insufficient guild balance');
+    }
+  }
+
+  async deductGuildBalance(discordGuildId: string, amount: number): Promise<void> {
+    if (amount <= 0) return;
+    const result = await this.discordGuildRepository
+      .createQueryBuilder()
+      .update(DiscordGuildEntity)
+      .set({ balance: () => 'balance - :amount' })
+      .where('guild_id = :guildId AND balance >= :amount')
+      .setParameters({ guildId: discordGuildId, amount })
+      .execute();
+
+    if (result.affected === 0) {
+      throw new BadRequestException('Insufficient guild balance');
+    }
   }
 
   async getOrCreateGuild(discordGuildId: string) {

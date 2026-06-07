@@ -12,6 +12,7 @@ import {
   RoleEntity,
   WebhookNotificationEntity,
   DiscordGuildEntity,
+  NotificationLogEntity,
 } from './entities';
 
 @Module({
@@ -35,6 +36,7 @@ import {
           UserSessionEntity,
           RoleEntity,
           TwitchAppEntity,
+          NotificationLogEntity,
         ],
         migrations: [__dirname + '/migrations/*{.ts,.js}'],
         migrationsRun: false,
