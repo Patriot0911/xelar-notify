@@ -1,9 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DiscordGuildEntity } from '@libs/database';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { botGuildIds, RedisService } from '@libs/redis';
 import { DiscordApiService } from './discord-api.service';
+import { IDiscordUserGuildItemModel } from '../models';
+import { DiscordPermissionFlag } from '../constants/manager-permission.constant';
+import { hasDiscordPermission } from '../utils/discord-permission.util';
 
 const BASE_GUILD_BALANCE = 0;
 
@@ -16,27 +19,43 @@ export class DiscordGuildService {
     private readonly discordGuildRepository: Repository<DiscordGuildEntity>,
   ) {}
 
-  async getUserGuilds(userId: string) {
-    return this.discordApiService.fetchUserGuilds(userId);
-  }
-
-  async getUserGuildsWithBot(userId: string) {
+  async getUserGuilds(userId: string): Promise<IDiscordUserGuildItemModel[]> {
     const [userGuilds, botGuildIdList] = await Promise.all([
       this.discordApiService.fetchUserGuilds(userId),
       this.getBotGuildIds(),
     ]);
 
     const botGuildSet = new Set(botGuildIdList);
-    const filteredGuilds = userGuilds.filter((guild) => botGuildSet.has(guild.id));
 
-    if (!filteredGuilds.length) return [];
+    if (userGuilds.length === 0) {
+      return [];
+    }
+
+    const guildIds = userGuilds.map((g) => g.id);
+
+    const userGuildsManagerPermissions = await this.discordGuildRepository.find({
+      where: { guildId: In(guildIds) },
+      select: { managerPermission: true, guildId: true, },
+    });
+
+    const managerPermissionMap = new Map(
+      userGuildsManagerPermissions.map((g) => [g.guildId, g.managerPermission]),
+    );
+
+    const filteredGuilds = userGuilds.filter((guild) => {
+      if (guild.owner) return true;
+      if (hasDiscordPermission(guild.permissions, DiscordPermissionFlag.ADMINISTRATOR)) return true;
+
+      const managerPermission = managerPermissionMap.get(guild.id);
+      return !!managerPermission && hasDiscordPermission(guild.permissions, managerPermission);
+    });
 
     const filteredGuildIds = filteredGuilds.map((g) => g.id);
 
     const dbStats = await this.discordGuildRepository
       .createQueryBuilder('guild')
-      .leftJoin('guild.notifications', 'botNotif', 'botNotif.onwerId = :userId', { userId })
-      .leftJoin('guild.webhookNotifications', 'webhookNotif', 'webhookNotif.onwerId = :userId', { userId })
+      .leftJoin('guild.notifications', 'botNotif')
+      .leftJoin('guild.webhookNotifications', 'webhookNotif')
       .select('guild.guildId', 'guildId')
       .addSelect('guild.balance', 'balance')
       .addSelect(
@@ -59,6 +78,7 @@ export class DiscordGuildService {
 
     return filteredGuilds.map((guild) => ({
       ...guild,
+      hasBot: botGuildSet.has(guild.id),
       balance: statsMap.get(guild.id)?.balance ?? 0,
       notificationCount: statsMap.get(guild.id)?.notificationCount ?? 0,
     }));
@@ -71,29 +91,18 @@ export class DiscordGuildService {
     return [];
   }
 
-  // async getDiscordUserGuildMember(userId: string, discordGuildId: string): Promise<IDiscordGuildMemberModel> {
-  //   const discordAccessToken = await this.discordBaseService.getUserDiscordAccessToken(userId);
-  //   const { data, } = await firstValueFrom(
-  //     this.httpService.get<IDiscordApiGuildMemberModel>(
-  //       `users/@me/guilds/${discordGuildId}/member`,
-  //       this.discordBaseService.getRequestHeadersWithDiscordToken(discordAccessToken),
-  //     ),
-  //   );
-  //   return this.discordGuildMapper.ApiToMemberModel(data);
-  // }
-
-  async getGuildInfo(discordGuildId: string): Promise<{ managerRoleId: string | null }> {
+  async getGuildInfo(discordGuildId: string): Promise<{ managerPermission: string | null }> {
     const guild = await this.discordGuildRepository.findOne({
       where: { guildId: discordGuildId },
-      select: { managerRoleId: true },
+      select: { managerPermission: true },
     });
-    return { managerRoleId: guild?.managerRoleId ?? null };
+    return { managerPermission: guild?.managerPermission ?? null };
   }
 
-  async setManagerRole(discordGuildId: string, roleId: string | null | undefined): Promise<void> {
+  async setManagerPermission(discordGuildId: string, permission: string | null | undefined): Promise<void> {
     await this.discordGuildRepository.update(
       { guildId: discordGuildId },
-      { managerRoleId: roleId ?? null },
+      { managerPermission: permission ?? null },
     );
   }
 

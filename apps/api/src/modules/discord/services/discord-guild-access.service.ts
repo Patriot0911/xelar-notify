@@ -1,30 +1,22 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DiscordGuildEntity, UserEntity } from '@libs/database';
+import { DiscordGuildEntity } from '@libs/database';
 import { Repository } from 'typeorm';
 import { guildUserAccess, guildUserAccessPattern, RedisService } from '@libs/redis';
-import { ClientProxy } from '@nestjs/microservices';
-import { BOT_RPC_CLIENT } from '@libs/rpc';
-import { RpcPatterns } from '@libs/rpc/patterns';
-import { firstValueFrom, timeout } from 'rxjs';
+import { DiscordApiService } from './discord-api.service';
+import { IDiscordGuildModel } from '../models';
+import { DiscordPermissionFlag } from '../constants/manager-permission.constant';
+import { hasDiscordPermission } from '../utils/discord-permission.util';
 
 const GUILD_ACCESS_TTL = 5 * 60; // 5 minutes
-
-interface IGuildMemberRolesResult {
-  roles: string[];
-  isAdministrator: boolean;
-}
 
 @Injectable()
 export class DiscordGuildAccessService {
   constructor(
     @InjectRepository(DiscordGuildEntity)
     private readonly guildRepo: Repository<DiscordGuildEntity>,
-    @InjectRepository(UserEntity)
-    private readonly userRepo: Repository<UserEntity>,
     private readonly redis: RedisService,
-    @Inject(BOT_RPC_CLIENT)
-    private readonly botClient: ClientProxy,
+    private readonly discordApiService: DiscordApiService,
   ) {}
 
   async canAccessGuild(userId: string, guildId: string): Promise<boolean> {
@@ -43,8 +35,10 @@ export class DiscordGuildAccessService {
   }
 
   async isDiscordAdminInGuild(userId: string, guildId: string): Promise<boolean> {
-    const member = await this.fetchGuildMember(userId, guildId);
-    return member.isAdministrator;
+    const guild = await this.findUserGuild(userId, guildId);
+    if (!guild) return false;
+
+    return guild.owner || hasDiscordPermission(guild.permissions, DiscordPermissionFlag.ADMINISTRATOR);
   }
 
   async invalidateGuildCache(guildId: string): Promise<void> {
@@ -52,33 +46,23 @@ export class DiscordGuildAccessService {
   }
 
   private async resolveAccess(userId: string, guildId: string): Promise<boolean> {
-    const member = await this.fetchGuildMember(userId, guildId);
-    if (!member) return false;
-    if (member.isAdministrator) return true;
+    const guild = await this.findUserGuild(userId, guildId);
+    if (!guild) return false;
+    if (guild.owner || hasDiscordPermission(guild.permissions, DiscordPermissionFlag.ADMINISTRATOR)) return true;
 
-    const guild = await this.guildRepo.findOne({
+    const guildSettings = await this.guildRepo.findOne({
       where: { guildId },
-      select: { managerRoleId: true },
+      select: { managerPermission: true },
     });
 
-    return !!(guild?.managerRoleId && member.roles.includes(guild.managerRoleId));
+    return !!(
+      guildSettings?.managerPermission &&
+      hasDiscordPermission(guild.permissions, guildSettings.managerPermission)
+    );
   }
 
-  private async fetchGuildMember(userId: string, guildId: string): Promise<IGuildMemberRolesResult> {
-    const user = await this.userRepo.findOne({
-      where: { id: userId },
-      select: { discordId: true },
-    });
-
-    if (!user?.discordId) return { roles: [], isAdministrator: false };
-
-    return firstValueFrom(
-      this.botClient
-        .send<IGuildMemberRolesResult>(RpcPatterns.bot.getGuildMemberRoles, {
-          guildId,
-          discordUserId: user.discordId,
-        })
-        .pipe(timeout(5000)),
-    ).catch(() => ({ roles: [], isAdministrator: false }));
+  private async findUserGuild(userId: string, guildId: string): Promise<IDiscordGuildModel | undefined> {
+    const guilds = await this.discordApiService.fetchUserGuilds(userId);
+    return guilds.find((guild) => guild.id === guildId);
   }
 }

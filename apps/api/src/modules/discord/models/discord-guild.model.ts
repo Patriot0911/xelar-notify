@@ -8,8 +8,6 @@ export interface IDiscordGuildModel {
   features: string[];
   memberCount: number;
   presenceCount: number;
-  balance: number;
-  notificationCount: number;
 };
 
 export interface IDiscordApiGuildModel {
@@ -22,4 +20,10 @@ export interface IDiscordApiGuildModel {
   features: string[];
   approximate_member_count: number;
   approximate_presence_count: number;
+};
+
+export interface IDiscordUserGuildItemModel extends IDiscordGuildModel {
+  hasBot: boolean;
+  balance: number;
+  notificationCount: number;
 };

@@ -25,8 +25,8 @@ export class DiscordGuildEntity {
   )
   webhookNotifications: WebhookNotificationEntity[];
 
-  @Column({ name: 'manager_role_id', type: 'varchar', nullable: true })
-  managerRoleId?: string | null;
+  @Column({ name: 'manager_permission', type: 'varchar', nullable: true })
+  managerPermission?: string | null;
 
   @Column({ name: 'balance', precision: 3, scale: 1, type: 'decimal', default: 0 })
   balance: number;

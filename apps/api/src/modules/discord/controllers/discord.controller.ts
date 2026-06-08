@@ -5,7 +5,7 @@ import { JwtAccessGuard } from '../../auth/guards/jwt-access.guard';
 import { DiscordChannelsService, DiscordGuildService } from '../services';
 import { DiscordRolesService } from '../services/discord-roles.service';
 import { DiscordGuildAccessService } from '../services/discord-guild-access.service';
-import { SetManagerRoleDto } from '../dto/set-manager-role.dto';
+import { SetManagerPermissionDto } from '../dto/set-manager-permission.dto';
 import { Permission } from '@libs/database';
 
 @Controller('api/discord')
@@ -21,9 +21,9 @@ export class DiscordController {
   ) {}
 
   @Get('guilds')
-  getUserGuildsWithBot(@Req() request) {
+  getUserGuilds(@Req() request) {
     const { sub } = <IAccessTokenPayload>request.user;
-    return this.discordGuildService.getUserGuildsWithBot(sub);
+    return this.discordGuildService.getUserGuilds(sub);
   }
 
   @Get('guilds/:guildId')
@@ -41,10 +41,10 @@ export class DiscordController {
     return this.discordRolesService.getGuildRoles(guildId);
   }
 
-  @Patch('guilds/:guildId/manager-role')
-  async setManagerRole(
+  @Patch('guilds/:guildId/manager-permission')
+  async setManagerPermission(
     @Param('guildId') guildId: string,
-    @Body() body: SetManagerRoleDto,
+    @Body() body: SetManagerPermissionDto,
     @Req() req,
   ) {
     const user = <IAccessTokenPayload>req.user;
@@ -52,10 +52,10 @@ export class DiscordController {
 
     if (!isAppAdmin) {
       const isGuildAdmin = await this.discordGuildAccessService.isDiscordAdminInGuild(user.sub, guildId);
-      if (!isGuildAdmin) throw new ForbiddenException('Only Discord guild administrators can configure the manager role');
+      if (!isGuildAdmin) throw new ForbiddenException('Only Discord guild administrators can configure the manager permission');
     }
 
-    await this.discordGuildService.setManagerRole(guildId, body.roleId);
+    await this.discordGuildService.setManagerPermission(guildId, body.permission);
     await this.discordGuildAccessService.invalidateGuildCache(guildId);
 
     return { success: true };
