@@ -192,7 +192,9 @@ export class TwitchNotificationsService {
 
     if (!notification) throw new NotFoundException('Notification not found');
 
+    const { streamerEventId } = notification;
     await this.discordNotificationRepository.remove(notification);
+    await this.cleanupSubscriptionIfUnused(streamerEventId);
   }
 
   async deleteWebhookNotification(id: string, ownerId: string): Promise<void> {
@@ -202,7 +204,21 @@ export class TwitchNotificationsService {
 
     if (!notification) throw new NotFoundException('Notification not found');
 
+    const { streamerEventId } = notification;
     await this.webhookNotificationRepository.remove(notification);
+    await this.cleanupSubscriptionIfUnused(streamerEventId);
+  }
+
+
+  async cleanupSubscriptionIfUnused(streamerEventId: string): Promise<void> {
+    const [discordCount, webhookCount] = await Promise.all([
+      this.discordNotificationRepository.count({ where: { streamerEventId } }),
+      this.webhookNotificationRepository.count({ where: { streamerEventId } }),
+    ]);
+
+    if (discordCount === 0 && webhookCount === 0) {
+      await this.twitchSubscriptionService.deleteLocalSubscription(streamerEventId);
+    }
   }
 
   async assertCanCreate(
