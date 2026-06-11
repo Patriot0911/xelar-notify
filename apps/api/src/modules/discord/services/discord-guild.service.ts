@@ -7,14 +7,18 @@ import { DiscordApiService } from './discord-api.service';
 import { IDiscordUserGuildItemModel } from '../models';
 import { DiscordPermissionFlag } from '../constants/manager-permission.constant';
 import { hasDiscordPermission } from '../utils/discord-permission.util';
+import { IGenericListPayloadResponse } from 'apps/api/src/shared';
+import { DiscordBotService } from './discord-bot.service';
+import { DiscordGuildAccessService } from './discord-guild-access.service';
 
-const BASE_GUILD_BALANCE = 0;
+const BASE_GUILD_BALANCE = 5;
 
 @Injectable()
 export class DiscordGuildService {
   constructor(
     private readonly discordApiService: DiscordApiService,
-    private readonly redis: RedisService,
+    private readonly discordBotService: DiscordBotService,
+    private readonly discordGuildAccessService: DiscordGuildAccessService,
     @InjectRepository(DiscordGuildEntity)
     private readonly discordGuildRepository: Repository<DiscordGuildEntity>,
   ) {}
@@ -22,7 +26,7 @@ export class DiscordGuildService {
   async getUserGuilds(userId: string): Promise<IDiscordUserGuildItemModel[]> {
     const [userGuilds, botGuildIdList] = await Promise.all([
       this.discordApiService.fetchUserGuilds(userId),
-      this.getBotGuildIds(),
+      this.discordBotService.getBotGuildIds(),
     ]);
 
     const botGuildSet = new Set(botGuildIdList);
@@ -81,34 +85,54 @@ export class DiscordGuildService {
       hasBot: botGuildSet.has(guild.id),
       balance: statsMap.get(guild.id)?.balance ?? 0,
       notificationCount: statsMap.get(guild.id)?.notificationCount ?? 0,
+      managerPermission: managerPermissionMap.get(guild.id) ?? undefined,
     }));
   }
 
-  private async getBotGuildIds(): Promise<string[]> {
-    const cached = await this.redis.get<string[]>(botGuildIds());
-    if (cached) return cached;
+  async getUserGuildInfo(userId: string, guildId: string): Promise<IDiscordUserGuildItemModel> {
+    const botGuildIds = await this.discordBotService.getBotGuildIds();
+    if (!botGuildIds.includes(guildId)) {
+      throw new BadRequestException('Discord guild does not have bot');
+    }
 
-    return [];
+    const apiUserGuild = await this.discordApiService.fetchUserGuildById(userId, guildId);
+    const guildInfo = await this.getOrCreateGuild(guildId);
+
+    const notifications = await this.discordGuildRepository
+      .createQueryBuilder('guild')
+      .leftJoin('guild.notifications', 'botNotif')
+      .leftJoin('guild.webhookNotifications', 'webhookNotif')
+      .select('guild.guildId', 'guildId')
+      .addSelect(
+        'COUNT(DISTINCT botNotif.id) + COUNT(DISTINCT webhookNotif.id)',
+        'count',
+      )
+      .where('guild.guildId = :guildId', { guildId, })
+      .groupBy('guild.guild_id')
+      .getRawOne<{ guildId: string; count: string }>();
+
+    return {
+      ...apiUserGuild,
+      balance: guildInfo.balance,
+      hasBot: true,
+      managerPermission: guildInfo.managerPermission ?? undefined,
+      notificationCount: notifications
+        ? Number(notifications.count)
+        : 0,
+    };
   }
 
-  async getGuildInfo(discordGuildId: string): Promise<{ managerPermission: string | null }> {
-    const guild = await this.discordGuildRepository.findOne({
-      where: { guildId: discordGuildId },
-      select: { managerPermission: true },
-    });
-    return { managerPermission: guild?.managerPermission ?? null };
-  }
-
-  async setManagerPermission(discordGuildId: string, permission: string | null | undefined): Promise<void> {
+  async setManagerPermission(guildId: string, permission: DiscordPermissionFlag | null | undefined): Promise<void> {
     await this.discordGuildRepository.update(
-      { guildId: discordGuildId },
+      { guildId, },
       { managerPermission: permission ?? null },
     );
+    await this.discordGuildAccessService.invalidateGuildCache(guildId);
   }
 
-  async assertGuildBalance(discordGuildId: string, amount: number): Promise<void> {
+  async assertGuildBalance(guildId: string, amount: number): Promise<void> {
     const guild = await this.discordGuildRepository.findOne({
-      where: { guildId: discordGuildId },
+      where: { guildId },
       select: { balance: true },
     });
     if (!guild || Number(guild.balance) < amount) {
@@ -116,14 +140,16 @@ export class DiscordGuildService {
     }
   }
 
-  async deductGuildBalance(discordGuildId: string, amount: number): Promise<void> {
-    if (amount <= 0) return;
+  async deductGuildBalance(guildId: string, amount: number): Promise<void> {
+    if (amount <= 0) {
+      return;
+    }
     const result = await this.discordGuildRepository
       .createQueryBuilder()
       .update(DiscordGuildEntity)
       .set({ balance: () => 'balance - :amount' })
       .where('guild_id = :guildId AND balance >= :amount')
-      .setParameters({ guildId: discordGuildId, amount })
+      .setParameters({ guildId, amount })
       .execute();
 
     if (result.affected === 0) {
@@ -131,16 +157,16 @@ export class DiscordGuildService {
     }
   }
 
-  async getOrCreateGuild(discordGuildId: string) {
+  async getOrCreateGuild(guildId: string): Promise<DiscordGuildEntity> {
     const guild = await this.discordGuildRepository.findOne({
-      where: { guildId: discordGuildId, },
+      where: { guildId, },
     });
     if (guild !== null) {
       return guild;
     }
     const createdGuild = this.discordGuildRepository.create({
       balance: BASE_GUILD_BALANCE,
-      guildId: discordGuildId,
+      guildId,
     });
     const savedGuild = await this.discordGuildRepository.save(createdGuild);
     return savedGuild;

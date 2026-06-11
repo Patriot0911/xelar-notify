@@ -1,12 +1,12 @@
-import { Body, Controller, ForbiddenException, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { IAccessTokenPayload } from '../../auth';
 import { JwtAccessGuard } from '../../auth/guards/jwt-access.guard';
-import { DiscordChannelsService, DiscordGuildService } from '../services';
-import { DiscordRolesService } from '../services/discord-roles.service';
+import { DiscordBotService, DiscordGuildService } from '../services';
 import { DiscordGuildAccessService } from '../services/discord-guild-access.service';
 import { SetManagerPermissionDto } from '../dto/set-manager-permission.dto';
-import { Permission } from '@libs/database';
+import { IDiscordChannelModel, IDiscordUserGuildItemModel } from '../models';
+import { IDiscordRoleModel } from '../models/discord-role.model';
 
 @Controller('api/discord')
 @ApiTags('Discord')
@@ -15,30 +15,34 @@ import { Permission } from '@libs/database';
 export class DiscordController {
   constructor(
     private readonly discordGuildService: DiscordGuildService,
-    private readonly discordChannelsService: DiscordChannelsService,
-    private readonly discordRolesService: DiscordRolesService,
     private readonly discordGuildAccessService: DiscordGuildAccessService,
+    private readonly discordBotService: DiscordBotService,
   ) {}
 
   @Get('guilds')
-  getUserGuilds(@Req() request) {
-    const { sub } = <IAccessTokenPayload>request.user;
+  getUserGuilds(@Req() req): Promise<IDiscordUserGuildItemModel[]> {
+    const { sub } = <IAccessTokenPayload> req.user;
     return this.discordGuildService.getUserGuilds(sub);
   }
 
   @Get('guilds/:guildId')
-  getGuildInfo(@Param('guildId') guildId: string) {
-    return this.discordGuildService.getGuildInfo(guildId);
+  async getGuildInfo(
+    @Req() req,
+    @Param('guildId') guildId: string
+  ): Promise<IDiscordUserGuildItemModel> {
+    const user = <IAccessTokenPayload> req.user;
+    await this.discordGuildAccessService.assertAccess(user.sub, guildId);
+    return this.discordGuildService.getUserGuildInfo(user.sub, guildId);
   }
 
   @Get('guilds/:guildId/channels')
-  getGuildTextChannels(@Param('guildId') guildId: string) {
-    return this.discordChannelsService.getGuildTextChannels(guildId);
+  getGuildTextChannels(@Param('guildId') guildId: string): Promise<IDiscordChannelModel[]> {
+    return this.discordBotService.getGuildTextChannels(guildId);
   }
 
   @Get('guilds/:guildId/roles')
-  getGuildRoles(@Param('guildId') guildId: string) {
-    return this.discordRolesService.getGuildRoles(guildId);
+  getGuildRoles(@Param('guildId') guildId: string): Promise<IDiscordRoleModel[]> {
+    return this.discordBotService.getGuildRoles(guildId);
   }
 
   @Patch('guilds/:guildId/manager-permission')
@@ -47,16 +51,10 @@ export class DiscordController {
     @Body() body: SetManagerPermissionDto,
     @Req() req,
   ) {
-    const user = <IAccessTokenPayload>req.user;
-    const isAppAdmin = user.permissions.includes(Permission.ADMIN);
-
-    if (!isAppAdmin) {
-      const isGuildAdmin = await this.discordGuildAccessService.isDiscordAdminInGuild(user.sub, guildId);
-      if (!isGuildAdmin) throw new ForbiddenException('Only Discord guild administrators can configure the manager permission');
-    }
+    const user = <IAccessTokenPayload> req.user;
+    await this.discordGuildAccessService.assertAccessAdmin(user.sub, guildId);
 
     await this.discordGuildService.setManagerPermission(guildId, body.permission);
-    await this.discordGuildAccessService.invalidateGuildCache(guildId);
 
     return { success: true };
   }

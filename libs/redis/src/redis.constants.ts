@@ -24,5 +24,8 @@ export const discordGuildRoles = (guildId: string) =>
 export const guildUserAccess = (guildId: string, userId: string) =>
   `discord:guild_access:${guildId}:${userId}`;
 
+export const guildAdminAccess = (guildId: string, userId: string) =>
+  `discord:guild_access:${guildId}:${userId}:admin`;
+
 export const guildUserAccessPattern = (guildId: string) =>
   `discord:guild_access:${guildId}:*`;

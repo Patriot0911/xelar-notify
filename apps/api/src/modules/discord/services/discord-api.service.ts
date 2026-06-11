@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DiscordTokenService } from './discord-token.service';
 import { firstValueFrom } from 'rxjs';
 import { IDiscordApiGuildModel, IDiscordApiMeModel, IDiscordGuildModel, IDiscordMeModel } from '../models';
 import { HttpService } from '@nestjs/axios';
 import { DiscordAuthMapper, DiscordGuildMapper } from '../mappers';
 import { RedisService, userGuilds } from '@libs/redis';
-import { DiscordBaseService } from './discord-base.service';
+import { DiscordApiBaseService } from './discord-api-base.service';
 
-const DISCORD_API_CACHE = 10 * 60 * 1000;
+const DISCORD_API_CACHE = 3600 * 24 * 7; // 7 days
 
 @Injectable()
 export class DiscordApiService {
@@ -16,7 +16,7 @@ export class DiscordApiService {
     private readonly discordTokenService: DiscordTokenService,
     private readonly discordGuildMapper: DiscordGuildMapper,
     private readonly discordAuthMapper: DiscordAuthMapper,
-    private readonly discordBaseService: DiscordBaseService,
+    private readonly discordBaseService: DiscordApiBaseService,
     private readonly redis: RedisService,
   ) {}
 
@@ -45,6 +45,20 @@ export class DiscordApiService {
     await this.redis.set(userGuilds(userId), result, DISCORD_API_CACHE);
 
     return result;
+  }
+
+  async fetchUserGuildById(userId: string, guildId: string): Promise<IDiscordGuildModel> {
+    const guilds = await this.fetchUserGuilds(userId);
+    if (!guilds || guilds.length < 1) {
+      throw new NotFoundException('User has no guilds');
+    }
+    const guild = guilds.find(
+      (g) => g.id === guildId
+    );
+    if (!guild) {
+      throw new NotFoundException('Cannot find specified guild');
+    }
+    return guild;
   }
 
   async fetchMeUser(userId: string): Promise<IDiscordMeModel> {

@@ -1,3 +1,5 @@
+import { DiscordPermissionFlag } from '../constants/manager-permission.constant';
+
 export interface IDiscordGuildModel {
   id: string;
   name: string;
@@ -26,4 +28,5 @@ export interface IDiscordUserGuildItemModel extends IDiscordGuildModel {
   hasBot: boolean;
   balance: number;
   notificationCount: number;
+  managerPermission?: DiscordPermissionFlag;
 };

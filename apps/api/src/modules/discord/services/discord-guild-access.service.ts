@@ -2,19 +2,18 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DiscordGuildEntity } from '@libs/database';
 import { Repository } from 'typeorm';
-import { guildUserAccess, guildUserAccessPattern, RedisService } from '@libs/redis';
+import { guildAdminAccess, guildUserAccess, guildUserAccessPattern, RedisService } from '@libs/redis';
 import { DiscordApiService } from './discord-api.service';
-import { IDiscordGuildModel } from '../models';
 import { DiscordPermissionFlag } from '../constants/manager-permission.constant';
 import { hasDiscordPermission } from '../utils/discord-permission.util';
 
-const GUILD_ACCESS_TTL = 5 * 60; // 5 minutes
+const GUILD_ACCESS_TTL = 10 * 60; // 10 minutes
 
 @Injectable()
 export class DiscordGuildAccessService {
   constructor(
     @InjectRepository(DiscordGuildEntity)
-    private readonly guildRepo: Repository<DiscordGuildEntity>,
+    private readonly guildRepository: Repository<DiscordGuildEntity>,
     private readonly redis: RedisService,
     private readonly discordApiService: DiscordApiService,
   ) {}
@@ -22,7 +21,22 @@ export class DiscordGuildAccessService {
   async canAccessGuild(userId: string, guildId: string): Promise<boolean> {
     const cacheKey = guildUserAccess(guildId, userId);
     const cached = await this.redis.get<boolean>(cacheKey);
-    if (cached !== null) return cached;
+    if (cached !== null) {
+      return cached;
+    }
+
+    const result = await this.resolveAccess(userId, guildId);
+    await this.redis.set(cacheKey, result, GUILD_ACCESS_TTL);
+    return result;
+  }
+
+  // todo: add diff permissions
+  async canManageGuild(userId: string, guildId: string): Promise<boolean> {
+    const cacheKey = guildAdminAccess(guildId, userId);
+    const cached = await this.redis.get<boolean>(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
 
     const result = await this.resolveAccess(userId, guildId);
     await this.redis.set(cacheKey, result, GUILD_ACCESS_TTL);
@@ -31,26 +45,35 @@ export class DiscordGuildAccessService {
 
   async assertAccess(userId: string, guildId: string): Promise<void> {
     const hasAccess = await this.canAccessGuild(userId, guildId);
-    if (!hasAccess) throw new ForbiddenException('No access to this guild');
+    if (!hasAccess) {
+      throw new ForbiddenException('User has no access to this action');
+    }
   }
 
-  async isDiscordAdminInGuild(userId: string, guildId: string): Promise<boolean> {
-    const guild = await this.findUserGuild(userId, guildId);
-    if (!guild) return false;
-
-    return guild.owner || hasDiscordPermission(guild.permissions, DiscordPermissionFlag.ADMINISTRATOR);
+  async assertAccessAdmin(userId: string, guildId: string) {
+    const hasAccess = await this.canManageGuild(userId, guildId);
+    if (!hasAccess) {
+      throw new ForbiddenException('User has no access to this action');
+    }
   }
 
   async invalidateGuildCache(guildId: string): Promise<void> {
     await this.redis.deleteByPattern(guildUserAccessPattern(guildId));
   }
 
-  private async resolveAccess(userId: string, guildId: string): Promise<boolean> {
-    const guild = await this.findUserGuild(userId, guildId);
-    if (!guild) return false;
-    if (guild.owner || hasDiscordPermission(guild.permissions, DiscordPermissionFlag.ADMINISTRATOR)) return true;
+  private async resolveAccess(userId: string, guildId: string, shouldBeAdmin: boolean = false): Promise<boolean> {
+    const guild = await this.discordApiService.fetchUserGuildById(userId, guildId);
+    if (!guild) {
+      return false;
+    }
 
-    const guildSettings = await this.guildRepo.findOne({
+    if (guild.owner || hasDiscordPermission(guild.permissions, DiscordPermissionFlag.ADMINISTRATOR)) {
+      return true;
+    } else if(shouldBeAdmin) {
+      return false;
+    }
+
+    const guildSettings = await this.guildRepository.findOne({
       where: { guildId },
       select: { managerPermission: true },
     });
@@ -59,10 +82,5 @@ export class DiscordGuildAccessService {
       guildSettings?.managerPermission &&
       hasDiscordPermission(guild.permissions, guildSettings.managerPermission)
     );
-  }
-
-  private async findUserGuild(userId: string, guildId: string): Promise<IDiscordGuildModel | undefined> {
-    const guilds = await this.discordApiService.fetchUserGuilds(userId);
-    return guilds.find((guild) => guild.id === guildId);
   }
 }

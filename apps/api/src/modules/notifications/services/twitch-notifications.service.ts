@@ -91,7 +91,7 @@ export class TwitchNotificationsService {
     });
 
     if (guildId) {
-      await this.discordWebhookService.validateWebhookUrl(dto.webhookUrl, guildId);
+      await this.discordWebhookService.validateDiscordWebhook(dto.webhookUrl, guildId);
       // todo: check if user associated with guild
       const guild = await this.discordGuildService.getOrCreateGuild(guildId);
       notification.discordGuildId = guild.id;
