@@ -1,10 +1,9 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DiscordGuildEntity } from '@libs/database';
+import { DiscordGuildEntity, DiscordPermissionFlag } from '@libs/database';
 import { Repository } from 'typeorm';
 import { guildAdminAccess, guildUserAccess, guildUserAccessPattern, RedisService } from '@libs/redis';
 import { DiscordApiService } from './discord-api.service';
-import { DiscordPermissionFlag } from '../constants/manager-permission.constant';
 import { hasDiscordPermission } from '../utils/discord-permission.util';
 
 const GUILD_ACCESS_TTL = 10 * 60; // 10 minutes

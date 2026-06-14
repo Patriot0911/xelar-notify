@@ -1,13 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DiscordGuildEntity } from '@libs/database';
+import { DiscordGuildEntity, DiscordPermissionFlag } from '@libs/database';
 import { In, Repository } from 'typeorm';
-import { botGuildIds, RedisService } from '@libs/redis';
 import { DiscordApiService } from './discord-api.service';
 import { IDiscordUserGuildItemModel } from '../models';
-import { DiscordPermissionFlag } from '../constants/manager-permission.constant';
 import { hasDiscordPermission } from '../utils/discord-permission.util';
-import { IGenericListPayloadResponse } from 'apps/api/src/shared';
 import { DiscordBotService } from './discord-bot.service';
 import { DiscordGuildAccessService } from './discord-guild-access.service';
 

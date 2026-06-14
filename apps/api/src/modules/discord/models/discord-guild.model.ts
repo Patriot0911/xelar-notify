@@ -1,4 +1,4 @@
-import { DiscordPermissionFlag } from '../constants/manager-permission.constant';
+import { DiscordPermissionFlag } from '@libs/database';
 
 export interface IDiscordGuildModel {
   id: string;

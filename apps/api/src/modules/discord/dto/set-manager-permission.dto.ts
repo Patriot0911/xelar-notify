@@ -1,4 +1,4 @@
-import { DiscordPermissionFlag } from '../constants/manager-permission.constant';
+import { DiscordPermissionFlag } from '@libs/database';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
