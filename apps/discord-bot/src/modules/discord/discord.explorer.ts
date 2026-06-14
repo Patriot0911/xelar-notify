@@ -1,8 +1,8 @@
 import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
-import { Client, REST, Routes, ChatInputCommandInteraction, ButtonInteraction, ModalSubmitInteraction, RESTPostAPIChatInputApplicationCommandsJSONBody } from 'discord.js';
+import { Client, REST, Routes, ChatInputCommandInteraction, ButtonInteraction, ModalSubmitInteraction, AutocompleteInteraction, RESTPostAPIChatInputApplicationCommandsJSONBody } from 'discord.js';
 import { ConfigService } from '@nestjs/config';
-import { COMMAND_METADATA, EVENT_METADATA, MODAL_METADATA, BUTTON_METADATA } from '../../shared/decorators';
+import { COMMAND_METADATA, EVENT_METADATA, MODAL_METADATA, BUTTON_METADATA, AUTOCOMPLETE_METADATA } from '../../shared/decorators';
 import { DISCORD_CLIENT } from '../../shared/constants/discord.constants';
 import { AppConfig } from '@libs/config';
 
@@ -26,6 +26,7 @@ export class DiscordExplorer implements OnModuleInit {
     const handlers = new Map<string, (i: ChatInputCommandInteraction) => Promise<void>>();
     const modalHandlers = new Map<string, (i: ModalSubmitInteraction) => Promise<void>>();
     const buttonHandlers = new Map<string, (i: ButtonInteraction) => Promise<void>>();
+    const autocompleteHandlers = new Map<string, (i: AutocompleteInteraction) => Promise<void>>();
 
     const wrappers = this.discovery.getProviders();
 
@@ -56,6 +57,11 @@ export class DiscordExplorer implements OnModuleInit {
         const buttonPrefix: string = this.reflector.get(BUTTON_METADATA, instance[method]);
         if (buttonPrefix) {
           buttonHandlers.set(buttonPrefix, instance[method].bind(instance));
+        }
+
+        const autocompleteCommand: string = this.reflector.get(AUTOCOMPLETE_METADATA, instance[method]);
+        if (autocompleteCommand) {
+          autocompleteHandlers.set(autocompleteCommand, instance[method].bind(instance));
         }
       });
     }
@@ -93,6 +99,14 @@ export class DiscordExplorer implements OnModuleInit {
       if (interaction.isButton()) {
         const prefix = interaction.customId.substring(0, interaction.customId.lastIndexOf(':'));
         const handler = buttonHandlers.get(prefix);
+        if (handler) {
+          await handler(interaction);
+        }
+        return;
+      }
+
+      if (interaction.isAutocomplete()) {
+        const handler = autocompleteHandlers.get(interaction.commandName);
         if (handler) {
           await handler(interaction);
         }

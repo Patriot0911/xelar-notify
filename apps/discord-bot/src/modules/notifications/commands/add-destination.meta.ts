@@ -8,8 +8,9 @@ export default function addDestinationCommandMeta() {
     .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption(option =>
       option.setName('broadcaster')
-        .setDescription('Twitch broadcaster ID to receive notifications from')
+        .setDescription('Twitch streamer to receive notifications from')
         .setRequired(true)
+        .setAutocomplete(true)
     )
     .addChannelOption(option =>
       option.setName('channel')
