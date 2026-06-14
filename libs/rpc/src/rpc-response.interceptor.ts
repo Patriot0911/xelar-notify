@@ -9,7 +9,7 @@ export class RpcResponseInterceptor implements NestInterceptor {
     }
 
     return next.handle().pipe(
-      map((data) => ({ success: true, data })),
+      map((data) => ({ status: true, data })),
     );
   }
 }

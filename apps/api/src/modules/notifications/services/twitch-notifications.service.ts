@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DiscordNotificationEntity, NotificationCostType, TwitchStreamerEvents, UserEntity, WebhookNotificationEntity, WebhookType, } from '@libs/database';
+import { DiscordNotificationEntity, NotificationCostType, NotificationStatus, TwitchStreamerEvents, UserEntity, WebhookNotificationEntity, WebhookType, } from '@libs/database';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
 import { DiscordGuildService, DiscordWebhookService } from '../../discord/services';
@@ -91,7 +91,7 @@ export class TwitchNotificationsService {
     });
 
     if (guildId) {
-      await this.discordWebhookService.validateWebhookUrl(dto.webhookUrl, guildId);
+      await this.discordWebhookService.validateDiscordWebhook(dto.webhookUrl, guildId);
       // todo: check if user associated with guild
       const guild = await this.discordGuildService.getOrCreateGuild(guildId);
       notification.discordGuildId = guild.id;
@@ -155,6 +155,8 @@ export class TwitchNotificationsService {
     if (dto.costType !== undefined) notification.costType  = dto.costType;
     if (dto.channelId !== undefined) notification.channelId = dto.channelId;
 
+    notification.status = NotificationStatus.Active;
+
     return this.discordNotificationRepository.save(notification);
   }
 
@@ -165,7 +167,7 @@ export class TwitchNotificationsService {
   ): Promise<WebhookNotificationEntity> {
     const notification = await this.webhookNotificationRepository.findOne({
       where: { id, onwerId: ownerId },
-      select: ['id', 'onwerId', 'costType', 'type', 'webhookUrl', 'messagePayload', 'discordGuildId', 'streamerEventId', 'cost'],
+      select: ['id', 'onwerId', 'costType', 'type', 'webhookUrl', 'messagePayload', 'discordGuildId', 'streamerEventId', 'cost', 'status'],
     });
 
     if (!notification) throw new NotFoundException('Notification not found');
@@ -182,6 +184,8 @@ export class TwitchNotificationsService {
     if (dto.costType  !== undefined) notification.costType  = dto.costType;
     if (dto.webhookUrl !== undefined) notification.webhookUrl = dto.webhookUrl;
 
+    notification.status = NotificationStatus.Active;
+
     return this.webhookNotificationRepository.save(notification);
   }
 
@@ -192,7 +196,9 @@ export class TwitchNotificationsService {
 
     if (!notification) throw new NotFoundException('Notification not found');
 
+    const { streamerEventId } = notification;
     await this.discordNotificationRepository.remove(notification);
+    await this.cleanupSubscriptionIfUnused(streamerEventId);
   }
 
   async deleteWebhookNotification(id: string, ownerId: string): Promise<void> {
@@ -202,7 +208,21 @@ export class TwitchNotificationsService {
 
     if (!notification) throw new NotFoundException('Notification not found');
 
+    const { streamerEventId } = notification;
     await this.webhookNotificationRepository.remove(notification);
+    await this.cleanupSubscriptionIfUnused(streamerEventId);
+  }
+
+
+  async cleanupSubscriptionIfUnused(streamerEventId: string): Promise<void> {
+    const [discordCount, webhookCount] = await Promise.all([
+      this.discordNotificationRepository.count({ where: { streamerEventId } }),
+      this.webhookNotificationRepository.count({ where: { streamerEventId } }),
+    ]);
+
+    if (discordCount === 0 && webhookCount === 0) {
+      await this.twitchSubscriptionService.deleteLocalSubscription(streamerEventId);
+    }
   }
 
   async assertCanCreate(

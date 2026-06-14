@@ -1,6 +1,6 @@
 import { TwitchStreamerEvents } from '@libs/database';
 import { IAddDestinationPayload } from '@libs/shared';
-import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class AddDestinationDto implements IAddDestinationPayload {
   @IsString()
@@ -18,4 +18,7 @@ export class AddDestinationDto implements IAddDestinationPayload {
   @IsEnum(TwitchStreamerEvents)
   @IsOptional()
   eventType?: TwitchStreamerEvents;
+
+  @IsObject()
+  payload: Record<string, unknown>;
 }

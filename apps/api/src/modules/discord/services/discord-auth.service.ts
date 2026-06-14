@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { DiscordAuthMapper } from '../mappers';
 import { AxiosError } from 'axios';
+import { DiscordTokenRevokedException } from '../../auth/exceptions';
 
 @Injectable()
 export class DiscordAuthService {
@@ -82,6 +83,9 @@ export class DiscordAuthService {
     } catch(e) {
       const { message, status } = <AxiosError> e;
       console.error(message);
+      if (status === 401) {
+        throw new DiscordTokenRevokedException();
+      }
       throw new InternalServerErrorException(
         `Something went wrong with Discord API. Please contact administrator for more information [${status}]`
       );

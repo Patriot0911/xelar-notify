@@ -1,5 +1,5 @@
 import { AppConfig, AppConfigModule } from '@libs/config';
-import { DatabaseModule, NotificationLogEntity, TwitchStreamerEventEntity } from '@libs/database';
+import { DatabaseModule, NotificationLogEntity, TwitchStreamerEventEntity, WebhookNotificationEntity } from '@libs/database';
 import { Module } from '@nestjs/common';
 import { StreamOnlineHandler } from './handlers';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -20,6 +20,7 @@ import { ConfigService } from '@nestjs/config';
     TypeOrmModule.forFeature([
       TwitchStreamerEventEntity,
       NotificationLogEntity,
+      WebhookNotificationEntity,
     ]),
   ],
   controllers: [

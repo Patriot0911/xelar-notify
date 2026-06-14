@@ -5,7 +5,8 @@ export type ISuccessResponse<T> = {
 
 export type IErrorResponse<E> = {
   status: false;
-  message: string;
+  rpcError: string;
+  message?: string;
   data?: E;
 };
 

@@ -13,7 +13,7 @@ import { RedisModule } from '@libs/redis';
     NotificationsModule,
     RedisModule,
     RpcModule.forRootAsync({
-      inject:     [ConfigService],
+      inject: [ConfigService],
       useFactory: (config: ConfigService<AppConfig>) => ({
         host: config.get('API_HOST')!,
         port: config.get('API_TCP_PORT')!,

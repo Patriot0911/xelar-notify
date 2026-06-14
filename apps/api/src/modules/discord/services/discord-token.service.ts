@@ -49,7 +49,7 @@ export class DiscordTokenService {
       );
 
       return data.accessToken;
-    } catch {
+    } catch (e) {
       await this.usersRepository.update(
         { id: userId },
         {
@@ -58,7 +58,7 @@ export class DiscordTokenService {
           discordTokenExpiresAt: null,
         },
       );
-      throw new DiscordTokenRevokedException();
+      throw e;
     }
   }
 

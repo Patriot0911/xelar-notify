@@ -13,7 +13,8 @@ export interface IStreamOnlineMessage {
 }
 
 export interface IDiscordNotificationMessage {
+  notificationId: string;
   channelId: string;
   guildId: string;
   messagePayload: unknown;
-}
+};

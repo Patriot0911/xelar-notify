@@ -10,7 +10,7 @@ export class DiscordWebhookService {
     private readonly httpService: HttpService,
   ) {}
 
-  async validateWebhookUrl(url: string, guildId: string): Promise<void> {
+  async validateDiscordWebhook(url: string, guildId: string): Promise<void> {
     const webhookRegex = /^https:\/\/discord\.com\/api\/webhooks\/\d+\/[\w-]+$/;
 
     if (!webhookRegex.test(url)) {
@@ -29,20 +29,6 @@ export class DiscordWebhookService {
 
     if (response.data.guild_id !== guildId) {
       throw new BadRequestException('Webhook does not belong to the specified guild');
-    }
-  }
-
-  async sendNotification(webhook: string, payload: Record<string, unknown>): Promise<void> {
-    try {
-      await firstValueFrom(
-        this.httpService.post(webhook, payload, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-      );
-    } catch (error) {
-      throw new BadRequestException('Failed to send notification to Discord');
     }
   }
 }

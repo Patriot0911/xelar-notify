@@ -6,7 +6,7 @@ export class RpcBusinessException<D = unknown> extends RpcException {
   readonly data?: D;
 
   constructor(rpcError: RpcError, _message: string, data?: D) {
-    super(rpcError);
+    super({ rpcError, message: _message, data, });
     this.rpcError = rpcError;
     this.data = data;
   }

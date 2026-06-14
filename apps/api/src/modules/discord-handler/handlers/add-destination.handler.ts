@@ -37,17 +37,6 @@ export class AddDestinationHandler {
 
     const eventType = data.eventType ?? TwitchStreamerEvents.STREAM_ONLINE;
 
-    const payload = {
-      content: '${streamer_name} is now live!',
-      embeds: [
-        {
-          title: '${streamer_name} is now live!',
-          description: 'Watch the stream live!',
-          color: 0x9146FF,
-        },
-      ],
-    };
-
     try {
       const discordNotification = await this.twitchNotificationsService.createDiscordNotification(
         {
@@ -55,7 +44,7 @@ export class AddDestinationHandler {
           channelId: data.channelId,
           guildId: data.guildId,
           event: eventType,
-          payload,
+          payload: data.payload,
           costType: NotificationCostType.Personal,
         },
         user.id,

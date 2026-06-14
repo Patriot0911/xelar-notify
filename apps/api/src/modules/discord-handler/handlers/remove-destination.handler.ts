@@ -8,6 +8,7 @@ import { RemoveDestinationDto } from '../dto';
 import { IRemoveDestinationResult, RpcBusinessException, RpcError } from '@libs/shared';
 import { RpcPayload } from '@libs/rpc';
 import { DiscordAuthService, DiscordGuildAccessService } from '../../discord/services';
+import { TwitchNotificationsService } from '../../notifications/services/twitch-notifications.service';
 
 @Controller()
 export class RemoveDestinationHandler {
@@ -18,6 +19,7 @@ export class RemoveDestinationHandler {
     private readonly notificationRepository: Repository<DiscordNotificationEntity>,
     private readonly discordAuthService: DiscordAuthService,
     private readonly discordGuildAccessService: DiscordGuildAccessService,
+    private readonly twitchNotificationsService: TwitchNotificationsService,
   ) {}
 
   @MessagePattern(RpcPatterns.discord.removeDestination)
@@ -61,7 +63,9 @@ export class RemoveDestinationHandler {
       }
     }
 
+    const { streamerEventId } = notification;
     await this.notificationRepository.remove(notification);
+    await this.twitchNotificationsService.cleanupSubscriptionIfUnused(streamerEventId);
 
     return { success: true };
   }

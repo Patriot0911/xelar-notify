@@ -4,7 +4,7 @@ export class DiscordNotConnectedException extends HttpException {
   constructor() {
     super(
       { data: 'DISCORD_NOT_CONNECTED', message: 'Discord account not connected' },
-      HttpStatus.UNAUTHORIZED,
+      HttpStatus.FORBIDDEN,
     );
   }
 }
@@ -13,7 +13,7 @@ export class DiscordTokenRevokedException extends HttpException {
   constructor() {
     super(
       { data: 'DISCORD_TOKEN_REVOKED', message: 'Discord access was revoked, please reconnect' },
-      HttpStatus.UNAUTHORIZED,
+      HttpStatus.FORBIDDEN,
     );
   }
 }

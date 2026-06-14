@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { DiscordBotModule } from './discord-bot.module';
 import { MicroserviceOptions, TcpOptions, Transport } from '@nestjs/microservices';
 import { Queues } from '@libs/queue';
+import { RpcExceptionFilter } from '@libs/rpc';
 
 async function bootstrap() {
   const {

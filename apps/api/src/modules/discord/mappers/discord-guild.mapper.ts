@@ -19,9 +19,6 @@ export class DiscordGuildMapper {
       features: data.features,
       memberCount: data.approximate_member_count,
       presenceCount: data.approximate_presence_count,
-      // todo: to sep methods
-      notificationCount: 0,
-      balance: 0,
     };
   }
 

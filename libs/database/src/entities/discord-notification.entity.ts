@@ -2,16 +2,12 @@ import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGenerat
 import { TwitchStreamerEventEntity } from './twitch-streamer-event';
 import { UserEntity } from './user.entity';
 import { DiscordGuildEntity } from './discord-guild.entity';
+import { NotificationStatus } from './notification-status.enum';
 
 export enum NotificationCostType {
   Personal = 'personal',
   Credit = 'credit',
   Guild = 'guild',
-};
-
-export enum DiscordNotificationStatus {
-  Active = 'active',
-  Suspended = 'suspended',
 };
 
 @Entity('discord_notifications')
@@ -35,10 +31,10 @@ export class DiscordNotificationEntity {
   @Column({
     name: 'status',
     type: 'enum',
-    enum: DiscordNotificationStatus,
-    default: DiscordNotificationStatus.Active,
+    enum: NotificationStatus,
+    default: NotificationStatus.Active,
   })
-  status: DiscordNotificationStatus;
+  status: NotificationStatus;
 
   @Column({ name: 'cost_type', type: 'enum', enum: NotificationCostType, enumName: 'discord_notifications_cost_type_enum' })
   costType: NotificationCostType;
