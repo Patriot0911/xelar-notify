@@ -3,6 +3,8 @@ export interface IAddDestinationPayload {
   guildId: string;
   channelId: string;
   broadcasterId: string;
+  eventType?: string;
+  payload?: Record<string, unknown>;
 };
 
 export interface IAddDestinationResult {

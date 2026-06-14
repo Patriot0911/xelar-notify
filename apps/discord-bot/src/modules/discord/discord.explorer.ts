@@ -1,8 +1,8 @@
 import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
-import { Client, REST, Routes, ChatInputCommandInteraction, RESTPostAPIChatInputApplicationCommandsJSONBody } from 'discord.js';
+import { Client, REST, Routes, ChatInputCommandInteraction, ButtonInteraction, ModalSubmitInteraction, RESTPostAPIChatInputApplicationCommandsJSONBody } from 'discord.js';
 import { ConfigService } from '@nestjs/config';
-import { COMMAND_METADATA, EVENT_METADATA } from '../../shared/decorators';
+import { COMMAND_METADATA, EVENT_METADATA, MODAL_METADATA, BUTTON_METADATA } from '../../shared/decorators';
 import { DISCORD_CLIENT } from '../../shared/constants/discord.constants';
 import { AppConfig } from '@libs/config';
 
@@ -24,6 +24,8 @@ export class DiscordExplorer implements OnModuleInit {
   private async registerCommands() {
     const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
     const handlers = new Map<string, (i: ChatInputCommandInteraction) => Promise<void>>();
+    const modalHandlers = new Map<string, (i: ModalSubmitInteraction) => Promise<void>>();
+    const buttonHandlers = new Map<string, (i: ButtonInteraction) => Promise<void>>();
 
     const wrappers = this.discovery.getProviders();
 
@@ -45,6 +47,16 @@ export class DiscordExplorer implements OnModuleInit {
           });
           handlers.set(metadata.name, instance[method].bind(instance));
         }
+
+        const modalPrefix: string = this.reflector.get(MODAL_METADATA, instance[method]);
+        if (modalPrefix) {
+          modalHandlers.set(modalPrefix, instance[method].bind(instance));
+        }
+
+        const buttonPrefix: string = this.reflector.get(BUTTON_METADATA, instance[method]);
+        if (buttonPrefix) {
+          buttonHandlers.set(buttonPrefix, instance[method].bind(instance));
+        }
       });
     }
 
@@ -61,11 +73,30 @@ export class DiscordExplorer implements OnModuleInit {
     );
 
     this.client.on('interactionCreate', async (interaction) => {
-      if (!interaction.isChatInputCommand()) return;
+      if (interaction.isChatInputCommand()) {
+        const handler = handlers.get(interaction.commandName);
+        if (handler) {
+          await handler(interaction);
+        }
+        return;
+      }
 
-      const handler = handlers.get(interaction.commandName);
-      if (handler) {
-        await handler(interaction);
+      if (interaction.isModalSubmit()) {
+        const prefix = interaction.customId.substring(0, interaction.customId.lastIndexOf(':'));
+        const handler = modalHandlers.get(prefix);
+        if (handler) {
+          await handler(interaction);
+        }
+        return;
+      }
+
+      if (interaction.isButton()) {
+        const prefix = interaction.customId.substring(0, interaction.customId.lastIndexOf(':'));
+        const handler = buttonHandlers.get(prefix);
+        if (handler) {
+          await handler(interaction);
+        }
+        return;
       }
     });
 

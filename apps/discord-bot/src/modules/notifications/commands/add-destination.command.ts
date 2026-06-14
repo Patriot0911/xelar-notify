@@ -1,15 +1,13 @@
-import { RpcService } from '@libs/rpc';
-import { RpcPatterns } from '@libs/rpc/patterns';
-import { IAddDestinationPayload, IAddDestinationResult } from '@libs/shared';
 import { Injectable } from '@nestjs/common';
 import { Command } from 'apps/discord-bot/src/shared/decorators';
-import { buildRpcErrorReply } from 'apps/discord-bot/src/shared/helpers/rpc-error.helper';
 import { ChatInputCommandInteraction, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { buildEmbedConfigModal, DEFAULT_EMBED_DRAFT } from '../helpers';
+import { PendingDestinationStore } from '../services';
 import addDestinationCommandMeta from './add-destination.meta';
 
 @Injectable()
 export class AddDestinationCommand {
-  constructor(private readonly rpc: RpcService) {}
+  constructor(private readonly pendingStore: PendingDestinationStore) {}
 
   @Command(addDestinationCommandMeta())
   async handle(interaction: ChatInputCommandInteraction) {
@@ -20,33 +18,15 @@ export class AddDestinationCommand {
       });
     }
 
-    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-    const res = await this.rpc.callSafe<IAddDestinationResult, IAddDestinationPayload>(
-      RpcPatterns.discord.addDestination,
-      <IAddDestinationPayload> {
-        discordId:    interaction.user.id,
-        guildId:      interaction.guildId,
-        channelId:    interaction.options.getChannel('channel')?.id ?? interaction.channelId,
-        broadcasterId: interaction.options.getString('broadcaster', true),
-        eventType:    interaction.options.getString('type') ?? 'stream.online',
-      },
-    );
-
-    if (!res.status) {
-      return interaction.editReply(buildRpcErrorReply(res));
-    }
-
-    return interaction.editReply({
-      embeds: [{
-        title: '✅ Subscription added',
-        color: 0x00b894,
-        fields: [
-          { name: 'Channel', value: `<#${res.data.channelId}>`,      inline: true },
-          { name: 'Event',   value: res.data.eventType,              inline: true },
-          { name: 'Cost',    value: `${res.data.cost} credit(s)`,    inline: true },
-        ],
-      }],
+    const token = this.pendingStore.create({
+      userId: interaction.user.id,
+      guildId: interaction.guildId!,
+      channelId: interaction.options.getChannel('channel')?.id ?? interaction.channelId,
+      broadcasterId: interaction.options.getString('broadcaster', true),
+      eventType: interaction.options.getString('type') ?? 'stream.online',
+      draft: DEFAULT_EMBED_DRAFT,
     });
+
+    return interaction.showModal(buildEmbedConfigModal(`add-destination:modal:${token}`, DEFAULT_EMBED_DRAFT));
   }
 }

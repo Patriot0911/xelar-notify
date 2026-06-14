@@ -41,8 +41,8 @@ export function buildRpcErrorReply(error: IErrorResponse<unknown>) {
         .setURL(authUrl)
         .setStyle(ButtonStyle.Link),
     );
-    return { embeds: [embed], components: [row] };
+    return { content: '', embeds: [embed], components: [row] };
   }
 
-  return { embeds: [embed] };
+  return { content: '', embeds: [embed] };
 }
