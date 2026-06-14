@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { DiscordNotificationEntity } from './discord-notification.entity';
 import { WebhookNotificationEntity } from './webhook-notification.entity';
-import { DiscordPermissionFlag } from 'apps/api/src/modules/discord/constants/manager-permission.constant';
+import { DiscordPermissionFlag } from './manager-permission.constant';
 
 @Entity('discord_guilds')
 export class DiscordGuildEntity {

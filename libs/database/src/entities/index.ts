@@ -9,3 +9,4 @@ export * from './discord-guild.entity';
 export * from './webhook-notification.entity';
 export * from './notification-log.entity';
 export * from './notification-status.enum';
+export * from './manager-permission.constant';
