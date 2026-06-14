@@ -3,6 +3,7 @@ import { TwitchStreamerEventEntity } from './twitch-streamer-event';
 import { UserEntity } from './user.entity';
 import { NotificationCostType } from './discord-notification.entity';
 import { DiscordGuildEntity } from './discord-guild.entity';
+import { NotificationStatus } from './notification-status.enum';
 
 export enum WebhookType {
   DISCORD = 'discord',
@@ -28,6 +29,15 @@ export class WebhookNotificationEntity {
 
   @Column({ name: 'cost', type: 'decimal', precision: 3, scale: 1 })
   cost: number;
+
+  @Column({
+    name: 'status',
+    type: 'enum',
+    enum: NotificationStatus,
+    enumName: 'webhook_notifications_status_enum',
+    default: NotificationStatus.Active,
+  })
+  status: NotificationStatus;
 
   @Column({ name: 'cost_type', type: 'enum', enum: NotificationCostType, enumName: 'webhook_notifications_cost_type_enum' })
   costType: NotificationCostType;

@@ -1,4 +1,4 @@
-import { NotificationLogEntity, NotificationLogStatus, NotificationLogType, TwitchStreamerEventEntity } from '@libs/database';
+import { NotificationLogEntity, NotificationLogStatus, NotificationLogType, NotificationStatus, TwitchStreamerEventEntity, WebhookNotificationEntity } from '@libs/database';
 import type {
   IDiscordNotificationMessage,
   IStreamOnlineMessage,
@@ -20,9 +20,11 @@ export class StreamOnlineHandler {
 
   constructor(
     @InjectRepository(TwitchStreamerEventEntity)
-    private readonly eventsRepo: Repository<TwitchStreamerEventEntity>,
+    private readonly eventsRepository: Repository<TwitchStreamerEventEntity>,
     @InjectRepository(NotificationLogEntity)
-    private readonly logsRepo: Repository<NotificationLogEntity>,
+    private readonly notificationLogsRepository: Repository<NotificationLogEntity>,
+    @InjectRepository(WebhookNotificationEntity)
+    private readonly webhooksRepository: Repository<WebhookNotificationEntity>,
     private readonly queue: QueueService,
   ) {}
 
@@ -32,11 +34,11 @@ export class StreamOnlineHandler {
     const message = ctx.getMessage();
 
     try {
-      const event = await this.eventsRepo
+      const event = await this.eventsRepository
         .createQueryBuilder('event')
         .leftJoinAndSelect('event.streamer', 'streamer')
-        .leftJoinAndSelect('event.discordNotifications', 'discord')
-        .leftJoinAndSelect('event.webhookNotifications', 'webhook')
+        .leftJoinAndSelect('event.discordNotifications', 'discord', 'discord.status = :activeStatus', { activeStatus: NotificationStatus.Active })
+        .leftJoinAndSelect('event.webhookNotifications', 'webhook', 'webhook.status = :activeStatus', { activeStatus: NotificationStatus.Active })
         .addSelect('webhook.webhookUrl')
         .where('event.subscriptionId = :subscriptionId', {
           subscriptionId: data.subscription.id,
@@ -64,6 +66,7 @@ export class StreamOnlineHandler {
     for (const dest of event.discordNotifications) {
       const interpolated = interpolatePayload(dest.messagePayload, vars);
       const payload: IDiscordNotificationMessage = {
+        notificationId: dest.id,
         channelId:      dest.channelId,
         guildId:        dest.guildId,
         messagePayload: interpolated,
@@ -84,15 +87,15 @@ export class StreamOnlineHandler {
         this.logger.error(`[Discord] ${dest.id} emit failed`, err);
       }
 
-      await this.logsRepo.save({
+      await this.notificationLogsRepository.save({
         notificationId:   dest.id,
         notificationType: NotificationLogType.Discord,
         status,
-        ownerId:          dest.onwerId,
-        guildId:          dest.guildId ?? null,
-        streamerLogin:    event.streamer?.twitchLogin ?? '',
-        eventType:        event.event,
-        requestPayload:   interpolated as Record<string, any> | null,
+        ownerId: dest.onwerId,
+        guildId: dest.guildId ?? null,
+        streamerLogin: event.streamer?.twitchLogin ?? '',
+        eventType: event.event,
+        requestPayload: interpolated as Record<string, any> | null,
         errorMessage,
       });
     }
@@ -114,35 +117,44 @@ export class StreamOnlineHandler {
       ),
     );
 
-    const logs = active.map((n, i) => {
+    const logs: NotificationLogEntity[] = [];
+    const suspendedIds: string[] = [];
+
+    for (let i = 0; i < active.length; i++) {
+      const n = active[i];
       const result = results[i];
       const interpolated = interpolatePayload(n.messagePayload, vars);
       const failed = result.status === 'rejected' || (result.status === 'fulfilled' && !result.value.ok);
 
+      let errorMessage: string | null = null;
+
       if (failed) {
-        const reason = result.status === 'rejected'
+        errorMessage = result.status === 'rejected'
           ? String(result.reason)
           : `HTTP ${result.value.status}`;
-        this.logger.error(`[Webhook] ${n.id} failed: ${reason}`);
+        this.logger.error(`[Webhook] ${n.id} failed: ${errorMessage}`);
+        suspendedIds.push(n.id);
       }
 
-      return this.logsRepo.create({
-        notificationId:   n.id,
+      logs.push(this.notificationLogsRepository.create({
+        notificationId: n.id,
         notificationType: NotificationLogType.Webhook,
-        status:           failed ? NotificationLogStatus.Failed : NotificationLogStatus.Sent,
-        ownerId:          n.onwerId,
-        guildId:          n.discordGuildId ?? null,
-        streamerLogin:    event.streamer?.twitchLogin ?? '',
-        eventType:        event.event,
-        requestPayload:   interpolated as Record<string, any> | null,
-        errorMessage:     failed
-          ? (result.status === 'rejected' ? String(result.reason) : `HTTP ${result.value.status}`)
-          : null,
-      });
-    });
+        status: failed ? NotificationLogStatus.Failed : NotificationLogStatus.Sent,
+        ownerId: n.onwerId,
+        guildId: n.discordGuildId ?? null,
+        streamerLogin: event.streamer?.twitchLogin ?? '',
+        eventType: event.event,
+        requestPayload: interpolated as Record<string, any> | null,
+        errorMessage,
+      }));
+    }
 
     if (logs.length) {
-      await this.logsRepo.save(logs);
+      await this.notificationLogsRepository.save(logs);
+    }
+
+    if (suspendedIds.length) {
+      await this.webhooksRepository.update(suspendedIds, { status: NotificationStatus.Suspended });
     }
   }
 }

@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DiscordNotificationEntity, NotificationCostType, TwitchStreamerEvents, UserEntity, WebhookNotificationEntity, WebhookType, } from '@libs/database';
+import { DiscordNotificationEntity, NotificationCostType, NotificationStatus, TwitchStreamerEvents, UserEntity, WebhookNotificationEntity, WebhookType, } from '@libs/database';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
 import { DiscordGuildService, DiscordWebhookService } from '../../discord/services';
@@ -155,6 +155,8 @@ export class TwitchNotificationsService {
     if (dto.costType !== undefined) notification.costType  = dto.costType;
     if (dto.channelId !== undefined) notification.channelId = dto.channelId;
 
+    notification.status = NotificationStatus.Active;
+
     return this.discordNotificationRepository.save(notification);
   }
 
@@ -165,7 +167,7 @@ export class TwitchNotificationsService {
   ): Promise<WebhookNotificationEntity> {
     const notification = await this.webhookNotificationRepository.findOne({
       where: { id, onwerId: ownerId },
-      select: ['id', 'onwerId', 'costType', 'type', 'webhookUrl', 'messagePayload', 'discordGuildId', 'streamerEventId', 'cost'],
+      select: ['id', 'onwerId', 'costType', 'type', 'webhookUrl', 'messagePayload', 'discordGuildId', 'streamerEventId', 'cost', 'status'],
     });
 
     if (!notification) throw new NotFoundException('Notification not found');
@@ -181,6 +183,8 @@ export class TwitchNotificationsService {
 
     if (dto.costType  !== undefined) notification.costType  = dto.costType;
     if (dto.webhookUrl !== undefined) notification.webhookUrl = dto.webhookUrl;
+
+    notification.status = NotificationStatus.Active;
 
     return this.webhookNotificationRepository.save(notification);
   }
