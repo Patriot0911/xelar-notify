@@ -4,3 +4,4 @@ export * from './list-destinations.handler';
 export * from './authenticate.handler';
 export * from './suspend-notification.handler';
 export * from './search-streamers.handler';
+export * from './get-profile.handler';

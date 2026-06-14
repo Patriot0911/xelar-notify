@@ -1,5 +1,6 @@
 export * from './add-destination.model';
 export * from './search-streamers.model';
+export * from './get-profile.model';
 export * from './remove-destination.model';
 export * from './list-destinations.model';
 export * from './authenticate.model';

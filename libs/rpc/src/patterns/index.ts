@@ -5,6 +5,7 @@ export const RpcPatterns = {
     removeDestination: 'discord.remove-destination',
     listDestinations: 'discord.list-destinations',
     getCredits: 'discord.get-credits',
+    getProfile: 'discord.get-profile',
     suspendNotification: 'discord.notifications.suspend',
     searchStreamers: 'discord.search-streamers',
   },

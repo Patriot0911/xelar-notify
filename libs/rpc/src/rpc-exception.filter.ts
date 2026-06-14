@@ -12,7 +12,8 @@ export class RpcExceptionFilter implements ExceptionFilter {
     if (exception instanceof RpcBusinessException) {
       return of({
         status: false,
-        message: exception.rpcError,
+        rpcError: exception.rpcError,
+        message: exception.message,
         data: exception.data,
       });
     }
@@ -20,7 +21,7 @@ export class RpcExceptionFilter implements ExceptionFilter {
     console.log('[RPC Error]', exception);
     return of({
       status: false,
-      message: RpcError.INTERNAL_ERROR,
+      rpcError: RpcError.INTERNAL_ERROR,
     });
   }
 }

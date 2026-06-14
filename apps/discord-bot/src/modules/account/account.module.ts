@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { AuthorizeCommand } from './commands';
+import { AuthorizeCommand, ProfileCommand } from './commands';
 
 @Module({
-  providers: [AuthorizeCommand],
+  providers: [AuthorizeCommand, ProfileCommand],
 })
 export class AccountModule {}
