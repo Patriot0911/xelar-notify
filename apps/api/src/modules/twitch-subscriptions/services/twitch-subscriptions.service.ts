@@ -218,6 +218,14 @@ export class TwitchSubscriptionService {
     }
   }
 
+  async allowsPersonalSubscriptions(broadcasterId: string): Promise<boolean> {
+    const streamer = await this.twitchStreamerRepository.findOne({
+      where: { broadcasterId },
+      select: { allowPersonalSubscriptions: true },
+    });
+    return streamer?.allowPersonalSubscriptions ?? false;
+  }
+
   async changeEventStatus(eventId: string, status: TwitchEventStatuses): Promise<boolean> {
     const result = await this.twitchStreamerEventsRepository.update(
       { id: eventId, },
