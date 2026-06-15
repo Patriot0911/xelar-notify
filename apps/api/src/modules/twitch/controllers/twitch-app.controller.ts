@@ -1,14 +1,17 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAccessGuard } from '../../auth';
+import { JwtAccessGuard, PermissionsGuard } from '../../auth/guards';
 import { ITwitchAppShortModel } from '../models';
 import { TwitchAppService } from '../services';
 import { IGenericListPayloadResponse } from 'apps/api/src/shared';
 import { AddTwitchAppDto, EditTwitchAppDto, GetTwitchAppsDto } from '../dto';
+import { Permissions } from '../../auth/decorator/permissions.decorator';
+import { Permission } from '@libs/database';
 
 @ApiTags('Twitch Apps')
 @ApiBearerAuth()
-@UseGuards(JwtAccessGuard)
+@UseGuards(JwtAccessGuard, PermissionsGuard)
+@Permissions(Permission.ADMIN, Permission.MANAGE_APPS)
 @Controller('api/twitch/apps')
 export class TwitchAppController {
   constructor(

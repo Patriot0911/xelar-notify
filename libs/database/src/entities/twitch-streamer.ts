@@ -28,6 +28,9 @@ export class TwitchStreamerEntity {
   @Column({ name: 'user_id', nullable: true })
   userId?: string | null;
 
+  @Column({ name: 'allow_personal_subscriptions', default: true })
+  allowPersonalSubscriptions: boolean;
+
   @OneToOne(() => UserEntity, (user) => user.twitchAccount)
   @JoinColumn({ name: 'user_id' })
   user?: UserEntity;

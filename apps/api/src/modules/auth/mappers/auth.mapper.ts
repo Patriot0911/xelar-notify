@@ -23,6 +23,8 @@ export class AuthMapper {
       id: user.id,
       displayName: user.displayName,
       discordId: user.discordId,
+      twitchLogin: user.twitchAccount?.twitchLogin ?? null,
+      allowPersonalSubscriptions: user.twitchAccount?.allowPersonalSubscriptions ?? false,
       permissions,
       roles,
     };

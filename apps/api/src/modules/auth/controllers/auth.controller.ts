@@ -30,11 +30,13 @@ import {
   LoginByEmailDto,
   RegistrationByEmailDto,
   SessionDto,
+  SetTwitchPersonalAuthDto,
   UpdateProfileDto,
   UserPayloadDto,
 } from '../dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { DiscordAuthService } from '../../discord/services';
+import { TwitchUserAuthService } from '../../twitch/services';
 
 @ApiTags('Auth')
 @Controller('api/auth')
@@ -42,6 +44,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly discordAuthService: DiscordAuthService,
+    private readonly twitchUserAuthService: TwitchUserAuthService,
     private readonly meService: MeService,
   ) {}
 
@@ -158,5 +161,39 @@ export class AuthController {
   async unlinkDiscord(@Req() request): Promise<void> {
     const { sub } = <IAccessTokenPayload>request.user;
     return await this.authService.unlinkDiscord(sub);
+  }
+
+  @Get('twitch')
+  @ApiGenericResponses({ [HttpStatus.MOVED_PERMANENTLY]: String })
+  async redirectForTwitchAuth(@Res() res) {
+    const redirectUri = await this.twitchUserAuthService.getAuthRedirectUri();
+    return res.redirect(redirectUri);
+  }
+
+  @Get('twitch/link')
+  @ApiBearerAuth()
+  @UseGuards(JwtAccessGuard)
+  @HttpCode(HttpStatus.OK)
+  async linkTwitch(@Req() request, @Query('code') code: string): Promise<void> {
+    const { sub } = <IAccessTokenPayload>request.user;
+    return await this.authService.linkTwitch(sub, code);
+  }
+
+  @Delete('twitch/unlink')
+  @ApiBearerAuth()
+  @UseGuards(JwtAccessGuard)
+  @HttpCode(HttpStatus.OK)
+  async unlinkTwitch(@Req() request): Promise<void> {
+    const { sub } = <IAccessTokenPayload>request.user;
+    return await this.authService.unlinkTwitch(sub);
+  }
+
+  @Patch('twitch/authorization')
+  @ApiBearerAuth()
+  @UseGuards(JwtAccessGuard)
+  @HttpCode(HttpStatus.OK)
+  async setTwitchPersonalAuth(@Req() request, @Body() data: SetTwitchPersonalAuthDto): Promise<void> {
+    const { sub } = <IAccessTokenPayload> request.user;
+    return await this.authService.setTwitchPersonalAuth(sub, data.enabled);
   }
 }

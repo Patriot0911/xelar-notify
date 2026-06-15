@@ -118,4 +118,12 @@ export class TwitchAppService {
       cost,
     );
   }
+
+  async consumeAppCost(clientId: string, cost: number) {
+    await this.twitchAppsRepository.increment(
+      { clientId },
+      'currentCost',
+      cost,
+    );
+  }
 }

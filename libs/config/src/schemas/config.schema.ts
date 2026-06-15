@@ -12,6 +12,7 @@ export const configSchema = z.object({
   ENCRYPTION_KEY:        z.string(),
   ENCRYPTION_SALT:       z.string(),
   TWITCH_WEBHOOK_URL:    z.url(),
+  TWITCH_AUTH_REDIRECT_URI: z.url(),
 
   // Auth
   JWT_SECRET_ACCESS:  z.string(),

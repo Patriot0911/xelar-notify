@@ -30,12 +30,14 @@ export class DiscordNotificationsController {
   }
 
   @Post('discord')
+  @UseGuards(DiscordGuard)
   createDiscordNotification(@Req() request, @Body() body: CreateDiscordNotificationDto) {
     const { sub } = <IAccessTokenPayload> request.user;
     return this.twitchNotificationsService.createDiscordNotification(body, sub);
   }
 
   @Post('discord/:guildId/webhook')
+  @UseGuards(DiscordGuard)
   createDiscordWebhookNotification(
     @Req() request,
     @Param('guildId') guildId: string,

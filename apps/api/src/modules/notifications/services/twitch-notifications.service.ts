@@ -229,8 +229,23 @@ export class TwitchNotificationsService {
     userId: string,
     broadcasterId: string,
     event: TwitchStreamerEvents
-  ) {
-    // todo: add check for public events etc
+  ): Promise<void> {
+    if (!this.publicStreamerEvents.includes(event)) {
+      const allowed = await this.twitchSubscriptionService.allowsPersonalSubscriptions(broadcasterId);
+      if (!allowed) {
+        throw new BadRequestException('This event is only available for streamers who authorized personal subscriptions');
+      }
+
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        select: { twitchAccount: { broadcasterId: true } },
+        relations: ['twitchAccount']
+      });
+
+      if (!user || user.twitchAccount?.broadcasterId !== broadcasterId) {
+        throw new BadRequestException('You can only create notifications for your own streams');
+      }
+    }
   }
 
   async assertCanAfford(
@@ -239,6 +254,14 @@ export class TwitchNotificationsService {
     costType: NotificationCostType,
     guildId?: string,
   ): Promise<void> {
+    if (costType === NotificationCostType.Credit) {
+      const allowed = await this.twitchSubscriptionService.allowsPersonalSubscriptions(broadcasterId);
+      if (!allowed) {
+        throw new BadRequestException('This streamer has not enabled free notifications');
+      }
+      return;
+    }
+
     const cost = this.notificationsService.resolveCost(costType);
     if (cost <= 0) return;
 

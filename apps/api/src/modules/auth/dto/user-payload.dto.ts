@@ -12,6 +12,12 @@ export class UserPayloadDto implements IUserPayload {
   @ApiProperty({ type: 'string', nullable: true, })
   discordId?: string | null;
 
+  @ApiProperty({ type: 'string', nullable: true, })
+  twitchLogin?: string | null;
+
+  @ApiProperty({ type: 'boolean', })
+  allowPersonalSubscriptions: boolean;
+
   @ApiProperty({ type: () => [Permission], isArray: true, })
   permissions: Permission[];
 

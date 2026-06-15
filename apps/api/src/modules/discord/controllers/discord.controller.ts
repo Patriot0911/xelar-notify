@@ -7,11 +7,12 @@ import { DiscordGuildAccessService } from '../services/discord-guild-access.serv
 import { SetManagerPermissionDto } from '../dto/set-manager-permission.dto';
 import { IDiscordChannelModel, IDiscordUserGuildItemModel } from '../models';
 import { IDiscordRoleModel } from '../models/discord-role.model';
+import { DiscordGuard } from '../guards';
 
 @Controller('api/discord')
 @ApiTags('Discord')
 @ApiBearerAuth()
-@UseGuards(JwtAccessGuard)
+@UseGuards(JwtAccessGuard, DiscordGuard)
 export class DiscordController {
   constructor(
     private readonly discordGuildService: DiscordGuildService,
@@ -36,12 +37,22 @@ export class DiscordController {
   }
 
   @Get('guilds/:guildId/channels')
-  getGuildTextChannels(@Param('guildId') guildId: string): Promise<IDiscordChannelModel[]> {
+  async getGuildTextChannels(
+    @Req() req,
+    @Param('guildId') guildId: string
+  ): Promise<IDiscordChannelModel[]> {
+    const user = <IAccessTokenPayload> req.user;
+    await this.discordGuildAccessService.assertAccess(user.sub, guildId);
     return this.discordBotService.getGuildTextChannels(guildId);
   }
 
   @Get('guilds/:guildId/roles')
-  getGuildRoles(@Param('guildId') guildId: string): Promise<IDiscordRoleModel[]> {
+  async getGuildRoles(
+    @Req() req,
+    @Param('guildId') guildId: string
+  ): Promise<IDiscordRoleModel[]> {
+    const user = <IAccessTokenPayload> req.user;
+    await this.discordGuildAccessService.assertAccess(user.sub, guildId);
     return this.discordBotService.getGuildRoles(guildId);
   }
 

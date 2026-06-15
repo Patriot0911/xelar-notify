@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { validate } from './validate';
-import { databaseConfig, authConfig, redisConfig, rabbitConfig, featureConfig, discordConfig } from './configs';
+import { databaseConfig, authConfig, redisConfig, rabbitConfig, featureConfig, discordConfig, twitchAuthConfig } from './configs';
 
 @Module({
   imports: [
@@ -15,6 +15,7 @@ import { databaseConfig, authConfig, redisConfig, rabbitConfig, featureConfig, d
         rabbitConfig,
         featureConfig,
         discordConfig,
+        twitchAuthConfig,
       ],
     }),
   ],
