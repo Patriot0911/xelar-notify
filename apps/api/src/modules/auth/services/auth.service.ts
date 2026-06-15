@@ -198,7 +198,12 @@ export class AuthService {
       where: { userId },
       order: { createdAt: 'DESC' },
     });
-    return sessions.map(this.authMapper.toSessionDto);
+    const filteredSessions = sessions.filter(s => s.expiresAt >= new Date());
+    if (filteredSessions.length > sessions.length) {
+      const expiredSessionIds = sessions.filter(s => !filteredSessions.includes(s)).map(s => s.id);
+      await this.sessionsRepository.delete(expiredSessionIds);
+    }
+    return filteredSessions.map(this.authMapper.toSessionDto);
   }
 
   async revokeSession(userId: string, sessionId: string): Promise<boolean> {
