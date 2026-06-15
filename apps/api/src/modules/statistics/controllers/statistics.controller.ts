@@ -1,6 +1,7 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAccessGuard } from '../../auth/guards';
+import { IAccessTokenPayload } from '../../auth/models';
 import { StatisticsService } from '../services';
 import { IDailyStatsModel, IPlatformStatsModel, IUserStatsModel } from '../models';
 
@@ -27,7 +28,8 @@ export class StatisticsController {
 
   @Get('me')
   @ApiOperation({ summary: 'Get my statistics' })
-  async getMyStatistics(): Promise<IUserStatsModel> {
-    return this.statisticsService.getUserStats('me');
+  async getMyStatistics(@Req() req): Promise<IUserStatsModel> {
+    const user = <IAccessTokenPayload>req.user;
+    return this.statisticsService.getUserStats(user.sub);
   }
 }
