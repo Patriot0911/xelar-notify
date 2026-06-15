@@ -1,6 +1,6 @@
 import { Repository, DataSource, FindOptionsWhere } from 'typeorm';
 import { Injectable } from '@nestjs/common';
-import { TwitchAppEntity } from '@libs/database';
+import { TwitchAppEntity, TwitchAppStatus } from '@libs/database';
 import { ITwitchAppEncryptOptionsModel } from '../models';
 import { CryptoService } from '@libs/shared';
 
@@ -77,7 +77,21 @@ export class TwitchAppsRepository extends Repository<TwitchAppEntity> {
     const app = await this
       .createQueryBuilder('app')
       .where('app.currentCost < app.maxCost')
+      .andWhere('app.status = :status', { status: TwitchAppStatus.Active })
       .orderBy('app.currentCost', 'ASC')
+      .getOne();
+    return (app && shouldDecrypt)
+      ? this.decryptFields(app, decryptOptions)
+      : app;
+  }
+
+  async findInternalApp(
+    shouldDecrypt = false,
+    decryptOptions: ITwitchAppEncryptOptionsModel = defaultEncryptOptions,
+  ): Promise<TwitchAppEntity | null> {
+    const app = await this
+      .createQueryBuilder('app')
+      .andWhere('app.status = :status', { status: TwitchAppStatus.Internal })
       .getOne();
     return (app && shouldDecrypt)
       ? this.decryptFields(app, decryptOptions)

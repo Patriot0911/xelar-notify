@@ -4,3 +4,4 @@ export * from './redis.config';
 export * from './rabbit.config';
 export * from './feature.config';
 export * from './discord.config';
+export * from './twitch.config';

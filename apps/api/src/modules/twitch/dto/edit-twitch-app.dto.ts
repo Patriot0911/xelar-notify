@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, MinLength } from 'class-validator';
+import { TwitchAppStatus } from '@libs/database';
+import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class EditTwitchAppDto {
   @ApiProperty()
@@ -18,4 +19,9 @@ export class EditTwitchAppDto {
   @IsString()
   @IsOptional()
   name?: string;
+
+  @ApiProperty({ enum: TwitchAppStatus, required: false })
+  @IsEnum(TwitchAppStatus)
+  @IsOptional()
+  status?: TwitchAppStatus;
 }

@@ -7,7 +7,7 @@ import {
   ISessionModel,
   TokenType,
 } from '../models';
-import { AccountStatus, Permission, UserEntity, UserSessionEntity } from '@libs/database/entities';
+import { AccountStatus, Permission, TwitchStreamerEntity, UserEntity, UserSessionEntity } from '@libs/database/entities';
 import {
   BadRequestException,
   ForbiddenException,
@@ -28,6 +28,9 @@ import { RolesMapper } from '../../roles/mappers';
 import { RolesService } from '../../roles/services';
 import { accessTokenBlackList, RedisService } from '@libs/redis';
 import { randomUUID } from 'crypto';
+import { CryptoService } from '@libs/shared';
+import { TwitchApiService, TwitchUserAuthService } from '../../twitch/services';
+import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 
 export const BASE_BALANCE = 10;
 
@@ -45,10 +48,16 @@ export class AuthService {
     private readonly redisService: RedisService,
     @Inject(authConfig.KEY)
     private authConfigService: ConfigType<typeof authConfig>,
+    private readonly crypto: CryptoService,
+    private readonly twitchUserAuthService: TwitchUserAuthService,
+    private readonly twitchApiService: TwitchApiService,
+    private readonly twitchSubscriptionService: TwitchSubscriptionService,
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
     @InjectRepository(UserSessionEntity)
     private sessionsRepository: Repository<UserSessionEntity>,
+    @InjectRepository(TwitchStreamerEntity)
+    private twitchStreamersRepository: Repository<TwitchStreamerEntity>,
   ) {}
 
   async authByDiscordCode(code: string): Promise<IAuthResponse> {
@@ -239,6 +248,101 @@ export class AuthService {
       { id: userId },
       { discordId: null, discordAccessToken: null, discordRefreshToken: null },
     );
+  }
+
+  async linkTwitch(userId: string, code: string): Promise<void> {
+    const tokens = await this.twitchUserAuthService.exchangeCodeForTokens(code);
+    const internalApp = await this.twitchUserAuthService.getInternalApp();
+    const twitchMe = await this.twitchApiService.getUserByToken(tokens.accessToken, internalApp.clientId);
+
+    if (!twitchMe) {
+      throw new BadRequestException('Could not fetch Twitch account information');
+    }
+
+    let twitchStreamer = await this.twitchStreamersRepository.findOne({
+      where: { broadcasterId: twitchMe.broadcasterId },
+    });
+
+    if (twitchStreamer?.userId && twitchStreamer.userId !== userId) {
+      // todo: notify admin
+      throw new BadRequestException('This Twitch account is already linked to another user');
+    }
+
+    if (!twitchStreamer) {
+      twitchStreamer = this.twitchStreamersRepository.create({
+        broadcasterId: twitchMe.broadcasterId,
+        twitchLogin: twitchMe.login,
+        displayName: twitchMe.displayName,
+        profileImageUrl: twitchMe.profileImageUrl,
+        profileImageUpdatedAt: new Date(),
+      });
+    }
+
+    twitchStreamer.userId = userId;
+    twitchStreamer.allowPersonalSubscriptions = true;
+    await this.twitchStreamersRepository.save(twitchStreamer);
+
+    await this.usersRepository.update(
+      { id: userId },
+      {
+        twitchAccessToken: this.crypto.encrypt(tokens.accessToken),
+        twitchRefreshToken: this.crypto.encrypt(tokens.refreshToken),
+        twitchTokenExpiresAt: new Date(Date.now() + tokens.expiresIn * 1000),
+      },
+    );
+
+    await this.twitchSubscriptionService.migrateToUserAuthorizedSubscriptions(twitchStreamer.id, userId);
+  }
+
+  async unlinkTwitch(userId: string): Promise<void> {
+    const twitchStreamer = await this.twitchStreamersRepository.findOne({
+      where: { userId },
+    });
+
+    if (!twitchStreamer) {
+      throw new BadRequestException('No Twitch account linked');
+    }
+
+    await this.twitchSubscriptionService.downgradeUserAuthorizedSubscriptions(twitchStreamer.id);
+
+    await this.twitchStreamersRepository.update(
+      { id: twitchStreamer.id },
+      { userId: null },
+    );
+
+    await this.usersRepository.update(
+      { id: userId },
+      {
+        twitchAccessToken: null,
+        twitchRefreshToken: null,
+        twitchTokenExpiresAt: null,
+      },
+    );
+  }
+
+  async setTwitchPersonalAuth(userId: string, enabled: boolean): Promise<void> {
+    const twitchStreamer = await this.twitchStreamersRepository.findOne({
+      where: { userId },
+    });
+
+    if (!twitchStreamer) {
+      throw new BadRequestException('No Twitch account linked');
+    }
+
+    if (twitchStreamer.allowPersonalSubscriptions === enabled) {
+      return;
+    }
+
+    await this.twitchStreamersRepository.update(
+      { id: twitchStreamer.id },
+      { allowPersonalSubscriptions: enabled },
+    );
+
+    if (enabled) {
+      await this.twitchSubscriptionService.migrateToUserAuthorizedSubscriptions(twitchStreamer.id, userId);
+    } else {
+      await this.twitchSubscriptionService.downgradeUserAuthorizedSubscriptions(twitchStreamer.id);
+    }
   }
 
   async verifyRefreshToken(sessionId: string, rawToken: string): Promise<boolean> {

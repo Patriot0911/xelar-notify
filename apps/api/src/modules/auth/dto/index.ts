@@ -6,3 +6,4 @@ export * from './login-by-email.dto';
 export * from './session.dto';
 export * from './update-profile.dto';
 export * from './link-discord.dto';
+export * from './set-twitch-personal-auth.dto';

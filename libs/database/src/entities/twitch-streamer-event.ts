@@ -17,6 +17,7 @@ export enum TwitchEventStatuses {
   PENDING = 'pending',
   VERIFIED = 'verified',
   REVOKED = 'revoked',
+  DEACTIVATED = 'deactivated',
 };
 
 @Entity('twitch_streamer_events')

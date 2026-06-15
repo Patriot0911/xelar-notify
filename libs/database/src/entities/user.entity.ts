@@ -52,7 +52,7 @@ export class UserEntity {
   @Column({ name: 'twitch_refresh_token', nullable: true, type: 'varchar' })
   twitchRefreshToken?: string | null;
 
-  @Column({ name: 'twitch_token_expires_at', nullable: true, type: 'date' })
+  @Column({ name: 'twitch_token_expires_at', nullable: true, type: 'timestamptz' })
   twitchTokenExpiresAt?: Date | null;
 
   @OneToMany(() => UserSessionEntity, (session) => session.user, { cascade: true })

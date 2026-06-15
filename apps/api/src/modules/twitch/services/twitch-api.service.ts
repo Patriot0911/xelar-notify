@@ -85,6 +85,8 @@ export class TwitchApiService {
     webhookSecret: string,
     broadcasterId: string,
     event: TwitchStreamerEvents = TwitchStreamerEvents.STREAM_ONLINE,
+    userAccessToken?: string,
+    twitchUserId?: string,
   ) {
     try {
       const { data, } = await firstValueFrom(
@@ -100,7 +102,11 @@ export class TwitchApiService {
               secret: webhookSecret,
             },
           },
-          <ITwitchHttpConfigModel> { twitchClientId: clientId, }
+          <ITwitchHttpConfigModel> {
+            twitchClientId: clientId,
+            accessToken: userAccessToken,
+            twitchUserId,
+          }
         ),
       );
       return data;
@@ -111,6 +117,18 @@ export class TwitchApiService {
         `Twitch Event registration went wrong. Please contact administrator for more information [${status}]`
       );
     }
+  }
+
+  async getUserByToken(accessToken: string, clientId: string): Promise<ITwitchApiUserNormalizedModel | null> {
+    const { data: { data, }, } = await firstValueFrom(
+      this.httpService.get<ITwitchGetUsersApiResponseModel>('/helix/users', <ITwitchHttpConfigModel> {
+        twitchClientId: clientId,
+        accessToken,
+      }),
+    );
+    return data.length > 0
+      ? this.twitchApiMapper.twitchApiUserToNormalized(data[0])
+      : null;
   }
 
   async getSubscriptionById(subscriptionId: string, clientId: string) {
