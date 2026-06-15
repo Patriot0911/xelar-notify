@@ -18,7 +18,7 @@ export class MeService {
   async getMe(userId: string): Promise<IUserPayload> {
     const userData = await this.usersRepository.findOneOrFail({
       where: { id: userId, },
-      relations: { roles: true, },
+      relations: { roles: true, twitchAccount: true, },
     });
     if (!userData) {
       throw new UnauthorizedException();

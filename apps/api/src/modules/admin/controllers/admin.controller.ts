@@ -1,12 +1,15 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { JwtAccessGuard } from '../../auth';
+import { JwtAccessGuard, PermissionsGuard } from '../../auth/guards';
 import { AddStreamOnlineSubscriptionDto, DeleteTwitchSubscriptionDto, GetRawTwitchSubscriptionsDto, GetTwitchSubscriptionsDto } from '../dto';
 import { AdminService } from '../services';
+import { Permission } from '@libs/database';
+import { Permissions } from '../../auth/decorator/permissions.decorator';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
-@UseGuards(JwtAccessGuard)
+@UseGuards(JwtAccessGuard, PermissionsGuard)
+@Permissions(Permission.ADMIN)
 @Controller('api/admin')
 export class AdminController {
   constructor(

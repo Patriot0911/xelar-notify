@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TwitchStreamerEntity } from '@libs/database';
 import { TwitchApiService } from '../services';
-import { JwtAccessGuard } from '../../auth';
+import { JwtAccessGuard } from '../../auth/guards/jwt-access.guard';
 import { TSearchTwitchChannelsResponseModel } from '../models';
 import { SearchTwtichChannelsDto } from '../dto';
 
