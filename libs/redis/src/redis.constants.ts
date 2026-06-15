@@ -29,3 +29,12 @@ export const guildAdminAccess = (guildId: string, userId: string) =>
 
 export const guildUserAccessPattern = (guildId: string) =>
   `discord:guild_access:${guildId}:*`;
+
+export const platformStatistics = () =>
+  `statistics:platform`;
+
+export const dailyStatistics = () =>
+  `statistics:daily`;
+
+export const userStatistics = (userId: string) =>
+  `statistics:user:${userId}`;
