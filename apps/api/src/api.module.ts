@@ -15,6 +15,7 @@ import { RolesModule } from './modules/roles';
 import { RedisModule } from '@libs/redis';
 import { NotificationLogsModule } from './modules/notification-logs/notification-logs.module';
 import { StatisticsModule } from './modules/statistics';
+import { UsersModule } from './modules/users';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { StatisticsModule } from './modules/statistics';
     RedisModule,
     NotificationLogsModule,
     StatisticsModule,
+    UsersModule,
   ],
 })
 export class ApiModule {}
