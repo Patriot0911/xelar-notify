@@ -1,12 +1,13 @@
-import { DiscordGuildEntity, DiscordNotificationEntity, NotificationLogEntity, NotificationLogStatus, TwitchStreamerEntity, UserEntity } from '@libs/database';
-import { dailyStatistics, platformStatistics, RedisService, userStatistics } from '@libs/redis';
+import { DiscordGuildEntity, DiscordNotificationEntity, NotificationLogEntity, NotificationLogStatus, NotificationLogType, TwitchStreamerEntity, UserEntity } from '@libs/database';
+import { dailyStatistics, notificationSplitStatistics, platformStatistics, RedisService, topStreamersStatistics, userStatistics } from '@libs/redis';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { IDailyStatsModel, IPlatformStatsModel, IUserStatsModel } from '../models';
+import { IDailyStatsModel, INotificationSplitModel, IPlatformStatsModel, ITopStreamerModel, IUserStatsModel } from '../models';
 
 const STATISTICS_CACHE_TTL = 60 * 20; // 20 minutes
 const DAILY_STATS_DAYS = 7;
+const TOP_STREAMERS_LIMIT = 5;
 
 @Injectable()
 export class StatisticsService {
@@ -109,6 +110,60 @@ export class StatisticsService {
     const result: IUserStatsModel = {
       notificationsSent,
       usedCredits: Number(usedCredits?.total ?? 0),
+    };
+
+    await this.redis.set(cacheKey, result, STATISTICS_CACHE_TTL);
+    return result;
+  }
+
+  async getTopStreamers(): Promise<ITopStreamerModel[]> {
+    const cacheKey = topStreamersStatistics();
+    const cached = await this.redis.get<ITopStreamerModel[]>(cacheKey);
+    if (cached) return cached;
+
+    const rows = await this.notificationLogRepository
+      .createQueryBuilder('log')
+      .select('log.streamerLogin', 'twitchLogin')
+      .addSelect('COUNT(*)', 'notificationCount')
+      .leftJoin(TwitchStreamerEntity, 'streamer', 'streamer.twitchLogin = log.streamerLogin')
+      .addSelect('streamer.displayName', 'displayName')
+      .addSelect('streamer.profileImageUrl', 'profileImageUrl')
+      .groupBy('log.streamerLogin')
+      .addGroupBy('streamer.displayName')
+      .addGroupBy('streamer.profileImageUrl')
+      .orderBy('"notificationCount"', 'DESC')
+      .limit(TOP_STREAMERS_LIMIT)
+      .getRawMany<{ twitchLogin: string; notificationCount: string; displayName: string | null; profileImageUrl: string | null }>();
+
+    const result: ITopStreamerModel[] = rows.map((r) => ({
+      twitchLogin: r.twitchLogin,
+      displayName: r.displayName,
+      profileImageUrl: r.profileImageUrl,
+      notificationCount: Number(r.notificationCount),
+    }));
+
+    await this.redis.set(cacheKey, result, STATISTICS_CACHE_TTL);
+    return result;
+  }
+
+  async getNotificationSplit(): Promise<INotificationSplitModel> {
+    const cacheKey = notificationSplitStatistics();
+    const cached = await this.redis.get<INotificationSplitModel>(cacheKey);
+    if (cached) return cached;
+
+    const rows = await this.notificationLogRepository
+      .createQueryBuilder('log')
+      .select('log.notificationType', 'type')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy('log.notificationType')
+      .getRawMany<{ type: NotificationLogType; count: string }>();
+
+    const toCount = (type: NotificationLogType) =>
+      Number(rows.find((r) => r.type === type)?.count ?? 0);
+
+    const result: INotificationSplitModel = {
+      discord: toCount(NotificationLogType.Discord),
+      webhook: toCount(NotificationLogType.Webhook),
     };
 
     await this.redis.set(cacheKey, result, STATISTICS_CACHE_TTL);

@@ -3,7 +3,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAccessGuard } from '../../auth/guards';
 import { IAccessTokenPayload } from '../../auth/models';
 import { StatisticsService } from '../services';
-import { IDailyStatsModel, IPlatformStatsModel, IUserStatsModel } from '../models';
+import { IDailyStatsModel, INotificationSplitModel, IPlatformStatsModel, ITopStreamerModel, IUserStatsModel } from '../models';
 
 @ApiTags('Statistics')
 @ApiBearerAuth()
@@ -31,5 +31,17 @@ export class StatisticsController {
   async getMyStatistics(@Req() req): Promise<IUserStatsModel> {
     const user = <IAccessTokenPayload>req.user;
     return this.statisticsService.getUserStats(user.sub);
+  }
+
+  @Get('top-streamers')
+  @ApiOperation({ summary: 'Get top 5 streamers by notification count' })
+  async getTopStreamers(): Promise<ITopStreamerModel[]> {
+    return this.statisticsService.getTopStreamers();
+  }
+
+  @Get('notification-split')
+  @ApiOperation({ summary: 'Get discord vs webhook notification split' })
+  async getNotificationSplit(): Promise<INotificationSplitModel> {
+    return this.statisticsService.getNotificationSplit();
   }
 }

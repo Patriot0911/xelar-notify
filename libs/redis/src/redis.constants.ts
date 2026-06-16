@@ -38,3 +38,9 @@ export const dailyStatistics = () =>
 
 export const userStatistics = (userId: string) =>
   `statistics:user:${userId}`;
+
+export const topStreamersStatistics = () =>
+  `statistics:top-streamers`;
+
+export const notificationSplitStatistics = () =>
+  `statistics:notification-split`;
