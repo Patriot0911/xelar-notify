@@ -1,18 +1,27 @@
 import { z } from 'zod';
 
+// Matches any string that contains at least one ${variableName} placeholder
+const TEMPLATE_VAR_RE = /\$\{[\w]+\}/;
+
+// Accepts a valid URL or a string containing a template variable like ${thumbnailUrl}
+export const urlOrTemplate = z.union([
+  z.url(),
+  z.string().regex(TEMPLATE_VAR_RE, 'Must be a valid URL or contain a template variable like ${variableName}'),
+]);
+
 export const EmbedSchema = z.object({
   title:       z.string().max(256).optional(),
   description: z.string().max(4096).optional(),
   color:       z.number().int().min(0).max(0xFFFFFF).optional(),
-  url:         z.url().optional(),
+  url:         urlOrTemplate.optional(),
   fields:      z.array(z.object({
     name:   z.string().max(256),
     value:  z.string().max(1024),
     inline: z.boolean().optional(),
   })).max(25).optional(),
   footer:    z.object({ text: z.string().max(2048) }).optional(),
-  thumbnail: z.object({ url: z.url() }).optional(),
-  image:     z.object({ url: z.url() }).optional(),
+  thumbnail: z.object({ url: urlOrTemplate }).optional(),
+  image:     z.object({ url: urlOrTemplate }).optional(),
   timestamp: z.string().datetime().optional(),
 });
 
