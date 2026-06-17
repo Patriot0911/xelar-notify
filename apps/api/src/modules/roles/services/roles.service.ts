@@ -23,7 +23,6 @@ export class RolesService {
           { id: userId, },
         ],
       },
-      relations: ['roles'],
     });
     const { permissions, roles, } = this.rolesMapper.rolesToAccess(userRoles);
     return {
