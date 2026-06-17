@@ -43,14 +43,14 @@ export class DiscordNotificationEntity {
   channelId: string;
 
   @Column({ name: 'guild_id', type: 'varchar' })
-  discordGuildId: string;
+  guildId: string;
 
   @ManyToOne(
     () => DiscordGuildEntity,
     (event) => event.notifications,
   )
   @JoinColumn({ name: 'guild_id' })
-  discordGuild: DiscordGuildEntity;
+  guild: DiscordGuildEntity;
 
   @Column({ name: 'streamer_event_id' })
   streamerEventId: string;

@@ -172,10 +172,12 @@ export class UsersService {
       this.discordNotificationsRepository.find({
         where: { onwerId: userId },
         order: { createdAt: 'DESC' },
+        relations: ['guild.discordGuildId'],
       }),
       this.webhookNotificationsRepository.find({
         where: { onwerId: userId },
         order: { createdAt: 'DESC' },
+        relations: ['guild.discordGuildId'],
       }),
     ]);
 

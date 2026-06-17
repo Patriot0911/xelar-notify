@@ -49,7 +49,7 @@ export class TwitchNotificationsService {
 
     const notification = this.discordNotificationRepository.create({
       streamerEventId: subscription.id,
-      discordGuildId: guild.id,
+      guildId: guild.id,
       channelId: dto.channelId,
       messagePayload: dto.payload as any,
       onwerId: ownerId,
@@ -94,7 +94,7 @@ export class TwitchNotificationsService {
       await this.discordWebhookService.validateDiscordWebhook(dto.webhookUrl, guildId);
       // todo: check if user associated with guild
       const guild = await this.discordGuildService.getOrCreateGuild(guildId);
-      notification.discordGuildId = guild.id;
+      notification.guildId = guild.id;
     }
 
     await this.applyCharge(ownerId, cost, dto.costType, guildId);
@@ -106,14 +106,14 @@ export class TwitchNotificationsService {
     const [bot, webhook] = await Promise.all([
       this.discordNotificationRepository
         .createQueryBuilder('n')
-        .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
+        .innerJoinAndSelect('n.guild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
         .leftJoinAndSelect('n.streamerEvent', 'event')
         .leftJoinAndSelect('event.streamer', 'streamer')
         .where('n.onwerId = :ownerId', { ownerId })
         .getMany(),
       this.webhookNotificationRepository
         .createQueryBuilder('n')
-        .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
+        .innerJoinAndSelect('n.guild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
         .leftJoinAndSelect('n.streamerEvent', 'event')
         .leftJoinAndSelect('event.streamer', 'streamer')
         .where('n.onwerId = :ownerId', { ownerId })
@@ -126,7 +126,7 @@ export class TwitchNotificationsService {
     const [bot, webhook] = await Promise.all([
       this.discordNotificationRepository.find({
         where: { onwerId: ownerId },
-        relations: ['streamerEvent', 'streamerEvent.streamer', 'discordGuild'],
+        relations: ['streamerEvent', 'streamerEvent.streamer', 'guild'],
       }),
       this.webhookNotificationRepository.find({
         where: { onwerId: ownerId },
@@ -167,10 +167,11 @@ export class TwitchNotificationsService {
   ): Promise<WebhookNotificationEntity> {
     const notification = await this.webhookNotificationRepository.findOne({
       where: { id, onwerId: ownerId },
-      select: ['id', 'onwerId', 'costType', 'type', 'webhookUrl', 'messagePayload', 'discordGuildId', 'streamerEventId', 'cost', 'status'],
     });
 
-    if (!notification) throw new NotFoundException('Notification not found');
+    if (!notification) {
+      throw new NotFoundException('Notification not found');
+    }
 
     if (dto.payload !== undefined) {
       const resolvedUrl = dto.webhookUrl ?? notification.webhookUrl ?? '';
@@ -252,7 +253,7 @@ export class TwitchNotificationsService {
     userId: string,
     broadcasterId: string,
     costType: NotificationCostType,
-    guildId?: string,
+    discordGuildId?: string,
   ): Promise<void> {
     if (costType === NotificationCostType.Credit) {
       const allowed = await this.twitchSubscriptionService.allowsPersonalSubscriptions(broadcasterId);
@@ -276,8 +277,10 @@ export class TwitchNotificationsService {
     }
 
     if (costType === NotificationCostType.Guild) {
-      if (!guildId) throw new BadRequestException('Guild ID required for guild-funded notifications');
-      await this.discordGuildService.assertGuildBalance(guildId, cost);
+      if (!discordGuildId) {
+        throw new BadRequestException('Guild ID required for guild-funded notifications');
+      }
+      await this.discordGuildService.assertGuildBalance(discordGuildId, cost);
     }
   }
 

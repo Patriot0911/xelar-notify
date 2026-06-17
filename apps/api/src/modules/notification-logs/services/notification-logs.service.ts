@@ -13,41 +13,41 @@ export class NotificationLogsService {
   constructor(
     private readonly guildAccess: DiscordGuildAccessService,
     @InjectRepository(NotificationLogEntity)
-    private readonly logsRepo: Repository<NotificationLogEntity>,
+    private readonly logsRepository: Repository<NotificationLogEntity>,
   ) {}
 
   async getAll(params: GetNotificationLogsDto): Promise<IGenericListPayloadResponse<INotificationLogModel>> {
-    return this.paginate(this.logsRepo.createQueryBuilder('log'), params);
+    return this.paginate(this.logsRepository.createQueryBuilder('log'), params);
   }
 
   async getMy(userId: string, params: GetNotificationLogsDto): Promise<IGenericListPayloadResponse<INotificationLogModel>> {
-    const qb = this.logsRepo
+    const qb = this.logsRepository
       .createQueryBuilder('log')
-      .where('log.owner_id = :userId', { userId });
+      .where('log.ownerId = :userId', { userId });
 
     return this.paginate(qb, params);
   }
 
   async getByGuild(
-    guildId: string,
+    discordGuildId: string,
     user: IAccessTokenPayload,
     params: GetNotificationLogsDto,
   ): Promise<IGenericListPayloadResponse<INotificationLogModel>> {
-    await this.guildAccess.assertAccess(user.sub, guildId);
+    await this.guildAccess.assertAccess(user.sub, discordGuildId);
 
-    const qb = this.logsRepo
+    const qb = this.logsRepository
       .createQueryBuilder('log')
-      .where('log.guild_id = :guildId', { guildId });
+      .where('log.discordGuildId = :discordGuildId', { discordGuildId });
 
     return this.paginate(qb, params);
   }
 
   private async paginate(
-    qb: ReturnType<typeof this.logsRepo.createQueryBuilder>,
+    qb: ReturnType<typeof this.logsRepository.createQueryBuilder>,
     { page, pageSize }: GetNotificationLogsDto,
   ): Promise<IGenericListPayloadResponse<INotificationLogModel>> {
     const [items, count] = await qb
-      .orderBy('log.created_at', 'DESC')
+      .orderBy('log.createdAt', 'DESC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getManyAndCount();

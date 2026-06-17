@@ -14,14 +14,14 @@ export class DiscordGuildEntity {
 
   @OneToMany(
     () => DiscordNotificationEntity,
-    (notification) => notification.discordGuild,
+    (notification) => notification.guild,
     { cascade: true }
   )
   notifications: DiscordNotificationEntity[];
 
   @OneToMany(
     () => WebhookNotificationEntity,
-    (notification) => notification.discordGuild,
+    (notification) => notification.guild,
     { cascade: true }
   )
   webhookNotifications: WebhookNotificationEntity[];

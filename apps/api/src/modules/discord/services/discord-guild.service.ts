@@ -127,9 +127,9 @@ export class DiscordGuildService {
     await this.discordGuildAccessService.invalidateGuildCache(guildId);
   }
 
-  async assertGuildBalance(guildId: string, amount: number): Promise<void> {
+  async assertGuildBalance(discordGuildId: string, amount: number): Promise<void> {
     const guild = await this.discordGuildRepository.findOne({
-      where: { discordGuildId: guildId },
+      where: { discordGuildId, },
       select: { balance: true },
     });
     if (!guild || Number(guild.balance) < amount) {

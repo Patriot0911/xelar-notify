@@ -51,7 +51,7 @@ export class GetProfileHandler {
 
       const guildSubscriptionsCount = await this.notificationRepository
         .createQueryBuilder('n')
-        .innerJoin('n.discordGuild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId: data.discordGuildId })
+        .innerJoin('n.guild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId: data.discordGuildId })
         .where('n.status = :status', { status: NotificationStatus.Active })
         .getCount();
 

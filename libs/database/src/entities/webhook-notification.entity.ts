@@ -49,14 +49,14 @@ export class WebhookNotificationEntity {
   webhookUrl?: string | null;
 
   @Column({ name: 'discord_guild_id', nullable: true, type: 'varchar',  })
-  discordGuildId?: string | null;
+  guildId?: string | null;
 
   @ManyToOne(
     () => DiscordGuildEntity,
     (guild) => guild.webhookNotifications,
   )
   @JoinColumn({ name: 'discord_guild_id' })
-  discordGuild?: DiscordGuildEntity;
+  guild?: DiscordGuildEntity;
 
   @ManyToOne(
     () => TwitchStreamerEventEntity,

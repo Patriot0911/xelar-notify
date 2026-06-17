@@ -38,7 +38,7 @@ export class RemoveDestinationHandler {
 
     const notification = await this.notificationRepository.findOne({
       where: { id: data.notificationId },
-      relations: ['discordGuild'],
+      relations: ['guild.discordGuildId'],
     });
 
     if (!notification) {
@@ -52,7 +52,7 @@ export class RemoveDestinationHandler {
         throw new RpcBusinessException(RpcError.FORBIDDEN, 'No permission to remove this notification');
       }
 
-      const notifGuildId = notification.discordGuild?.discordGuildId;
+      const notifGuildId = notification.guild?.discordGuildId;
       if (notifGuildId !== data.discordGuildId) {
         throw new RpcBusinessException(RpcError.FORBIDDEN, 'Notification does not belong to this server');
       }

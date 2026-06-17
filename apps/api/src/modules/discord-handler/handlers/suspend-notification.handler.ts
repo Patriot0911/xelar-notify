@@ -29,7 +29,7 @@ export class SuspendNotificationHandler {
   async handle(@RpcPayload() data: SuspendNotificationDto): Promise<ISuspendNotificationResult> {
     const notification = await this.notificationRepository.findOne({
       where: { id: data.notificationId },
-      relations: ['streamerEvent', 'streamerEvent.streamer'],
+      relations: ['streamerEvent', 'streamerEvent.streamer', 'guild.discordGuildId'],
     });
 
     if (!notification) {
@@ -46,7 +46,7 @@ export class SuspendNotificationHandler {
       notificationType: NotificationLogType.Discord,
       status: NotificationLogStatus.Failed,
       ownerId: notification.onwerId,
-      discordGuildId: notification.discordGuildId ?? null,
+      discordGuildId: notification.guild.discordGuildId ?? null,
       streamerLogin: notification.streamerEvent?.streamer?.twitchLogin ?? '',
       eventType: notification.streamerEvent?.event ?? '',
       requestPayload: notification.messagePayload as Record<string, any> | null,

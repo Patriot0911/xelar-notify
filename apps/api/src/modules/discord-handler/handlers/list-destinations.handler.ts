@@ -50,7 +50,7 @@ export class ListDestinationsHandler {
   private async fetchGuildDestinations(guildId: string, requesterId: string): Promise<IDestinationItem[]> {
     const notifications = await this.notificationRepository
       .createQueryBuilder('n')
-      .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.discordGuildId = :guildId', { guildId })
+      .innerJoinAndSelect('n.guild', 'guild', 'guild.discordGuildId = :guildId', { guildId })
       .leftJoinAndSelect('n.streamerEvent', 'event')
       .leftJoinAndSelect('event.streamer', 'streamer')
       .getMany();
