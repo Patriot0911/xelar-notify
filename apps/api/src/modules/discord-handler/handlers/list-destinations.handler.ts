@@ -34,14 +34,14 @@ export class ListDestinationsHandler {
       );
     }
 
-    if (data.guildId) {
-      const hasAccess = await this.discordGuildAccessService.canAccessGuild(user.id, data.guildId);
+    if (data.discordGuildId) {
+      const hasAccess = await this.discordGuildAccessService.canAccessGuild(user.id, data.discordGuildId);
 
       if (!hasAccess) {
         throw new RpcBusinessException(RpcError.FORBIDDEN, 'No permission to view this server\'s notifications');
       }
 
-      return { items: await this.fetchGuildDestinations(data.guildId, user.id) };
+      return { items: await this.fetchGuildDestinations(data.discordGuildId, user.id) };
     }
 
     return { items: await this.fetchOwnDestinations(user.id) };
@@ -50,7 +50,7 @@ export class ListDestinationsHandler {
   private async fetchGuildDestinations(guildId: string, requesterId: string): Promise<IDestinationItem[]> {
     const notifications = await this.notificationRepository
       .createQueryBuilder('n')
-      .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.guildId = :guildId', { guildId })
+      .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.discordGuildId = :guildId', { guildId })
       .leftJoinAndSelect('n.streamerEvent', 'event')
       .leftJoinAndSelect('event.streamer', 'streamer')
       .getMany();

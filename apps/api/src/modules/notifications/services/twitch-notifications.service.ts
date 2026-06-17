@@ -33,7 +33,7 @@ export class TwitchNotificationsService {
     ownerId: string,
   ): Promise<DiscordNotificationEntity> {
     await this.assertCanCreate(ownerId, dto.broadcasterId, dto.event);
-    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType, dto.guildId);
+    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType, dto.discordGuildId);
 
     const subscription = await this.twitchSubscriptionService.getOrCreateEvent(
       dto.broadcasterId,
@@ -43,13 +43,13 @@ export class TwitchNotificationsService {
     this.discordPayloadService.validateBotPayload(dto.payload);
 
     const cost = this.notificationsService.resolveCost(dto.costType);
-    await this.applyCharge(ownerId, cost, dto.costType, dto.guildId);
+    await this.applyCharge(ownerId, cost, dto.costType, dto.discordGuildId);
 
-    const guild = await this.discordGuildService.getOrCreateGuild(dto.guildId);
+    const guild = await this.discordGuildService.getOrCreateGuild(dto.discordGuildId);
 
     const notification = this.discordNotificationRepository.create({
       streamerEventId: subscription.id,
-      guildId: guild.id,
+      discordGuildId: guild.id,
       channelId: dto.channelId,
       messagePayload: dto.payload as any,
       onwerId: ownerId,
@@ -106,14 +106,14 @@ export class TwitchNotificationsService {
     const [bot, webhook] = await Promise.all([
       this.discordNotificationRepository
         .createQueryBuilder('n')
-        .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.guildId = :discordGuildId', { discordGuildId })
+        .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
         .leftJoinAndSelect('n.streamerEvent', 'event')
         .leftJoinAndSelect('event.streamer', 'streamer')
         .where('n.onwerId = :ownerId', { ownerId })
         .getMany(),
       this.webhookNotificationRepository
         .createQueryBuilder('n')
-        .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.guildId = :discordGuildId', { discordGuildId })
+        .innerJoinAndSelect('n.discordGuild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
         .leftJoinAndSelect('n.streamerEvent', 'event')
         .leftJoinAndSelect('event.streamer', 'streamer')
         .where('n.onwerId = :ownerId', { ownerId })

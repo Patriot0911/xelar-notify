@@ -3,17 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { NotificationLogEntity } from '@libs/database';
 import { Repository } from 'typeorm';
 import { IGenericListPayloadResponse } from 'apps/api/src/shared';
-import { GetNotificationLogsDto } from './dto/get-notification-logs.dto';
-import { INotificationLogModel } from './models/notification-log.model';
-import { IAccessTokenPayload } from '../auth/models';
-import { DiscordGuildAccessService } from '../discord/services/discord-guild-access.service';
+import { GetNotificationLogsDto } from '../dto/get-notification-logs.dto';
+import { INotificationLogModel } from '../models/notification-log.model';
+import { IAccessTokenPayload } from '../../auth/models';
+import { DiscordGuildAccessService } from '../../discord/services/discord-guild-access.service';
 
 @Injectable()
 export class NotificationLogsService {
   constructor(
+    private readonly guildAccess: DiscordGuildAccessService,
     @InjectRepository(NotificationLogEntity)
     private readonly logsRepo: Repository<NotificationLogEntity>,
-    private readonly guildAccess: DiscordGuildAccessService,
   ) {}
 
   async getAll(params: GetNotificationLogsDto): Promise<IGenericListPayloadResponse<INotificationLogModel>> {
@@ -65,7 +65,7 @@ export class NotificationLogsService {
       notificationType: entity.notificationType,
       status:           entity.status,
       ownerId:          entity.ownerId,
-      guildId:          entity.guildId ?? null,
+      discordGuildId:   entity.discordGuildId ?? null,
       streamerLogin:    entity.streamerLogin,
       eventType:        entity.eventType,
       requestPayload:   entity.requestPayload ?? null,

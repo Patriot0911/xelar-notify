@@ -10,7 +10,7 @@ export class DiscordGuildEntity {
 
   @Index()
   @Column({ name: 'guild_id', unique: true, })
-  guildId: string;
+  discordGuildId: string;
 
   @OneToMany(
     () => DiscordNotificationEntity,

@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 import { AddDestinationDto } from '../dto';
 import { IAddDestinationResult, RpcBusinessException, RpcError } from '@libs/shared';
 import { RpcPayload } from '@libs/rpc';
-import { NotificationsService } from '../../notifications/services';
 import { DiscordAuthService } from '../../discord/services';
 import { TwitchNotificationsService } from '../../notifications/services/twitch-notifications.service';
 
@@ -16,7 +15,6 @@ export class AddDestinationHandler {
   constructor(
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
-    private readonly notificationsService: NotificationsService,
     private readonly twitchNotificationsService: TwitchNotificationsService,
     private readonly discordAuthService: DiscordAuthService,
   ) {}
@@ -42,7 +40,7 @@ export class AddDestinationHandler {
         {
           broadcasterId: data.broadcasterId,
           channelId: data.channelId,
-          guildId: data.guildId,
+          discordGuildId: data.discordGuildId,
           event: eventType,
           payload: data.payload,
           costType: NotificationCostType.Personal,

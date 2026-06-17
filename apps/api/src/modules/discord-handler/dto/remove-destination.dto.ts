@@ -10,5 +10,5 @@ export class RemoveDestinationDto implements IRemoveDestinationPayload {
 
   @IsString()
   @IsOptional()
-  guildId?: string;
+  discordGuildId?: string;
 }

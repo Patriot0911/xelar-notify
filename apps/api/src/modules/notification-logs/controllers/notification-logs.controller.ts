@@ -1,16 +1,18 @@
 import { Controller, Get, Param, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { NotificationLogsService } from './notification-logs.service';
-import { GetNotificationLogsDto } from './dto/get-notification-logs.dto';
-import { JwtAccessGuard, PermissionsGuard } from '../auth/guards';
-import { Permissions } from '../auth/decorator/permissions.decorator';
+import { GetNotificationLogsDto } from '../dto/get-notification-logs.dto';
+import { JwtAccessGuard, PermissionsGuard } from '../../auth/guards';
+import { Permissions } from '../../auth/decorator/permissions.decorator';
 import { Permission } from '@libs/database';
-import { IAccessTokenPayload } from '../auth/models';
+import { IAccessTokenPayload } from '../../auth/models';
+import { NotificationLogsService } from '../services';
 
 @ApiTags('Notification Logs')
 @Controller('api/notification-logs')
 export class NotificationLogsController {
-  constructor(private readonly logsService: NotificationLogsService) {}
+  constructor(
+    private readonly logsService: NotificationLogsService
+  ) {}
 
   @Get()
   @ApiBearerAuth()

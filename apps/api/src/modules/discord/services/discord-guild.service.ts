@@ -35,12 +35,12 @@ export class DiscordGuildService {
     const guildIds = userGuilds.map((g) => g.id);
 
     const userGuildsManagerPermissions = await this.discordGuildRepository.find({
-      where: { guildId: In(guildIds) },
-      select: { managerPermission: true, guildId: true, },
+      where: { discordGuildId: In(guildIds) },
+      select: { managerPermission: true, discordGuildId: true, },
     });
 
     const managerPermissionMap = new Map(
-      userGuildsManagerPermissions.map((g) => [g.guildId, g.managerPermission]),
+      userGuildsManagerPermissions.map((g) => [g.discordGuildId, g.managerPermission]),
     );
 
     const filteredGuilds = userGuilds.filter((guild) => {
@@ -57,19 +57,19 @@ export class DiscordGuildService {
       .createQueryBuilder('guild')
       .leftJoin('guild.notifications', 'botNotif')
       .leftJoin('guild.webhookNotifications', 'webhookNotif')
-      .select('guild.guildId', 'guildId')
+      .select('guild.discordGuildId', 'discordGuildId')
       .addSelect('guild.balance', 'balance')
       .addSelect(
         'COUNT(DISTINCT botNotif.id) + COUNT(DISTINCT webhookNotif.id)',
         'notificationCount',
       )
-      .where('guild.guildId IN (:...guildIds)', { guildIds: filteredGuildIds })
-      .groupBy('guild.id, guild.guildId, guild.balance')
-      .getRawMany<{ guildId: string; balance: string; notificationCount: string }>();
+      .where('guild.discordGuildId IN (:...guildIds)', { guildIds: filteredGuildIds })
+      .groupBy('guild.id, guild.discordGuildId, guild.balance')
+      .getRawMany<{ discordGuildId: string; balance: string; notificationCount: string }>();
 
     const statsMap = new Map(
       dbStats.map((row) => [
-        row.guildId,
+        row.discordGuildId,
         {
           balance: parseFloat(row.balance),
           notificationCount: parseInt(row.notificationCount, 10),
@@ -99,14 +99,14 @@ export class DiscordGuildService {
       .createQueryBuilder('guild')
       .leftJoin('guild.notifications', 'botNotif')
       .leftJoin('guild.webhookNotifications', 'webhookNotif')
-      .select('guild.guildId', 'guildId')
+      .select('guild.discordGuildId', 'discordGuildId')
       .addSelect(
         'COUNT(DISTINCT botNotif.id) + COUNT(DISTINCT webhookNotif.id)',
         'count',
       )
-      .where('guild.guildId = :guildId', { guildId, })
+      .where('guild.discordGuildId = :guildId', { guildId, })
       .groupBy('guild.guild_id')
-      .getRawOne<{ guildId: string; count: string }>();
+      .getRawOne<{ discordGuildId: string; count: string }>();
 
     return {
       ...apiUserGuild,
@@ -121,7 +121,7 @@ export class DiscordGuildService {
 
   async setManagerPermission(guildId: string, permission: DiscordPermissionFlag | null | undefined): Promise<void> {
     await this.discordGuildRepository.update(
-      { guildId, },
+      { discordGuildId: guildId, },
       { managerPermission: permission ?? null },
     );
     await this.discordGuildAccessService.invalidateGuildCache(guildId);
@@ -129,7 +129,7 @@ export class DiscordGuildService {
 
   async assertGuildBalance(guildId: string, amount: number): Promise<void> {
     const guild = await this.discordGuildRepository.findOne({
-      where: { guildId },
+      where: { discordGuildId: guildId },
       select: { balance: true },
     });
     if (!guild || Number(guild.balance) < amount) {
@@ -156,14 +156,14 @@ export class DiscordGuildService {
 
   async getOrCreateGuild(guildId: string): Promise<DiscordGuildEntity> {
     const guild = await this.discordGuildRepository.findOne({
-      where: { guildId, },
+      where: { discordGuildId: guildId },
     });
     if (guild !== null) {
       return guild;
     }
     const createdGuild = this.discordGuildRepository.create({
       balance: BASE_GUILD_BALANCE,
-      guildId,
+      discordGuildId: guildId,
     });
     const savedGuild = await this.discordGuildRepository.save(createdGuild);
     return savedGuild;

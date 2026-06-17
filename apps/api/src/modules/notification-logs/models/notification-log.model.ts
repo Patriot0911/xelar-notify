@@ -6,10 +6,10 @@ export interface INotificationLogModel {
   notificationType: NotificationLogType;
   status: NotificationLogStatus;
   ownerId: string;
-  guildId: string | null;
+  discordGuildId: string | null;
   streamerLogin: string;
   eventType: string;
   requestPayload: Record<string, any> | null;
   errorMessage: string | null;
   createdAt: Date;
-}
+};

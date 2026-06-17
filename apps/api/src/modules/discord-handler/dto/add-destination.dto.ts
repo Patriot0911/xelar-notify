@@ -7,7 +7,7 @@ export class AddDestinationDto implements IAddDestinationPayload {
   discordId: string;
 
   @IsString()
-  guildId: string;
+  discordGuildId: string;
 
   @IsString()
   channelId: string;

@@ -3,16 +3,16 @@ import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 
 export enum NotificationLogType {
   Discord = 'discord',
   Webhook = 'webhook',
-}
+};
 
 export enum NotificationLogStatus {
   Sent = 'sent',
   Failed = 'failed',
-}
+};
 
 @Entity('notification_logs')
 @Index(['ownerId', 'createdAt'])
-@Index(['guildId', 'createdAt'])
+@Index(['discordGuildId', 'createdAt'])
 export class NotificationLogEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -30,7 +30,7 @@ export class NotificationLogEntity {
   ownerId: string;
 
   @Column({ name: 'guild_id', type: 'varchar', nullable: true })
-  guildId?: string | null;
+  discordGuildId?: string | null;
 
   @Column({ name: 'streamer_login', type: 'varchar' })
   streamerLogin: string;

@@ -1,6 +1,6 @@
 export interface IGetProfilePayload {
   discordId: string;
-  guildId?: string;
+  discordGuildId?: string;
 }
 
 export interface IGetProfileGuildStats {

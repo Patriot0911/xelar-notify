@@ -6,7 +6,7 @@ export interface IDiscordNotificationItemModel {
   costType: NotificationCostType;
   cost: number;
   channelId: string;
-  guildId: string;
+  discordGuildId: string;
   streamerEventId: string;
   createdAt: Date;
 }

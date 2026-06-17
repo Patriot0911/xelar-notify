@@ -46,7 +46,7 @@ export class SuspendNotificationHandler {
       notificationType: NotificationLogType.Discord,
       status: NotificationLogStatus.Failed,
       ownerId: notification.onwerId,
-      guildId: notification.guildId ?? null,
+      discordGuildId: notification.discordGuildId ?? null,
       streamerLogin: notification.streamerEvent?.streamer?.twitchLogin ?? '',
       eventType: notification.streamerEvent?.event ?? '',
       requestPayload: notification.messagePayload as Record<string, any> | null,

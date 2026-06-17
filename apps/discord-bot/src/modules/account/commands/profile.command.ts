@@ -19,7 +19,7 @@ export class ProfileCommand {
       RpcPatterns.discord.getProfile,
       <IGetProfilePayload> {
         discordId: interaction.user.id,
-        guildId: interaction.guildId ?? undefined,
+        discordGuildId: interaction.guildId ?? undefined,
       },
     );
 

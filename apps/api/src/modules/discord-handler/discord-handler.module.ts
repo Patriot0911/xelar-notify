@@ -13,7 +13,12 @@ import { AddDestinationHandler, AuthenticateHandler, GetProfileHandler, ListDest
     TwitchSubscriptionsModule,
     TwitchModule,
     NotificationsModule,
-    TypeOrmModule.forFeature([UserEntity, DiscordNotificationEntity, NotificationLogEntity, DiscordGuildEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      DiscordNotificationEntity,
+      NotificationLogEntity,
+      DiscordGuildEntity,
+    ]),
   ],
   controllers: [
     AddDestinationHandler,

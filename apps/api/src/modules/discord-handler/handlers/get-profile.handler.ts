@@ -44,18 +44,16 @@ export class GetProfileHandler {
       subscriptionsCount,
     };
 
-    if (data.guildId) {
+    if (data.discordGuildId) {
       const guild = await this.discordGuildRepository.findOne({
-        where: { guildId: data.guildId },
+        where: { discordGuildId: data.discordGuildId },
       });
 
       const guildSubscriptionsCount = await this.notificationRepository
         .createQueryBuilder('n')
-        .innerJoin('n.discordGuild', 'guild', 'guild.guildId = :guildId', { guildId: data.guildId })
+        .innerJoin('n.discordGuild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId: data.discordGuildId })
         .where('n.status = :status', { status: NotificationStatus.Active })
         .getCount();
-
-
 
       result.guild = {
         balance: guild?.balance ?? 0,

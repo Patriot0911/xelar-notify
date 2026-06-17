@@ -73,7 +73,7 @@ export class UsersMapper {
       costType: n.costType,
       cost: n.cost,
       channelId: n.channelId,
-      guildId: n.guildId,
+      discordGuildId: n.discordGuildId,
       streamerEventId: n.streamerEventId,
       createdAt: n.createdAt,
     };

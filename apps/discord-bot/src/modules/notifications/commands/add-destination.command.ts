@@ -20,7 +20,7 @@ export class AddDestinationCommand {
 
     const token = this.pendingStore.create({
       userId: interaction.user.id,
-      guildId: interaction.guildId!,
+      discordGuildId: interaction.guildId!,
       channelId: interaction.options.getChannel('channel')?.id ?? interaction.channelId,
       broadcasterId: interaction.options.getString('broadcaster', true),
       eventType: interaction.options.getString('type') ?? 'stream.online',

@@ -48,16 +48,16 @@ export class RemoveDestinationHandler {
     const isOwner = notification.onwerId === user.id;
 
     if (!isOwner) {
-      if (!data.guildId) {
+      if (!data.discordGuildId) {
         throw new RpcBusinessException(RpcError.FORBIDDEN, 'No permission to remove this notification');
       }
 
-      const notifGuildId = notification.discordGuild?.guildId;
-      if (notifGuildId !== data.guildId) {
+      const notifGuildId = notification.discordGuild?.discordGuildId;
+      if (notifGuildId !== data.discordGuildId) {
         throw new RpcBusinessException(RpcError.FORBIDDEN, 'Notification does not belong to this server');
       }
 
-      const hasAccess = await this.discordGuildAccessService.canAccessGuild(user.id, data.guildId);
+      const hasAccess = await this.discordGuildAccessService.canAccessGuild(user.id, data.discordGuildId);
       if (!hasAccess) {
         throw new RpcBusinessException(RpcError.FORBIDDEN, 'No permission to manage this server');
       }

@@ -48,7 +48,7 @@ export class AddDestinationButtonHandler {
       RpcPatterns.discord.addDestination,
       <IAddDestinationPayload> {
         discordId: interaction.user.id,
-        guildId: pending.guildId,
+        discordGuildId: pending.discordGuildId,
         channelId: pending.channelId,
         broadcasterId: pending.broadcasterId,
         eventType: pending.eventType,

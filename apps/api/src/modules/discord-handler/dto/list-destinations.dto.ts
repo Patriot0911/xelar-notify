@@ -7,5 +7,5 @@ export class ListDestinationsDto implements IListDestinationsPayload {
 
   @IsString()
   @IsOptional()
-  guildId?: string;
+  discordGuildId?: string;
 }

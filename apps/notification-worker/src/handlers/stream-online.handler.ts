@@ -68,7 +68,7 @@ export class StreamOnlineHandler {
       const payload: IDiscordNotificationMessage = {
         notificationId: dest.id,
         channelId:      dest.channelId,
-        guildId:        dest.guildId,
+        discordGuildId: dest.discordGuildId,
         messagePayload: interpolated,
       };
 
@@ -92,7 +92,7 @@ export class StreamOnlineHandler {
         notificationType: NotificationLogType.Discord,
         status,
         ownerId: dest.onwerId,
-        guildId: dest.guildId ?? null,
+        discordGuildId: dest.discordGuildId ?? null,
         streamerLogin: event.streamer?.twitchLogin ?? '',
         eventType: event.event,
         requestPayload: interpolated as Record<string, any> | null,
@@ -141,7 +141,7 @@ export class StreamOnlineHandler {
         notificationType: NotificationLogType.Webhook,
         status: failed ? NotificationLogStatus.Failed : NotificationLogStatus.Sent,
         ownerId: n.onwerId,
-        guildId: n.discordGuildId ?? null,
+        discordGuildId: n.discordGuildId ?? null,
         streamerLogin: event.streamer?.twitchLogin ?? '',
         eventType: event.event,
         requestPayload: interpolated as Record<string, any> | null,

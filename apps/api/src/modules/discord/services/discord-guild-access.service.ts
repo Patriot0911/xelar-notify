@@ -73,7 +73,7 @@ export class DiscordGuildAccessService {
     }
 
     const guildSettings = await this.guildRepository.findOne({
-      where: { guildId },
+      where: { discordGuildId: guildId },
       select: { managerPermission: true },
     });
 

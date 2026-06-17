@@ -6,7 +6,7 @@ const TTL_MS = 15 * 60 * 1000;
 
 export interface PendingDestination {
   userId: string;
-  guildId: string;
+  discordGuildId: string;
   channelId: string;
   broadcasterId: string;
   eventType: string;

@@ -1,6 +1,6 @@
 export interface IListDestinationsPayload {
   discordId: string;
-  guildId?: string;
+  discordGuildId?: string;
 }
 
 export interface IDestinationItem {

@@ -1,7 +1,7 @@
 export interface IRemoveDestinationPayload {
   discordId: string;
   notificationId: string;
-  guildId?: string;
+  discordGuildId?: string;
 }
 
 export interface IRemoveDestinationResult {

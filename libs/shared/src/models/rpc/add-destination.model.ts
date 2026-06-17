@@ -1,6 +1,6 @@
 export interface IAddDestinationPayload {
   discordId: string;
-  guildId: string;
+  discordGuildId: string;
   channelId: string;
   broadcasterId: string;
   eventType?: string;

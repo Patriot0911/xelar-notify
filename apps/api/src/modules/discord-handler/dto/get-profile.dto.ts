@@ -7,5 +7,5 @@ export class GetProfileDto implements IGetProfilePayload {
 
   @IsString()
   @IsOptional()
-  guildId?: string;
+  discordGuildId?: string;
 }
