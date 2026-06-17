@@ -26,6 +26,7 @@ export class AuthMapper {
       twitchLogin: user.twitchAccount?.twitchLogin ?? null,
       allowPersonalSubscriptions: user.twitchAccount?.allowPersonalSubscriptions ?? false,
       permissions,
+      balance: Number(user.balance),
       roles,
     };
   }

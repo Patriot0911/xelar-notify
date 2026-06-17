@@ -15,6 +15,9 @@ export class UserPayloadDto implements IUserPayload {
   @ApiProperty({ type: 'string', nullable: true, })
   twitchLogin?: string | null;
 
+  @ApiProperty({ type: 'number' })
+  balance: number;
+
   @ApiProperty({ type: 'boolean', })
   allowPersonalSubscriptions: boolean;
 

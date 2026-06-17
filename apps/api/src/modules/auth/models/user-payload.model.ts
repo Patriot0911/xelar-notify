@@ -8,4 +8,5 @@ export interface IUserPayload {
   allowPersonalSubscriptions: boolean;
   roles: string[];
   permissions: Permission[];
+  balance: number;
 };
