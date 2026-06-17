@@ -38,6 +38,7 @@ export class StreamOnlineHandler {
         .createQueryBuilder('event')
         .leftJoinAndSelect('event.streamer', 'streamer')
         .leftJoinAndSelect('event.discordNotifications', 'discord', 'discord.status = :discordStatus', { discordStatus: NotificationStatus.Active })
+        .leftJoinAndSelect('discord.guild', 'discordGuild')
         .leftJoinAndSelect('event.webhookNotifications', 'webhook', 'webhook.status = :webhookStatus', { webhookStatus: NotificationStatus.Active })
         .addSelect('webhook.webhookUrl')
         .where('event.subscriptionId = :subscriptionId', {
