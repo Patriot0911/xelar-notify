@@ -23,6 +23,7 @@ export class RolesService {
           { id: userId, },
         ],
       },
+      relations: ['roles'],
     });
     const { permissions, roles, } = this.rolesMapper.rolesToAccess(userRoles);
     return {
@@ -68,7 +69,8 @@ export class RolesService {
 
   async createRole(roleData: ICreateRoleModel, userId: string): Promise<IRoleItemModel> {
     const userData = await this.usersRepository.findOneOrFail({
-      where: { id: userId, }
+      where: { id: userId, },
+      relations: ['roles'],
     });
     await this.checkUserRoleManageAccess(roleData.permissions, userData);
     const newRole = this.rolesRepository.create({
@@ -109,11 +111,12 @@ export class RolesService {
         && userRole.rolePriority <= roleData.rolePriority
       ) || !userRole
      ) {
-      throw new ForbiddenException('Cannot edit role for higher prioirty');
+      throw new ForbiddenException('Cannot edit role for higher or equal prioirty');
     }
 
     const userData = await this.usersRepository.findOne({
-      where: { id: userId, }
+      where: { id: userId, },
+      relations: ['roles'],
     });
 
     await this.checkUserRoleManageAccess(currentRoleData.permissions, userData!);
