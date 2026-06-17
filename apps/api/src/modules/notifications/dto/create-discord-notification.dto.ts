@@ -15,7 +15,7 @@ export class CreateDiscordNotificationDto {
   payload: Record<string, unknown>;
 
   @IsString()
-  discordGuildId: string;
+  guildId: string;
 
   @IsString()
   channelId: string;

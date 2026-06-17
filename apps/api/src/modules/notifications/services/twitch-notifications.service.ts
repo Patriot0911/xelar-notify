@@ -33,7 +33,7 @@ export class TwitchNotificationsService {
     ownerId: string,
   ): Promise<DiscordNotificationEntity> {
     await this.assertCanCreate(ownerId, dto.broadcasterId, dto.event);
-    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType, dto.discordGuildId);
+    await this.assertCanAfford(ownerId, dto.broadcasterId, dto.costType, dto.guildId);
 
     const subscription = await this.twitchSubscriptionService.getOrCreateEvent(
       dto.broadcasterId,
@@ -43,9 +43,9 @@ export class TwitchNotificationsService {
     this.discordPayloadService.validateBotPayload(dto.payload);
 
     const cost = this.notificationsService.resolveCost(dto.costType);
-    await this.applyCharge(ownerId, cost, dto.costType, dto.discordGuildId);
+    await this.applyCharge(ownerId, cost, dto.costType, dto.guildId);
 
-    const guild = await this.discordGuildService.getOrCreateGuild(dto.discordGuildId);
+    const guild = await this.discordGuildService.getOrCreateGuild(dto.guildId);
 
     const notification = this.discordNotificationRepository.create({
       streamerEventId: subscription.id,

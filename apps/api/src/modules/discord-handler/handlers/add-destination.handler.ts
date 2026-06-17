@@ -40,7 +40,7 @@ export class AddDestinationHandler {
         {
           broadcasterId: data.broadcasterId,
           channelId: data.channelId,
-          discordGuildId: data.discordGuildId,
+          guildId: data.discordGuildId,
           event: eventType,
           payload: data.payload,
           costType: NotificationCostType.Personal,
