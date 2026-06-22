@@ -7,3 +7,4 @@ export * from './authenticate.model';
 export * from './suspend-notification.model';
 export * from './rpc-result.model';
 export * from './rpc.exception';
+export * from './get-channel-info.model';

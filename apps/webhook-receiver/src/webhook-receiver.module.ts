@@ -5,6 +5,7 @@ import { RedisModule } from '@libs/redis';
 import { DatabaseModule } from '@libs/database';
 import { CryptoModule } from '@libs/shared';
 import { IQueueCredentials, QueueModule } from '@libs/queue';
+import { RpcModule } from '@libs/rpc';
 import { ConfigService } from '@nestjs/config';
 
 @Module({
@@ -19,6 +20,13 @@ import { ConfigService } from '@nestjs/config';
       useFactory: (config: ConfigService<AppConfig>): IQueueCredentials => ({
         user: config.get('RABBIT_RECEIVER_USER')!,
         password: config.get('RABBIT_RECEIVER_PASSWORD')!,
+      }),
+    }),
+    RpcModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService<AppConfig>) => ({
+        host: config.get('API_HOST')!,
+        port: config.get('API_TCP_PORT')!,
       }),
     }),
   ],

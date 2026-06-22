@@ -10,6 +10,19 @@ export interface ITwitchStreamOnlineEvent {
 export interface IStreamOnlineMessage {
   subscription: { id: string };
   event: ITwitchStreamOnlineEvent;
+  channelInfo?: {
+    broadcasterId: string;
+    broadcasterLogin: string;
+    displayName: string;
+    gameId: string;
+    gameName?: string;
+    isLive: boolean;
+    tagIds: string[];
+    tags: string[];
+    thumbnailUrl: string;
+    streamTitle?: string;
+    streamStartedAt?: string;
+  };
 }
 
 export interface IDiscordNotificationMessage {

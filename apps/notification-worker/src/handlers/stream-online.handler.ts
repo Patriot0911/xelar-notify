@@ -48,7 +48,7 @@ export class StreamOnlineHandler {
 
       if (!event) return channel.ack(message);
 
-      const vars = buildStreamOnlineVars(data.event, event.streamer?.profileImageUrl);
+      const vars = buildStreamOnlineVars(data.event, data.channelInfo, event.streamer?.profileImageUrl);
 
       await this.dispatchDiscord(event, vars);
       await this.dispatchWebhooks(event, vars);

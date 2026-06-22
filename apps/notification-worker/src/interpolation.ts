@@ -1,7 +1,8 @@
-import type { ITwitchStreamOnlineEvent } from '@libs/queue';
+import type { IStreamOnlineMessage, ITwitchStreamOnlineEvent } from '@libs/queue';
 
 export function buildStreamOnlineVars(
   event: ITwitchStreamOnlineEvent,
+  channelInfo: IStreamOnlineMessage['channelInfo'],
   avatarUrl?: string | null,
 ): Record<string, string> {
   return {
@@ -13,6 +14,9 @@ export function buildStreamOnlineVars(
     streamUrl:     `https://twitch.tv/${event.broadcaster_user_login}`,
     thumbnailUrl:  `https://static-cdn.jtvnw.net/previews-ttv/live_user_${event.broadcaster_user_login}-1280x720.jpg`,
     avatarUrl:     avatarUrl ?? '',
+    streamTitle:   channelInfo?.streamTitle ?? '',
+    gameName:      channelInfo?.gameName ?? '',
+    gameId:        channelInfo?.gameId ?? '',
   };
 }
 

@@ -1,4 +1,7 @@
 import { IStreamOnlineMessage, QueuePatterns, Queues, QueueService } from '@libs/queue';
+import { RpcPatterns } from '@libs/rpc/patterns';
+import { RpcService } from '@libs/rpc';
+import type { ITwitchChannelInfoResult, ITwitchGetChannelInfoPayload } from '@libs/shared';
 import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
@@ -7,6 +10,7 @@ export class TwitchReceiverService {
 
   constructor(
     private readonly queueService: QueueService,
+    private readonly rpcService: RpcService,
   ) {}
 
   acknowledgeEvent(eventId: string) {
@@ -34,9 +38,15 @@ export class TwitchReceiverService {
     }
 
     if (subscriptionType === 'stream.online') {
+      const channelInfo = await this.rpcService.callSafe<ITwitchChannelInfoResult, ITwitchGetChannelInfoPayload>(
+        RpcPatterns.twitch.getChannelInfo,
+        { broadcasterId: dto.event.broadcaster_user_id },
+      );
+
       const payload: IStreamOnlineMessage = {
         subscription: { id: dto.subscription.id },
         event: dto.event,
+        channelInfo: channelInfo.status ? channelInfo.data ?? undefined : undefined,
       };
       this.queueService.emit(
         Queues.STREAM_EVENTS,

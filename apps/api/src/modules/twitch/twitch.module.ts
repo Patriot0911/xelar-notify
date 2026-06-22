@@ -10,7 +10,7 @@ import { TwitchApiMapper, TwitchAppMapper } from './mappers';
 import { TwitchAppsRepository } from './repositories';
 import { DataSource } from 'typeorm';
 import { CryptoService } from '@libs/shared';
-import { TwitchAppController } from './controllers';
+import { TwitchAppController, TwitchRpcController } from './controllers';
 
 @Module({
   imports: [
@@ -28,6 +28,7 @@ import { TwitchAppController } from './controllers';
   controllers: [
     TwitchController,
     TwitchAppController,
+    TwitchRpcController,
   ],
   providers: [
     TwitchAppAuthService,

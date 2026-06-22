@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import {
   ITwitchApiUserNormalizedModel,
@@ -12,7 +12,11 @@ import {
 import { TwitchApiMapper } from '../mappers';
 import { TwitchStreamerEvents } from '@libs/database';
 import { AxiosError } from 'axios';
-import { ITwitchGetSubscriptionsApiResponseModel } from '../models/twitch-api';
+import {
+  ITwitchApiChannelNormalizedModel,
+  ITwitchChannelApiResponseModel,
+  ITwitchGetSubscriptionsApiResponseModel
+} from '../models/twitch-api';
 import { IGetTwitchSubscriptionParamsModel } from '../models/twitch-params.model';
 import { TwitchAppsRepository } from '../repositories';
 
@@ -170,6 +174,33 @@ export class TwitchApiService {
       console.error(message);
       throw new InternalServerErrorException(
         `Twitch API subscription error. Please contact administrator for more information [${status}]`
+      );
+    }
+  }
+
+  async getChannelById(broadcasterId: string): Promise<ITwitchApiChannelNormalizedModel> {
+    const app = await this.getLeastLoadedApp();
+    if (!app) {
+      throw new InternalServerErrorException('Cannot find Twitch app');
+    }
+    try {
+      const { data: { data, }, } = await firstValueFrom(
+        this.httpService.get<ITwitchChannelApiResponseModel>('/helix/channels', <ITwitchHttpConfigModel> {
+          params: { broadcaster_id: broadcasterId },
+          twitchClientId: app.clientId,
+        }),
+      );
+      if (!data || data.length < 1) {
+        throw new NotFoundException(
+          `Cannot find broadcaster channel with id: ${broadcasterId}`
+        );
+      }
+      return this.twitchApiMapper.twitchApiChannelToNormalized(data[0]);
+    } catch(e: unknown) {
+      const { message, status } = <AxiosError> e;
+      console.error(message);
+      throw new InternalServerErrorException(
+        `Twitch API error. Please contact administrator for more information [${status}]`
       );
     }
   }
