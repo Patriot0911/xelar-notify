@@ -1,1 +1,1 @@
-export * from './twitch-event-context.model';
+export * from './twitch-events-restrictions.model';

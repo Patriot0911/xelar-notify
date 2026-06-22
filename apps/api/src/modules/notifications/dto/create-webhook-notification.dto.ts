@@ -1,11 +1,12 @@
 import { NotificationCostType, TwitchStreamerEvents } from '@libs/database';
 import { IsEnum, IsObject, IsString } from 'class-validator';
+import { AllowedTwitchEvents } from '../models';
 
 export class CreateWebhookNotificationDto {
   @IsString()
   broadcasterId: string;
 
-  @IsEnum(TwitchStreamerEvents)
+  @IsEnum(AllowedTwitchEvents)
   event: TwitchStreamerEvents;
 
   @IsEnum(NotificationCostType)
