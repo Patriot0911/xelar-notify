@@ -18,10 +18,14 @@ export class DiscordBotService {
   ) {}
 
   async getGuildTextChannels(guildId: string): Promise<IDiscordChannelModel[]> {
-    const cached = await this.redis.get<IDiscordChannelModel[]>(
-      discordGuildChannels(guildId),
+    const cached = await this.redis.get<IDiscordChannelModel[]>(discordGuildChannels(guildId));
+    if (cached) return cached;
+
+    return firstValueFrom(
+      this.botClient
+        .send<IDiscordChannelModel[]>(RpcPatterns.bot.getGuildChannels, { guildId })
+        .pipe(timeout(8000)),
     );
-    return cached ?? [];
   }
 
   async getBotGuildIds(): Promise<string[]> {

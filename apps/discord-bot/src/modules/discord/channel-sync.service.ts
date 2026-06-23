@@ -9,7 +9,7 @@ type TextGuildChannel = TextChannel | NewsChannel;
 
 const CHANNELS_TTL = 24 * 60 * 60; // 24 h safety-net; events keep it fresh
 
-interface ICachedChannel {
+export interface ICachedChannel {
   id: string;
   name: string;
   position: number;
@@ -49,9 +49,9 @@ export class ChannelSyncService implements OnModuleInit {
     this.logger.log(`Synced channels for ${guilds.length} guilds`);
   }
 
-  private async syncGuild(guildId: string): Promise<void> {
+  async syncGuild(guildId: string): Promise<ICachedChannel[]> {
     const guild = this.client.guilds.cache.get(guildId);
-    if (!guild) return;
+    if (!guild) return [];
 
     const channels = [...guild.channels.cache.values()]
       .filter(isTextGuildChannel)
@@ -65,6 +65,7 @@ export class ChannelSyncService implements OnModuleInit {
       .sort((a, b) => a.position - b.position);
 
     await this.redis.set(discordGuildChannels(guildId), channels, CHANNELS_TTL);
+    return channels;
   }
 
   @OnDiscordEvent('channelCreate')
