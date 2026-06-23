@@ -19,10 +19,18 @@ export const EmbedSchema = z.object({
     value:  z.string().max(1024),
     inline: z.boolean().optional(),
   })).max(25).optional(),
-  footer:    z.object({ text: z.string().max(2048) }).optional(),
+  author: z.object({
+    name:     z.string().max(256),
+    url:      urlOrTemplate.optional(),
+    icon_url: urlOrTemplate.optional(),
+  }).optional(),
+  footer: z.object({
+    text:     z.string().max(2048),
+    icon_url: urlOrTemplate.optional(),
+  }).optional(),
   thumbnail: z.object({ url: urlOrTemplate }).optional(),
   image:     z.object({ url: urlOrTemplate }).optional(),
-  timestamp: z.string().datetime().optional(),
+  timestamp: z.union([z.string().datetime(), z.string().regex(TEMPLATE_VAR_RE)]).optional(),
 });
 
 // Raw object without .refine() so extended schemas can call .extend() on it
