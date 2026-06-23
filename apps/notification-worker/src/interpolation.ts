@@ -11,6 +11,7 @@ export function buildStreamOnlineVars(
     streamerId:    event.broadcaster_user_id,
     streamType:    event.type,
     startedAt:     event.started_at,
+    startedAtTimestamp: String(Math.floor(new Date(event.started_at).getTime() / 1000)),
     streamUrl:     `https://twitch.tv/${event.broadcaster_user_login}`,
     thumbnailUrl:  `https://static-cdn.jtvnw.net/previews-ttv/live_user_${event.broadcaster_user_login}-1280x720.jpg`,
     avatarUrl:     avatarUrl ?? '',
