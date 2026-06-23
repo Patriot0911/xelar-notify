@@ -13,6 +13,7 @@ export const RpcPatterns = {
     getGuildRoles:       'bot.discord.guild-roles',
     getGuildMemberRoles: 'bot.discord.guild-member-roles',
     getGuildChannels:    'bot.discord.guild-channels',
+    getGuildIds:         'bot.discord.guild-ids',
   },
   twitch: {
     getChannelInfo: 'twitch.get-channel-info',

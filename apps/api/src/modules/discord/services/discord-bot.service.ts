@@ -30,7 +30,13 @@ export class DiscordBotService {
 
   async getBotGuildIds(): Promise<string[]> {
     const cached = await this.redis.get<string[]>(botGuildIds());
-    return cached ?? [];
+    if (cached) return cached;
+
+    return firstValueFrom(
+      this.botClient
+        .send<string[]>(RpcPatterns.bot.getGuildIds, {})
+        .pipe(timeout(8000)),
+    );
   }
 
   async getGuildRoles(guildId: string): Promise<IDiscordRoleModel[]> {

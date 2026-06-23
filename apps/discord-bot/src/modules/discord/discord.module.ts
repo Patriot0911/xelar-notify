@@ -7,6 +7,7 @@ import { ChannelSyncService } from './channel-sync.service';
 import { GetGuildRolesHandler } from './get-guild-roles.handler';
 import { GetGuildMemberHandler } from './get-guild-member.handler';
 import { GetGuildChannelsHandler } from './get-guild-channels.handler';
+import { GetGuildIdsHandler } from './get-guild-ids.handler';
 
 @Module({
   imports: [DiscoveryModule],
@@ -16,7 +17,7 @@ import { GetGuildChannelsHandler } from './get-guild-channels.handler';
     GuildSyncService,
     ChannelSyncService,
   ],
-  controllers: [GetGuildRolesHandler, GetGuildMemberHandler, GetGuildChannelsHandler],
+  controllers: [GetGuildRolesHandler, GetGuildMemberHandler, GetGuildChannelsHandler, GetGuildIdsHandler],
   exports: [
     discordProvider,
     DiscordExplorer,

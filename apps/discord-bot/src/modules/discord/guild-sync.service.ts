@@ -19,10 +19,11 @@ export class GuildSyncService implements OnModuleInit {
     }
   }
 
-  async syncGuilds(): Promise<void> {
+  async syncGuilds(): Promise<string[]> {
     const guildIds = [...this.client.guilds.cache.keys()];
     await this.redis.set(botGuildIds(), guildIds);
     console.log(`Synced ${guildIds.length} guilds to Redis`);
+    return guildIds;
   }
 
   @OnDiscordEvent('guildCreate')
