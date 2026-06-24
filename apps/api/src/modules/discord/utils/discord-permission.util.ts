@@ -1,4 +1,5 @@
 export const hasDiscordPermission = (permissions: string, flag: string): boolean => {
+  const perms = BigInt(permissions);
   const required = BigInt(flag);
-  return (BigInt(permissions) & required) === required;
+  return (perms & required) === required;
 };

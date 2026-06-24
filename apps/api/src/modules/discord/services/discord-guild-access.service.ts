@@ -66,9 +66,13 @@ export class DiscordGuildAccessService {
       return false;
     }
 
-    if (guild.owner || hasDiscordPermission(guild.permissions, DiscordPermissionFlag.ADMINISTRATOR)) {
+    if (guild.owner) {
       return true;
-    } else if(shouldBeAdmin) {
+    }
+
+    if (hasDiscordPermission(guild.permissions, DiscordPermissionFlag.ADMINISTRATOR)) {
+      return true;
+    } else if (shouldBeAdmin) {
       return false;
     }
 

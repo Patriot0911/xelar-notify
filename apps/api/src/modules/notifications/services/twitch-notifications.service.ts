@@ -1,10 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DiscordNotificationEntity, NotificationCostType, NotificationStatus, TwitchStreamerEvents, UserEntity, WebhookNotificationEntity, WebhookType, } from '@libs/database';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
-import { DiscordGuildService, DiscordWebhookService } from '../../discord/services';
+import { DiscordGuildAccessService, DiscordGuildService, DiscordWebhookService } from '../../discord/services';
 import { CreateDiscordNotificationDto, CreateWebhookNotificationDto, UpdateDiscordNotificationDto, UpdateWebhookNotificationDto } from '../dto';
 import { NotificationsService } from './notifications.service';
 
@@ -18,6 +18,7 @@ export class TwitchNotificationsService {
     private readonly twitchSubscriptionService: TwitchSubscriptionService,
     private readonly discordPayloadService: DiscordPayloadService,
     private readonly discordWebhookService: DiscordWebhookService,
+    private readonly discordGuildAccessService: DiscordGuildAccessService,
     private readonly notificationsService: NotificationsService,
     private readonly discordGuildService: DiscordGuildService,
     @InjectRepository(DiscordNotificationEntity)
@@ -142,10 +143,16 @@ export class TwitchNotificationsService {
     ownerId: string,
   ): Promise<DiscordNotificationEntity> {
     const notification = await this.discordNotificationRepository.findOne({
-      where: { id, onwerId: ownerId },
+      where: { id, },
     });
 
-    if (!notification) throw new NotFoundException('Notification not found');
+    if (!notification) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    if (notification.onwerId !== ownerId) {
+      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guildId);
+    }
 
     if (dto.payload !== undefined) {
       this.discordPayloadService.validateBotPayload(dto.payload);
@@ -166,11 +173,18 @@ export class TwitchNotificationsService {
     ownerId: string,
   ): Promise<WebhookNotificationEntity> {
     const notification = await this.webhookNotificationRepository.findOne({
-      where: { id, onwerId: ownerId },
+      where: { id, },
     });
 
     if (!notification) {
       throw new NotFoundException('Notification not found');
+    }
+
+    if (notification.onwerId !== ownerId) {
+      if (!notification.guildId) {
+        throw new ForbiddenException('You have no access to this notification');
+      }
+      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guildId);
     }
 
     if (dto.payload !== undefined) {
@@ -192,10 +206,16 @@ export class TwitchNotificationsService {
 
   async deleteDiscordNotification(id: string, ownerId: string): Promise<void> {
     const notification = await this.discordNotificationRepository.findOne({
-      where: { id, onwerId: ownerId },
+      where: { id, },
     });
 
-    if (!notification) throw new NotFoundException('Notification not found');
+    if (!notification) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    if (notification.onwerId !== ownerId) {
+      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guildId);
+    }
 
     const { streamerEventId } = notification;
     await this.discordNotificationRepository.remove(notification);
@@ -204,10 +224,19 @@ export class TwitchNotificationsService {
 
   async deleteWebhookNotification(id: string, ownerId: string): Promise<void> {
     const notification = await this.webhookNotificationRepository.findOne({
-      where: { id, onwerId: ownerId },
+      where: { id, },
     });
 
-    if (!notification) throw new NotFoundException('Notification not found');
+    if (!notification) {
+      throw new NotFoundException('Notification not found');
+    }
+
+    if (notification.onwerId !== ownerId) {
+      if (!notification.guildId) {
+        throw new ForbiddenException('You have no access to this notification');
+      }
+      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guildId);
+    }
 
     const { streamerEventId } = notification;
     await this.webhookNotificationRepository.remove(notification);

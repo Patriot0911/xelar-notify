@@ -43,7 +43,7 @@ export class UserEntity {
   @Column({ name: 'discord_refresh_token', nullable: true, type: 'varchar' })
   discordRefreshToken?: string | null;
 
-  @Column({ name: 'discord_token_expires_at', nullable: true, type: 'date' })
+  @Column({ name: 'discord_token_expires_at', nullable: true, type: 'timestamptz' })
   discordTokenExpiresAt?: Date | null;
 
   @Column({ name: 'twitch_access_token', nullable: true, type: 'varchar' })

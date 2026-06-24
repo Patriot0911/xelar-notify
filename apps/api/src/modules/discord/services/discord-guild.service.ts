@@ -92,7 +92,9 @@ export class DiscordGuildService {
       throw new BadRequestException('Discord guild does not have bot');
     }
 
+    console.log({ guildId })
     const apiUserGuild = await this.discordApiService.fetchUserGuildById(userId, guildId);
+    console.log({ apiUserGuild })
     const guildInfo = await this.getOrCreateGuild(guildId);
 
     const notifications = await this.discordGuildRepository

@@ -7,7 +7,7 @@ import { DiscordAuthMapper, DiscordGuildMapper } from '../mappers';
 import { RedisService, userGuilds } from '@libs/redis';
 import { DiscordApiBaseService } from './discord-api-base.service';
 
-const DISCORD_API_CACHE = 3600 * 24 * 7; // 7 days
+const DISCORD_API_CACHE = 30 * 60; // 30 minutes
 
 @Injectable()
 export class DiscordApiService {
