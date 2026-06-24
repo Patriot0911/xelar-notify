@@ -37,7 +37,7 @@ export class DiscordGuildAccessService {
       return cached;
     }
 
-    const result = await this.resolveAccess(userId, discordGuildId);
+    const result = await this.resolveAccess(userId, discordGuildId, true);
     await this.redis.set(cacheKey, result, GUILD_ACCESS_TTL);
     return result;
   }
