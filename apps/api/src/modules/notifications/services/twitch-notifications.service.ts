@@ -103,21 +103,19 @@ export class TwitchNotificationsService {
     return this.webhookNotificationRepository.save(notification);
   }
 
-  async getGuildNotifications(ownerId: string, discordGuildId: string) {
+  async getGuildNotifications(discordGuildId: string) {
     const [bot, webhook] = await Promise.all([
       this.discordNotificationRepository
         .createQueryBuilder('n')
         .innerJoinAndSelect('n.guild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
         .leftJoinAndSelect('n.streamerEvent', 'event')
         .leftJoinAndSelect('event.streamer', 'streamer')
-        .where('n.onwerId = :ownerId', { ownerId })
         .getMany(),
       this.webhookNotificationRepository
         .createQueryBuilder('n')
         .innerJoinAndSelect('n.guild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
         .leftJoinAndSelect('n.streamerEvent', 'event')
         .leftJoinAndSelect('event.streamer', 'streamer')
-        .where('n.onwerId = :ownerId', { ownerId })
         .getMany(),
     ]);
     return { bot, webhook };

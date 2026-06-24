@@ -29,7 +29,7 @@ export class DiscordNotificationsController {
   ) {
     const { sub } = <IAccessTokenPayload>request.user;
     await this.discordGuildAccessService.assertAccess(sub, discordGuildId);
-    return this.twitchNotificationsService.getGuildNotifications(sub, discordGuildId);
+    return this.twitchNotificationsService.getGuildNotifications(discordGuildId);
   }
 
   @Post('discord')
