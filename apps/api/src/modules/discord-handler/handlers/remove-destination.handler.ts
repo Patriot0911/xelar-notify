@@ -38,7 +38,7 @@ export class RemoveDestinationHandler {
 
     const notification = await this.notificationRepository.findOne({
       where: { id: data.notificationId },
-      relations: ['guild.discordGuildId'],
+      relations: ['guild'],
     });
 
     if (!notification) {

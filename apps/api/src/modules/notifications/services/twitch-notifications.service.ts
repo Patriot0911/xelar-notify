@@ -142,6 +142,7 @@ export class TwitchNotificationsService {
   ): Promise<DiscordNotificationEntity> {
     const notification = await this.discordNotificationRepository.findOne({
       where: { id, },
+      relations: ['guild'],
     });
 
     if (!notification) {
@@ -149,7 +150,7 @@ export class TwitchNotificationsService {
     }
 
     if (notification.onwerId !== ownerId) {
-      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guildId);
+      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guild.discordGuildId);
     }
 
     if (dto.payload !== undefined) {
@@ -172,6 +173,7 @@ export class TwitchNotificationsService {
   ): Promise<WebhookNotificationEntity> {
     const notification = await this.webhookNotificationRepository.findOne({
       where: { id, },
+      relations: ['guild'],
     });
 
     if (!notification) {
@@ -182,7 +184,7 @@ export class TwitchNotificationsService {
       if (!notification.guildId) {
         throw new ForbiddenException('You have no access to this notification');
       }
-      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guildId);
+      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guild!.discordGuildId);
     }
 
     if (dto.payload !== undefined) {
@@ -205,6 +207,7 @@ export class TwitchNotificationsService {
   async deleteDiscordNotification(id: string, ownerId: string): Promise<void> {
     const notification = await this.discordNotificationRepository.findOne({
       where: { id, },
+      relations: ['guild'],
     });
 
     if (!notification) {
@@ -212,7 +215,7 @@ export class TwitchNotificationsService {
     }
 
     if (notification.onwerId !== ownerId) {
-      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guildId);
+      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guild.discordGuildId);
     }
 
     const { streamerEventId } = notification;
@@ -223,6 +226,7 @@ export class TwitchNotificationsService {
   async deleteWebhookNotification(id: string, ownerId: string): Promise<void> {
     const notification = await this.webhookNotificationRepository.findOne({
       where: { id, },
+      relations: ['guild'],
     });
 
     if (!notification) {
@@ -233,7 +237,7 @@ export class TwitchNotificationsService {
       if (!notification.guildId) {
         throw new ForbiddenException('You have no access to this notification');
       }
-      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guildId);
+      await this.discordGuildAccessService.assertAccessAdmin(ownerId, notification.guild!.discordGuildId);
     }
 
     const { streamerEventId } = notification;

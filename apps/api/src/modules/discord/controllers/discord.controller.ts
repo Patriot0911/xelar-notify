@@ -29,31 +29,31 @@ export class DiscordController {
   @Get('guilds/:guildId')
   async getGuildInfo(
     @Req() req,
-    @Param('guildId') guildId: string
+    @Param('guildId') discordGuildId: string
   ): Promise<IDiscordUserGuildItemModel> {
     const user = <IAccessTokenPayload> req.user;
-    await this.discordGuildAccessService.assertAccess(user.sub, guildId);
-    return this.discordGuildService.getUserGuildInfo(user.sub, guildId);
+    await this.discordGuildAccessService.assertAccess(user.sub, discordGuildId);
+    return this.discordGuildService.getUserGuildInfo(user.sub, discordGuildId);
   }
 
   @Get('guilds/:guildId/channels')
   async getGuildTextChannels(
     @Req() req,
-    @Param('guildId') guildId: string
+    @Param('guildId') discordGuildId: string
   ): Promise<IDiscordChannelModel[]> {
     const user = <IAccessTokenPayload> req.user;
-    await this.discordGuildAccessService.assertAccess(user.sub, guildId);
-    return this.discordBotService.getGuildTextChannels(guildId);
+    await this.discordGuildAccessService.assertAccess(user.sub, discordGuildId);
+    return this.discordBotService.getGuildTextChannels(discordGuildId);
   }
 
   @Get('guilds/:guildId/roles')
   async getGuildRoles(
     @Req() req,
-    @Param('guildId') guildId: string
+    @Param('guildId') discordGuildId: string
   ): Promise<IDiscordRoleModel[]> {
     const user = <IAccessTokenPayload> req.user;
-    await this.discordGuildAccessService.assertAccess(user.sub, guildId);
-    return this.discordBotService.getGuildRoles(guildId);
+    await this.discordGuildAccessService.assertAccess(user.sub, discordGuildId);
+    return this.discordBotService.getGuildRoles(discordGuildId);
   }
 
   @Patch('guilds/:guildId/manager-permission')

@@ -17,40 +17,40 @@ export class DiscordGuildAccessService {
     private readonly discordApiService: DiscordApiService,
   ) {}
 
-  async canAccessGuild(userId: string, guildId: string): Promise<boolean> {
-    const cacheKey = guildUserAccess(guildId, userId);
+  async canAccessGuild(userId: string, discordGuildId: string): Promise<boolean> {
+    const cacheKey = guildUserAccess(discordGuildId, userId);
     const cached = await this.redis.get<boolean>(cacheKey);
     if (cached !== null) {
       return cached;
     }
 
-    const result = await this.resolveAccess(userId, guildId);
+    const result = await this.resolveAccess(userId, discordGuildId);
     await this.redis.set(cacheKey, result, GUILD_ACCESS_TTL);
     return result;
   }
 
   // todo: add diff permissions
-  async canManageGuild(userId: string, guildId: string): Promise<boolean> {
-    const cacheKey = guildAdminAccess(guildId, userId);
+  async canManageGuild(userId: string, discordGuildId: string): Promise<boolean> {
+    const cacheKey = guildAdminAccess(discordGuildId, userId);
     const cached = await this.redis.get<boolean>(cacheKey);
     if (cached !== null) {
       return cached;
     }
 
-    const result = await this.resolveAccess(userId, guildId);
+    const result = await this.resolveAccess(userId, discordGuildId);
     await this.redis.set(cacheKey, result, GUILD_ACCESS_TTL);
     return result;
   }
 
-  async assertAccess(userId: string, guildId: string): Promise<void> {
-    const hasAccess = await this.canAccessGuild(userId, guildId);
+  async assertAccess(userId: string, discordGuildId: string): Promise<void> {
+    const hasAccess = await this.canAccessGuild(userId, discordGuildId);
     if (!hasAccess) {
       throw new ForbiddenException('User has no access to this action');
     }
   }
 
-  async assertAccessAdmin(userId: string, guildId: string) {
-    const hasAccess = await this.canManageGuild(userId, guildId);
+  async assertAccessAdmin(userId: string, discordGuildId: string) {
+    const hasAccess = await this.canManageGuild(userId, discordGuildId);
     if (!hasAccess) {
       throw new ForbiddenException('User has no access to this action');
     }
@@ -60,8 +60,8 @@ export class DiscordGuildAccessService {
     await this.redis.deleteByPattern(guildUserAccessPattern(guildId));
   }
 
-  private async resolveAccess(userId: string, guildId: string, shouldBeAdmin: boolean = false): Promise<boolean> {
-    const guild = await this.discordApiService.fetchUserGuildById(userId, guildId);
+  private async resolveAccess(userId: string, discordGuildId: string, shouldBeAdmin: boolean = false): Promise<boolean> {
+    const guild = await this.discordApiService.fetchUserGuildById(userId, discordGuildId);
     if (!guild) {
       return false;
     }
@@ -77,7 +77,7 @@ export class DiscordGuildAccessService {
     }
 
     const guildSettings = await this.guildRepository.findOne({
-      where: { discordGuildId: guildId },
+      where: { discordGuildId: discordGuildId },
       select: { managerPermission: true },
     });
 
