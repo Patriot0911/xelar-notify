@@ -25,6 +25,9 @@ export class TwitchStreamerEntity {
   @Column({ name: 'is_partner', default: false })
   isPartner: boolean;
 
+  @Column({ name: 'is_internal', type: 'boolean', default: false, nullable: true })
+  isInternal?: boolean | null;
+
   @Column({ name: 'user_id', nullable: true })
   userId?: string | null;
 
