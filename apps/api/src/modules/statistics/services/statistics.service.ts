@@ -1,4 +1,4 @@
-import { DiscordGuildEntity, DiscordNotificationEntity, NotificationLogEntity, NotificationLogStatus, NotificationLogType, TwitchStreamerEntity, UserEntity } from '@libs/database';
+import { DiscordGuildEntity, DiscordNotificationEntity, NotificationLogEntity, NotificationLogStatus, NotificationLogType, TwitchStreamerEntity, UserEntity, WebhookNotificationEntity } from '@libs/database';
 import { dailyStatistics, notificationSplitStatistics, platformStatistics, RedisService, topStreamersStatistics, userStatistics } from '@libs/redis';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,6 +15,8 @@ export class StatisticsService {
     private readonly redis: RedisService,
     @InjectRepository(DiscordNotificationEntity)
     private readonly discordNotificationRepository: Repository<DiscordNotificationEntity>,
+    @InjectRepository(WebhookNotificationEntity)
+    private readonly webhookNotificationRepository: Repository<WebhookNotificationEntity>,
     @InjectRepository(TwitchStreamerEntity)
     private readonly twitchStreamerRepository: Repository<TwitchStreamerEntity>,
     @InjectRepository(NotificationLogEntity)
@@ -33,13 +35,15 @@ export class StatisticsService {
     }
 
     const [
-      totalNotifications,
+      totalDiscordNotifications,
+      totalWebhookNotifications,
       totalStreamers,
       totalUsers,
       totalGuilds,
       successfulNotifications,
     ] = await Promise.all([
       this.discordNotificationRepository.count(),
+      this.webhookNotificationRepository.count(),
       this.twitchStreamerRepository.count(),
       this.userRepository.count(),
       this.discordGuildRepository.count(),
@@ -49,7 +53,8 @@ export class StatisticsService {
     ]);
 
     const result: IPlatformStatsModel = {
-      totalNotifications,
+      totalDiscordNotifications,
+      totalWebhookNotifications,
       totalStreamers,
       totalUsers,
       totalGuilds,

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TwitchSubscriptionsModule } from '../twitch-subscriptions';
 import { TwitchModule } from '../twitch';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DiscordGuildEntity, DiscordNotificationEntity, NotificationLogEntity, TwitchStreamerEntity, UserEntity } from '@libs/database';
+import { DiscordGuildEntity, DiscordNotificationEntity, NotificationLogEntity, TwitchStreamerEntity, UserEntity, WebhookNotificationEntity } from '@libs/database';
 import { StatisticsService } from './services';
 import { StatisticsController } from './controllers';
 
@@ -13,6 +13,7 @@ import { StatisticsController } from './controllers';
     TypeOrmModule.forFeature([
       TwitchStreamerEntity,
       DiscordNotificationEntity,
+      WebhookNotificationEntity,
       NotificationLogEntity,
       DiscordGuildEntity,
       UserEntity,

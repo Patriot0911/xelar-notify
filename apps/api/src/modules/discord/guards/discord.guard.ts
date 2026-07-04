@@ -1,5 +1,6 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { DiscordTokenService } from '../services';
+import { DiscordTokenRevokedException } from '../../auth/exceptions';
 
 @Injectable()
 export class DiscordGuard implements CanActivate {
@@ -12,7 +13,7 @@ export class DiscordGuard implements CanActivate {
     const userId  = request.user.sub;
 
     if (!userId) {
-      throw new ForbiddenException();
+      throw new DiscordTokenRevokedException();
     }
 
     await this.discordTokenService.validateConnection(userId);

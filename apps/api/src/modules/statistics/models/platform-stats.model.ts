@@ -1,5 +1,6 @@
 export interface IPlatformStatsModel {
-  totalNotifications: number;
+  totalDiscordNotifications: number;
+  totalWebhookNotifications: number;
   totalStreamers: number;
   totalUsers: number;
   totalGuilds: number;
