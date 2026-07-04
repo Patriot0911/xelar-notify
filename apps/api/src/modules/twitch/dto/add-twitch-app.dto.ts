@@ -1,5 +1,6 @@
+import { TwitchAppStatus } from '@libs/database';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class AddTwitchAppDto {
   @ApiProperty({ required: true })
@@ -15,8 +16,13 @@ export class AddTwitchAppDto {
   @IsString()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   @IsString()
   @IsOptional()
   webhookSecret?: string;
+
+  @ApiProperty({ enum: TwitchAppStatus, required: false })
+  @IsEnum(TwitchAppStatus)
+  @IsOptional()
+  status?: TwitchAppStatus;
 }

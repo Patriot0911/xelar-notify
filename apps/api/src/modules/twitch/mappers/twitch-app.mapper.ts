@@ -10,6 +10,7 @@ export class TwitchAppMapper {
       name: twitchApp.name,
       clientId: twitchApp.clientId,
       createdAt: twitchApp.createdAt,
+      status: twitchApp.status,
     };
   }
 }

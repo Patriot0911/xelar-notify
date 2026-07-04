@@ -6,7 +6,7 @@ import { TwitchAppMapper } from '../mappers';
 import crypto from 'node:crypto';
 import { AddTwitchAppDto, EditTwitchAppDto } from '../dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TwitchStreamerEventEntity } from '@libs/database';
+import { TwitchAppStatus, TwitchStreamerEventEntity } from '@libs/database';
 import { Repository } from 'typeorm';
 import { TwitchAppAuthService } from './twitch-app-auth.service';
 
@@ -72,6 +72,7 @@ export class TwitchAppService {
       clientSecret:   dto.clientSecret,
       webhookSecret:  webhookSecret,
       accessToken:    tokenData.access_token,
+      status:         dto.status ?? TwitchAppStatus.Active,
       tokenExpiresAt: new Date(Date.now() + tokenData.expires_in * 1000)
     });
 

@@ -160,6 +160,7 @@ export class TwitchNotificationsService {
 
     if (dto.costType !== undefined) notification.costType  = dto.costType;
     if (dto.channelId !== undefined) notification.channelId = dto.channelId;
+    if (dto.isDisabled !== undefined) notification.isDisabled = dto.isDisabled;
 
     notification.status = NotificationStatus.Active;
 
@@ -173,6 +174,7 @@ export class TwitchNotificationsService {
   ): Promise<WebhookNotificationEntity> {
     const notification = await this.webhookNotificationRepository.findOne({
       where: { id, },
+      select: ['id', 'onwerId', 'guildId', 'webhookUrl', 'messagePayload', 'costType'],
       relations: ['guild'],
     });
 
@@ -196,8 +198,17 @@ export class TwitchNotificationsService {
       notification.messagePayload = dto.payload as any;
     }
 
-    if (dto.costType  !== undefined) notification.costType  = dto.costType;
-    if (dto.webhookUrl !== undefined) notification.webhookUrl = dto.webhookUrl;
+    if (dto.costType  !== undefined) notification.costType = dto.costType;
+    if (dto.costType  !== undefined) notification.costType = dto.costType;
+    if (dto.isDisabled !== undefined) notification.isDisabled = dto.isDisabled;
+    if (
+      dto.webhookUrl !== undefined
+      && notification.guildId
+      && notification.webhookUrl !== dto.webhookUrl
+    ) {
+      await this.discordWebhookService.validateDiscordWebhook(dto.webhookUrl, notification.guild!.discordGuildId);
+      notification.webhookUrl = dto.webhookUrl;
+    }
 
     notification.status = NotificationStatus.Active;
 

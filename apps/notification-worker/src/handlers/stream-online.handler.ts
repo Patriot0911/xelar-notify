@@ -37,9 +37,9 @@ export class StreamOnlineHandler {
       const event = await this.eventsRepository
         .createQueryBuilder('event')
         .leftJoinAndSelect('event.streamer', 'streamer')
-        .leftJoinAndSelect('event.discordNotifications', 'discord', 'discord.status = :discordStatus', { discordStatus: NotificationStatus.Active })
+        .leftJoinAndSelect('event.discordNotifications', 'discord', 'discord.status = :discordStatus AND discord.isDisabled IS NOT TRUE', { discordStatus: NotificationStatus.Active })
         .leftJoinAndSelect('discord.guild', 'discordGuild')
-        .leftJoinAndSelect('event.webhookNotifications', 'webhook', 'webhook.status = :webhookStatus', { webhookStatus: NotificationStatus.Active })
+        .leftJoinAndSelect('event.webhookNotifications', 'webhook', 'webhook.status = :webhookStatus AND webhook.isDisabled IS NOT TRUE', { webhookStatus: NotificationStatus.Active })
         .addSelect('webhook.webhookUrl')
         .where('event.subscriptionId = :subscriptionId', {
           subscriptionId: data.subscription.id,

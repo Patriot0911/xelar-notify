@@ -36,6 +36,9 @@ export class DiscordNotificationEntity {
   })
   status: NotificationStatus;
 
+  @Column({ type: 'boolean', name: 'is_disabled', default: false, nullable: true })
+  isDisabled: boolean | null;
+
   @Column({ name: 'cost_type', type: 'enum', enum: NotificationCostType, enumName: 'discord_notifications_cost_type_enum' })
   costType: NotificationCostType;
 
