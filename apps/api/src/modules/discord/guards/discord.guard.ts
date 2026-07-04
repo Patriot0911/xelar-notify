@@ -12,7 +12,7 @@ export class DiscordGuard implements CanActivate {
     const userId  = request.user.sub;
 
     if (!userId) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
 
     await this.discordTokenService.validateConnection(userId);
