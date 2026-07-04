@@ -1,4 +1,5 @@
 export const REDIS_CLIENT = 'REDIS_CLIENT';
+export const REDIS_CHANNEL_CLIENT = 'REDIS_CHANNEL_CLIENT';
 
 export const twitchWebhookSecret = (clientId: string) =>
   `twitch:webhook:secret:${clientId}`;

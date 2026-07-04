@@ -6,7 +6,7 @@ import { guildAdminAccess, guildUserAccess, guildUserAccessPattern, RedisService
 import { DiscordApiService } from './discord-api.service';
 import { hasDiscordPermission } from '../utils/discord-permission.util';
 
-const GUILD_ACCESS_TTL = 10 * 60; // 10 minutes
+const GUILD_ACCESS_TTL = 60 * 2 * 60; // 2 hours
 
 @Injectable()
 export class DiscordGuildAccessService {
@@ -18,28 +18,20 @@ export class DiscordGuildAccessService {
   ) {}
 
   async canAccessGuild(userId: string, discordGuildId: string): Promise<boolean> {
-    const cacheKey = guildUserAccess(discordGuildId, userId);
-    const cached = await this.redis.get<boolean>(cacheKey);
-    if (cached !== null) {
-      return cached;
-    }
-
-    const result = await this.resolveAccess(userId, discordGuildId);
-    await this.redis.set(cacheKey, result, GUILD_ACCESS_TTL);
-    return result;
+    return this.redis.getOrSet(
+      guildUserAccess(discordGuildId, userId),
+      () => this.resolveAccess(userId, discordGuildId),
+      GUILD_ACCESS_TTL,
+    );
   }
 
   // todo: add diff permissions
   async canManageGuild(userId: string, discordGuildId: string): Promise<boolean> {
-    const cacheKey = guildAdminAccess(discordGuildId, userId);
-    const cached = await this.redis.get<boolean>(cacheKey);
-    if (cached !== null) {
-      return cached;
-    }
-
-    const result = await this.resolveAccess(userId, discordGuildId, true);
-    await this.redis.set(cacheKey, result, GUILD_ACCESS_TTL);
-    return result;
+    return this.redis.getOrSet(
+      guildAdminAccess(discordGuildId, userId),
+      () => this.resolveAccess(userId, discordGuildId, true),
+      GUILD_ACCESS_TTL,
+    );
   }
 
   async assertAccess(userId: string, discordGuildId: string): Promise<void> {
