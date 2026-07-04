@@ -132,6 +132,7 @@ export class StatisticsService {
       .addGroupBy('streamer.displayName')
       .addGroupBy('streamer.profileImageUrl')
       .orderBy('"notificationCount"', 'DESC')
+      .where('streamer.isInternal != true')
       .limit(TOP_STREAMERS_LIMIT)
       .getRawMany<{ twitchLogin: string; notificationCount: string; displayName: string | null; profileImageUrl: string | null }>();
 
