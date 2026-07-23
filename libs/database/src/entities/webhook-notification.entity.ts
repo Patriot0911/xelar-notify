@@ -72,6 +72,9 @@ export class WebhookNotificationEntity {
   @Column({ name: 'message_payload', type: 'jsonb', nullable: true })
   messagePayload: string | null;
 
+  @Column({ name: 'game_filters', type: 'jsonb', default: () => "'[]'" })
+  gameFilters: string[];
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

@@ -2,7 +2,7 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TwitchAppEntity, TwitchStreamerEntity, TwitchStreamerEventEntity, UserEntity } from '@libs/database';
-import { TwitchAppAuthService, TwitchApiService, TwitchAppService, TwitchUserAuthService, TwitchUserTokenService } from './services';
+import { TwitchAppAuthService, TwitchApiService, TwitchAppService, TwitchGamesService, TwitchUserAuthService, TwitchUserTokenService } from './services';
 import { TwitchAppTokenManager } from './twitch-token.manager';
 import { TwitchAuthInterceptor } from './twitch-auth.interceptor';
 import { TwitchController } from './controllers/twitch.controller';
@@ -41,6 +41,7 @@ import { TwitchAppController, TwitchRpcController } from './controllers';
     TwitchAppService,
     TwitchUserAuthService,
     TwitchUserTokenService,
+    TwitchGamesService,
     {
       provide: TwitchAppsRepository,
       useFactory: (dataSource: DataSource, crypto: CryptoService) =>
@@ -56,6 +57,7 @@ import { TwitchAppController, TwitchRpcController } from './controllers';
     TwitchAppService,
     TwitchUserAuthService,
     TwitchUserTokenService,
+    TwitchGamesService,
   ],
 })
 export class TwitchModule implements OnModuleInit {

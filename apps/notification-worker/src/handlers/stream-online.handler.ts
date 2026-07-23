@@ -60,11 +60,20 @@ export class StreamOnlineHandler {
     }
   }
 
+  private matchesGameFilter(gameFilters: string[] | null | undefined, gameId: string): boolean {
+    if (!gameFilters || gameFilters.length === 0) return true;
+    return !!gameId && gameFilters.includes(gameId);
+  }
+
   private async dispatchDiscord(
     event: TwitchStreamerEventEntity,
     vars: Record<string, string>,
   ) {
-    for (const dest of event.discordNotifications) {
+    const notifications = event.discordNotifications.filter(
+      (dest) => this.matchesGameFilter(dest.gameFilters, vars.gameId),
+    );
+
+    for (const dest of notifications) {
       const interpolated = interpolatePayload(dest.messagePayload, vars);
       const payload: IDiscordNotificationMessage = {
         notificationId: dest.id,
@@ -106,7 +115,9 @@ export class StreamOnlineHandler {
     event: TwitchStreamerEventEntity,
     vars: Record<string, string>,
   ) {
-    const active = event.webhookNotifications.filter((n) => n.webhookUrl);
+    const active = event.webhookNotifications.filter(
+      (n) => n.webhookUrl && this.matchesGameFilter(n.gameFilters, vars.gameId),
+    );
 
     const results = await Promise.allSettled(
       active.map((n) =>

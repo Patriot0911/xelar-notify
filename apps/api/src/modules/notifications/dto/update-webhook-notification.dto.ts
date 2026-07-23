@@ -1,6 +1,6 @@
 import { NotificationCostType } from '@libs/database';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
 
 export class UpdateWebhookNotificationDto {
   @ApiProperty({ required: false })
@@ -22,4 +22,10 @@ export class UpdateWebhookNotificationDto {
   @IsOptional()
   @IsBoolean()
   isDisabled?: boolean;
+
+  @ApiProperty({ required: false, type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  gameFilters?: string[];
 }

@@ -2,11 +2,15 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import {
+  ITwitchApiCategoryNormalizedModel,
   ITwitchApiUserNormalizedModel,
+  ITwitchCategoriesApiResponseModel,
   ITwitchChannelsApiResponseModel,
   ITwitchEventRegistrationResponseModel,
+  ITwitchGamesApiResponseModel,
   ITwitchGetUsersApiResponseModel,
   ITwitchHttpConfigModel,
+  TSearchTwitchCategoriesResponseModel,
   TSearchTwitchChannelsResponseModel,
 } from '../models';
 import { TwitchApiMapper } from '../mappers';
@@ -49,6 +53,46 @@ export class TwitchApiService {
       ),
       meta: pagination,
     };
+  }
+
+  async searchCategories(searchStr: string, cursor?: string, limit: number = 20): Promise<TSearchTwitchCategoriesResponseModel> {
+    const app = await this.getLeastLoadedApp();
+    const query = encodeURIComponent(searchStr);
+
+    const { data: { data, pagination, } } = await firstValueFrom(
+      this.httpService.get<ITwitchCategoriesApiResponseModel>('/helix/search/categories', <ITwitchHttpConfigModel> {
+        params: {
+          query,
+          first: limit,
+          after: cursor,
+        },
+        twitchClientId: app.clientId,
+      }),
+    );
+
+    return {
+      items: data.map(
+        (c) => this.twitchApiMapper.twitchApiCategoryToNormalized(c)
+      ),
+      meta: pagination,
+    };
+  }
+
+  async getGamesByIds(gameIds: string[]): Promise<ITwitchApiCategoryNormalizedModel[]> {
+    if (gameIds.length === 0) return [];
+    if (gameIds.length > 100) {
+      throw new InternalServerErrorException('Reached limit for Twitch API search params');
+    }
+    const app = await this.getLeastLoadedApp();
+
+    const { data: { data, }, } = await firstValueFrom(
+      this.httpService.get<ITwitchGamesApiResponseModel>('/helix/games', <ITwitchHttpConfigModel> {
+        params: { id: gameIds },
+        twitchClientId: app.clientId,
+      }),
+    );
+
+    return data.map((g) => this.twitchApiMapper.twitchApiCategoryToNormalized(g));
   }
 
   async getUserById(broadcasterId: string): Promise<ITwitchApiUserNormalizedModel | null> {

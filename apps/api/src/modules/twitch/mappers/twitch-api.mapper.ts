@@ -1,8 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { ITwitchApiChannelModel, ITwitchApiChannelNormalizedModel, ITwitchApiUserModel, ITwitchApiUserNormalizedModel } from '../models';
+import { ITwitchApiCategoryModel, ITwitchApiCategoryNormalizedModel, ITwitchApiChannelModel, ITwitchApiChannelNormalizedModel, ITwitchApiUserModel, ITwitchApiUserNormalizedModel } from '../models';
 
 @Injectable()
 export class TwitchApiMapper {
+  twitchApiCategoryToNormalized(category: ITwitchApiCategoryModel): ITwitchApiCategoryNormalizedModel {
+    return {
+      id: category.id,
+      name: category.name,
+      boxArtUrl: category.box_art_url,
+    };
+  }
+
   twitchApiChannelToNormalized(channel: ITwitchApiChannelModel): ITwitchApiChannelNormalizedModel {
     return {
       broadcasterId: channel.id,

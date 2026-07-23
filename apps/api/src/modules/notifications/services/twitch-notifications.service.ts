@@ -56,6 +56,7 @@ export class TwitchNotificationsService {
       onwerId: ownerId,
       costType: dto.costType,
       cost,
+      gameFilters: dto.gameFilters ?? [],
     });
 
     return this.discordNotificationRepository.save(notification);
@@ -89,6 +90,7 @@ export class TwitchNotificationsService {
       onwerId: ownerId,
       costType: dto.costType,
       cost,
+      gameFilters: dto.gameFilters ?? [],
     });
 
     if (guildId) {
@@ -161,6 +163,7 @@ export class TwitchNotificationsService {
     if (dto.costType !== undefined) notification.costType  = dto.costType;
     if (dto.channelId !== undefined) notification.channelId = dto.channelId;
     if (dto.isDisabled !== undefined) notification.isDisabled = dto.isDisabled;
+    if (dto.gameFilters !== undefined) notification.gameFilters = dto.gameFilters;
 
     notification.status = NotificationStatus.Active;
 
@@ -201,6 +204,7 @@ export class TwitchNotificationsService {
     if (dto.costType  !== undefined) notification.costType = dto.costType;
     if (dto.costType  !== undefined) notification.costType = dto.costType;
     if (dto.isDisabled !== undefined) notification.isDisabled = dto.isDisabled;
+    if (dto.gameFilters !== undefined) notification.gameFilters = dto.gameFilters;
     if (
       dto.webhookUrl !== undefined
       && notification.guildId

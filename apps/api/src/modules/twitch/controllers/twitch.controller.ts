@@ -3,10 +3,10 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TwitchStreamerEntity } from '@libs/database';
-import { TwitchApiService } from '../services';
+import { TwitchApiService, TwitchGamesService } from '../services';
 import { JwtAccessGuard } from '../../auth/guards/jwt-access.guard';
-import { TSearchTwitchChannelsResponseModel } from '../models';
-import { SearchTwtichChannelsDto } from '../dto';
+import { ITwitchApiCategoryNormalizedModel, TSearchTwitchCategoriesResponseModel, TSearchTwitchChannelsResponseModel } from '../models';
+import { SearchTwitchCategoriesDto, SearchTwtichChannelsDto } from '../dto';
 
 @ApiTags('Twitch')
 @Controller('api/twitch')
@@ -15,6 +15,7 @@ import { SearchTwtichChannelsDto } from '../dto';
 export class TwitchController {
   constructor(
     private readonly twitchApiService: TwitchApiService,
+    private readonly twitchGamesService: TwitchGamesService,
     @InjectRepository(TwitchStreamerEntity)
     private readonly twitchStreamerRepository: Repository<TwitchStreamerEntity>,
   ) {}
@@ -22,6 +23,17 @@ export class TwitchController {
   @Get('channels')
   async getExternalApiChannels(@Query() query: SearchTwtichChannelsDto): Promise<TSearchTwitchChannelsResponseModel> {
     return await this.twitchApiService.getChannels(query.search, query.cursor);
+  }
+
+  @Get('categories')
+  async searchCategories(@Query() query: SearchTwitchCategoriesDto): Promise<TSearchTwitchCategoriesResponseModel> {
+    return await this.twitchApiService.searchCategories(query.search, query.cursor);
+  }
+
+  @Get('games')
+  async getGamesByIds(@Query('ids') ids: string): Promise<ITwitchApiCategoryNormalizedModel[]> {
+    const gameIds = (ids ?? '').split(',').map((id) => id.trim()).filter(Boolean);
+    return await this.twitchGamesService.resolveNames(gameIds);
   }
 
   @Get(':broadcasterId/allow-personal-subscriptions')

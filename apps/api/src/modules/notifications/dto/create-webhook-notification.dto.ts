@@ -1,5 +1,6 @@
 import { NotificationCostType, TwitchStreamerEvents } from '@libs/database';
-import { IsEnum, IsObject, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsEnum, IsObject, IsOptional, IsString } from 'class-validator';
 import { AllowedTwitchEvents } from '../models';
 
 export class CreateWebhookNotificationDto {
@@ -17,4 +18,10 @@ export class CreateWebhookNotificationDto {
 
   @IsString()
   webhookUrl: string;
+
+  @ApiProperty({ required: false, type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  gameFilters?: string[];
 }

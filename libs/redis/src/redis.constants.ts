@@ -7,6 +7,9 @@ export const twitchWebhookSecret = (clientId: string) =>
 export const twitchWebhookMessage = (messageId: string) =>
   `twitch:webhook:log:${messageId}`;
 
+export const twitchGameName = (gameId: string) =>
+  `twitch:game-name:${gameId}`;
+
 export const accessTokenBlackList = (jti: string) =>
   `blacklist:access:${jti}`;
 
