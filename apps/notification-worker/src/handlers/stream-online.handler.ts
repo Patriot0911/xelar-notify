@@ -40,6 +40,7 @@ export class StreamOnlineHandler {
         .leftJoinAndSelect('event.discordNotifications', 'discord', 'discord.status = :discordStatus AND discord.isDisabled IS NOT TRUE', { discordStatus: NotificationStatus.Active })
         .leftJoinAndSelect('discord.guild', 'discordGuild')
         .leftJoinAndSelect('event.webhookNotifications', 'webhook', 'webhook.status = :webhookStatus AND webhook.isDisabled IS NOT TRUE', { webhookStatus: NotificationStatus.Active })
+        .leftJoinAndSelect('webhook.guild', 'webhookGuild')
         .addSelect('webhook.webhookUrl')
         .where('event.subscriptionId = :subscriptionId', {
           subscriptionId: data.subscription.id,
