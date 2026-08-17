@@ -189,7 +189,7 @@ export class TwitchApiService {
     options: IGetTwitchSubscriptionParamsModel
   ) {
     const app = await this.twitchAppsRepository.findOne(
-      { where: { clientId, }, }, true, { accessToken: true,}
+      { where: { clientId, }, }
     );
 
     if (!app) {
@@ -208,7 +208,6 @@ export class TwitchApiService {
               user_id: options.userIds,
             },
             twitchClientId: clientId,
-            accessToken: app.accessToken,
           },
         ),
       );
