@@ -21,6 +21,7 @@ import {
 } from '@libs/database';
 import { In, MoreThan, Repository } from 'typeorm';
 import { UsersMapper } from '../mappers/users.mapper';
+import { GetNotificationLogsDto } from '../../notification-logs/dto/get-notification-logs.dto';
 
 @Injectable()
 export class UsersService {
@@ -187,12 +188,20 @@ export class UsersService {
     };
   }
 
-  async getUserNotificationLogs(userId: string): Promise<IUserNotificationLogModel[]> {
-    const logs = await this.notificationLogsRepository.find({
+  async getUserNotificationLogs(
+    userId: string,
+    { page, pageSize }: GetNotificationLogsDto,
+  ): Promise<IGenericListPayloadResponse<IUserNotificationLogModel>> {
+    const [logs, count] = await this.notificationLogsRepository.findAndCount({
       where: { ownerId: userId },
       order: { createdAt: 'DESC' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     });
 
-    return logs.map((log) => this.usersMapper.notificationLogToItem(log));
+    return {
+      items: logs.map((log) => this.usersMapper.notificationLogToItem(log)),
+      meta: { count },
+    };
   }
 }
