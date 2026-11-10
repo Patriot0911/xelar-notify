@@ -5,7 +5,14 @@ import { DiscordNotificationEntity, NotificationCostType, NotificationStatus, Tw
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
 import { DiscordGuildAccessService, DiscordGuildService, DiscordWebhookService } from '../../discord/services';
-import { CreateDiscordNotificationDto, CreateWebhookNotificationDto, UpdateDiscordNotificationDto, UpdateWebhookNotificationDto } from '../dto';
+import {
+  CreateDiscordNotificationDto,
+  CreateWebhookNotificationDto,
+  GetGuildNotificationsDto,
+  UpdateDiscordNotificationDto,
+  UpdateWebhookNotificationDto,
+} from '../dto';
+import { IGenericListPayloadResponse } from 'apps/api/src/shared';
 import { NotificationsService } from './notifications.service';
 
 @Injectable()
@@ -105,22 +112,38 @@ export class TwitchNotificationsService {
     return this.webhookNotificationRepository.save(notification);
   }
 
-  async getGuildNotifications(discordGuildId: string) {
-    const [bot, webhook] = await Promise.all([
-      this.discordNotificationRepository
-        .createQueryBuilder('n')
-        .innerJoinAndSelect('n.guild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
-        .leftJoinAndSelect('n.streamerEvent', 'event')
-        .leftJoinAndSelect('event.streamer', 'streamer')
-        .getMany(),
-      this.webhookNotificationRepository
-        .createQueryBuilder('n')
-        .innerJoinAndSelect('n.guild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
-        .leftJoinAndSelect('n.streamerEvent', 'event')
-        .leftJoinAndSelect('event.streamer', 'streamer')
-        .getMany(),
-    ]);
-    return { bot, webhook };
+  async getGuildBotNotifications(
+    discordGuildId: string,
+    { page, pageSize }: GetGuildNotificationsDto,
+  ): Promise<IGenericListPayloadResponse<DiscordNotificationEntity>> {
+    const [items, count] = await this.discordNotificationRepository
+      .createQueryBuilder('n')
+      .innerJoinAndSelect('n.guild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
+      .leftJoinAndSelect('n.streamerEvent', 'event')
+      .leftJoinAndSelect('event.streamer', 'streamer')
+      .orderBy('n.createdAt', 'DESC')
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getManyAndCount();
+
+    return { items, meta: { count } };
+  }
+
+  async getGuildWebhookNotifications(
+    discordGuildId: string,
+    { page, pageSize }: GetGuildNotificationsDto,
+  ): Promise<IGenericListPayloadResponse<WebhookNotificationEntity>> {
+    const [items, count] = await this.webhookNotificationRepository
+      .createQueryBuilder('n')
+      .innerJoinAndSelect('n.guild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
+      .leftJoinAndSelect('n.streamerEvent', 'event')
+      .leftJoinAndSelect('event.streamer', 'streamer')
+      .orderBy('n.createdAt', 'DESC')
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getManyAndCount();
+
+    return { items, meta: { count } };
   }
 
   async getUserNotifications(ownerId: string) {

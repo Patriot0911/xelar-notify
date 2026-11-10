@@ -1,8 +1,14 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { IAccessTokenPayload, JwtAccessGuard } from '../../auth';
 import { DiscordGuard } from '../../discord/guards';
-import { CreateDiscordNotificationDto, CreateWebhookNotificationDto, UpdateDiscordNotificationDto, UpdateWebhookNotificationDto } from '../dto';
+import {
+  CreateDiscordNotificationDto,
+  CreateWebhookNotificationDto,
+  GetGuildNotificationsDto,
+  UpdateDiscordNotificationDto,
+  UpdateWebhookNotificationDto,
+} from '../dto';
 import { TwitchNotificationsService } from '../services';
 import { DiscordGuildAccessService } from '../../discord/services';
 
@@ -21,15 +27,30 @@ export class DiscordNotificationsController {
     return this.twitchNotificationsService.getUserNotifications(sub);
   }
 
-  @Get('discord/:discordGuildId')
+  @Get('discord/:discordGuildId/bot')
   @UseGuards(DiscordGuard)
-  async getGuildNotifications(
+  @ApiOperation({ summary: 'Get paginated Discord bot notifications of a guild' })
+  async getGuildBotNotifications(
     @Req() request,
     @Param('discordGuildId') discordGuildId: string,
+    @Query() params: GetGuildNotificationsDto,
   ) {
     const { sub } = <IAccessTokenPayload> request.user;
     await this.discordGuildAccessService.assertAccess(sub, discordGuildId);
-    return this.twitchNotificationsService.getGuildNotifications(discordGuildId);
+    return this.twitchNotificationsService.getGuildBotNotifications(discordGuildId, params);
+  }
+
+  @Get('discord/:discordGuildId/webhook')
+  @UseGuards(DiscordGuard)
+  @ApiOperation({ summary: 'Get paginated webhook notifications of a guild' })
+  async getGuildWebhookNotifications(
+    @Req() request,
+    @Param('discordGuildId') discordGuildId: string,
+    @Query() params: GetGuildNotificationsDto,
+  ) {
+    const { sub } = <IAccessTokenPayload> request.user;
+    await this.discordGuildAccessService.assertAccess(sub, discordGuildId);
+    return this.twitchNotificationsService.getGuildWebhookNotifications(discordGuildId, params);
   }
 
   @Post('discord')
