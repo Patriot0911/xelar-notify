@@ -2,97 +2,57 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# Xelar Notify
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Notification automation platform that turns Twitch streamer events into real-time Discord alerts (and outgoing webhooks), without polling. An operator configures, once, which Twitch events should notify which Discord channel or webhook; the system then reacts end to end as those events happen on Twitch.
 
-## Description
+## Business overview
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Twitch push events (currently stream online, with offline, update, raid, subscribe and cheer modeled in the domain) are received via EventSub and verified.
+- Each event is matched against the destinations configured for that streamer, applying optional game filters.
+- Matching notifications are delivered as Discord bot messages, Discord incoming webhooks, or arbitrary outgoing webhooks, using templated, interpolated message content.
+- Every delivery attempt is logged for auditing, and webhooks that fail repeatedly are automatically suspended to avoid wasted or abusive traffic.
+- A REST admin API backs authentication (including Discord OAuth), Twitch app and streamer management, and destination configuration, all persisted to PostgreSQL.
 
-## Project setup
+## Architecture
 
-```bash
-$ npm install
-```
+The system is deliberately split into small, independently deployable services connected by a message broker, rather than a single monolith:
 
-## Compile and run the project
+- **Service decomposition by responsibility.** Four independent NestJS applications: `api` (REST admin surface and auth), `webhook-receiver` (Twitch EventSub ingestion), `notification-worker` (event matching, templating and dispatch), and `discord-bot` (Discord delivery and slash commands). Each service can be scaled, deployed and reasoned about independently.
+- **Asynchronous decoupling via RabbitMQ.** Services communicate through typed queues and routing patterns rather than direct calls, so a slow or failing consumer cannot block the producer, and each stage of the pipeline can be retried or scaled on its own.
+- **Least-privilege messaging.** Each service authenticates to RabbitMQ with its own dedicated credentials, so a compromised or misbehaving service is limited to the queues it actually needs.
+- **Synchronous RPC only where it belongs.** The `discord-bot` talks to `api` over a typed TCP transport for operations that need an immediate response (for example, slash commands), keeping the rest of the system fully asynchronous.
+- **Shared libraries for cross-cutting concerns.** Database entities and migrations, queue access, Redis access, RPC exception handling and configuration are factored into shared libs consumed by every app, avoiding duplicated infrastructure code.
+- **Fail-fast configuration.** Environment configuration is validated against a schema at boot, so misconfiguration is caught immediately instead of surfacing as a runtime failure later.
+- **Idempotent ingestion.** Incoming Twitch events are deduplicated in Redis before being queued, protecting the rest of the pipeline from duplicate deliveries.
+- **Migrations as a first-class deployment step.** A dedicated migration step runs to completion before the API starts, keeping schema changes explicit, ordered and auditable rather than applied implicitly at runtime.
 
-```bash
-# development
-$ npm run start
+## Data flow
 
-# watch mode
-$ npm run start:dev
+1. Twitch sends an event to `webhook-receiver`, which verifies the signature, deduplicates it, and publishes it to RabbitMQ.
+2. `notification-worker` consumes the event, resolves the active notification destinations for that streamer, applies filters and templating, writes a delivery log entry, and publishes per-destination payloads.
+3. `discord-bot` consumes Discord-bound payloads and delivers them; direct webhook destinations are called by `notification-worker` itself.
+4. `discord-bot` uses a synchronous RPC call to `api` for operations that require live data, such as slash commands.
 
-# production mode
-$ npm run start:prod
-```
+## Tech stack
 
-## Run tests
+NestJS, TypeScript, PostgreSQL with TypeORM, RabbitMQ, Redis, Zod, Docker.
+
+## Getting started
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
+npm run start:dev:docker   # starts postgres, redis and rabbitmq
+npm run migration:run
+npm run start:dev          # runs all four apps concurrently
 ```
 
-## Deployment
+Individual apps can also be run separately, for example `npm run start:dev:api`, `npm run start:dev:webhook-receiver`, `npm run start:dev:notification-worker`, `npm run start:dev:discord-bot`. See `.env.example` for the full list of required environment variables.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Tests
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run test
+npm run test:e2e
+npm run test:cov
 ```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

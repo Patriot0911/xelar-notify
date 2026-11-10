@@ -8,6 +8,7 @@ import { IGenericListPayloadResponse } from 'apps/api/src/shared';
 import { GetUsersRequestDto, UpdateUserBalanceDto, UpdateUserRolesDto, UpdateUserStatusDto } from '../dto';
 import { IUserItemModel, IUserListItemModel, IUserNotificationLogModel, IUserSessionModel, IUserSubscriptionsModel } from '../models';
 import { IAccessTokenPayload } from '../../auth/models';
+import { GetNotificationLogsDto } from '../../notification-logs/dto/get-notification-logs.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -87,7 +88,10 @@ export class UsersController {
 
   @Get(':userId/notification-logs')
   @ApiOperation({ summary: 'Get notification logs of a user' })
-  async getUserNotificationLogs(@Param('userId') userId: string): Promise<IUserNotificationLogModel[]> {
-    return this.usersService.getUserNotificationLogs(userId);
+  async getUserNotificationLogs(
+    @Param('userId') userId: string,
+    @Query() params: GetNotificationLogsDto,
+  ): Promise<IGenericListPayloadResponse<IUserNotificationLogModel>> {
+    return this.usersService.getUserNotificationLogs(userId, params);
   }
 }
