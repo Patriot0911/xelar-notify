@@ -1,17 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, Max, Min } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { IsInt, Max, Min } from 'class-validator';
+import { SearchPaginationDto } from 'apps/api/src/shared';
 
-export class GetGuildNotificationsDto {
-  @ApiProperty({ required: false, default: 1 })
+/** `?page=&pageSize=&search=` for notification lists; search matches streamer name/login and event type. */
+export class GetGuildNotificationsDto extends SearchPaginationDto {
+  @ApiPropertyOptional({ default: 10, maximum: 100 })
   @Type(() => Number)
-  @IsNumber()
-  @Min(1)
-  page: number = 1;
-
-  @ApiProperty({ required: false, default: 10 })
-  @Type(() => Number)
-  @IsNumber()
+  @IsInt()
   @Min(1)
   @Max(100)
   pageSize: number = 10;

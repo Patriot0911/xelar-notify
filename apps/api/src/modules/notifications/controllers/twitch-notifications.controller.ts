@@ -21,10 +21,18 @@ export class DiscordNotificationsController {
     private readonly discordGuildAccessService: DiscordGuildAccessService,
   ) {}
 
-  @Get()
-  getUserNotifications(@Req() request) {
+  @Get('bot')
+  @ApiOperation({ summary: 'Get paginated Discord bot notifications created by the current user' })
+  getMyBotNotifications(@Req() request, @Query() params: GetGuildNotificationsDto) {
     const { sub } = <IAccessTokenPayload>request.user;
-    return this.twitchNotificationsService.getUserNotifications(sub);
+    return this.twitchNotificationsService.getMyBotNotifications(sub, params);
+  }
+
+  @Get('webhook')
+  @ApiOperation({ summary: 'Get paginated webhook notifications created by the current user' })
+  getMyWebhookNotifications(@Req() request, @Query() params: GetGuildNotificationsDto) {
+    const { sub } = <IAccessTokenPayload>request.user;
+    return this.twitchNotificationsService.getMyWebhookNotifications(sub, params);
   }
 
   @Get('discord/:discordGuildId/bot')

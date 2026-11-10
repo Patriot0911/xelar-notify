@@ -6,7 +6,7 @@ import {
   IUserNotificationLogModel,
   IUserSessionModel,
 } from '../models';
-import { IGenericListPayloadResponse } from 'apps/api/src/shared';
+import { applySearch, IGenericListPayloadResponse } from 'apps/api/src/shared';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   AccountStatus,
@@ -18,10 +18,19 @@ import {
   UserSessionEntity,
   WebhookNotificationEntity,
 } from '@libs/database';
-import { In, MoreThan, Repository } from 'typeorm';
+import { In, MoreThan, Repository, SelectQueryBuilder } from 'typeorm';
 import { UsersMapper } from '../mappers/users.mapper';
 import { GetNotificationLogsDto } from '../../notification-logs/dto/get-notification-logs.dto';
 import { GetGuildNotificationsDto } from '../../notifications/dto/get-guild-notifications.dto';
+import { NOTIFICATION_SEARCH_COLUMNS } from '../../notifications/notifications.constants';
+
+const USER_SEARCH_COLUMNS = [
+  'users.displayName',
+  'users.email',
+  'users.discordId',
+  'twitchAccount.twitchLogin',
+  'CAST(users.id AS text)',
+];
 
 @Injectable()
 export class UsersService {
@@ -48,12 +57,12 @@ export class UsersService {
       .leftJoinAndSelect('users.roles', 'roles')
       .leftJoin('users.twitchAccount', 'twitchAccount')
       .addSelect('twitchAccount.allowPersonalSubscriptions')
+      .orderBy('users.createdAt', 'DESC')
+      .addOrderBy('users.id', 'ASC') // tie-breaker: stable pages
       .skip((page - 1) * pageSize)
       .take(pageSize);
 
-    if (search) {
-      usersQb.andWhere('users.displayName LIKE :search', { search });
-    }
+    applySearch(usersQb, USER_SEARCH_COLUMNS, search);
 
     const [usersData, total] = await usersQb.distinct(true).getManyAndCount();
 
@@ -171,31 +180,40 @@ export class UsersService {
   /** Discord bot notifications created by the user (paid from their balance or their guild's). */
   async getUserBotSubscriptions(
     userId: string,
-    { page, pageSize }: GetGuildNotificationsDto,
+    params: GetGuildNotificationsDto,
   ): Promise<IGenericListPayloadResponse<DiscordNotificationEntity>> {
-    const [items, count] = await this.discordNotificationsRepository.findAndCount({
-      where: { onwerId: userId },
-      order: { createdAt: 'DESC' },
-      relations: { guild: true, streamerEvent: { streamer: true } },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    });
-
-    return { items, meta: { count } };
+    const qb = this.discordNotificationsRepository.createQueryBuilder('n');
+    return this.paginateSubscriptions(qb, userId, params);
   }
 
   /** Webhook notifications created by the user. */
   async getUserWebhookSubscriptions(
     userId: string,
-    { page, pageSize }: GetGuildNotificationsDto,
+    params: GetGuildNotificationsDto,
   ): Promise<IGenericListPayloadResponse<WebhookNotificationEntity>> {
-    const [items, count] = await this.webhookNotificationsRepository.findAndCount({
-      where: { onwerId: userId },
-      order: { createdAt: 'DESC' },
-      relations: { guild: true, streamerEvent: { streamer: true } },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    });
+    const qb = this.webhookNotificationsRepository.createQueryBuilder('n');
+    return this.paginateSubscriptions(qb, userId, params);
+  }
+
+  private async paginateSubscriptions<T extends DiscordNotificationEntity | WebhookNotificationEntity>(
+    qb: SelectQueryBuilder<T>,
+    userId: string,
+    { page, pageSize, search }: GetGuildNotificationsDto,
+  ): Promise<IGenericListPayloadResponse<T>> {
+    qb
+      .leftJoinAndSelect('n.guild', 'guild')
+      .leftJoinAndSelect('n.streamerEvent', 'event')
+      .leftJoinAndSelect('event.streamer', 'streamer')
+      .where('n.onwerId = :userId', { userId });
+
+    applySearch(qb, NOTIFICATION_SEARCH_COLUMNS, search);
+
+    const [items, count] = await qb
+      .orderBy('n.createdAt', 'DESC')
+      .addOrderBy('n.id', 'ASC')
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getManyAndCount();
 
     return { items, meta: { count } };
   }

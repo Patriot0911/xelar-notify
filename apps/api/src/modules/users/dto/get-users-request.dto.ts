@@ -1,24 +1,5 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString, Max, Min, } from 'class-validator';
+import { SearchPaginationDto } from 'apps/api/src/shared';
 import { IGetUsersFiltersModel } from '../models';
-import { Type } from 'class-transformer';
 
-export class GetUsersRequestDto implements IGetUsersFiltersModel {
-  @ApiProperty({ required: false, default: 1 })
-  @IsNumber()
-  @Min(1)
-  @Type(() => Number)
-  page: number = 1;
-
-  @ApiProperty({ required: false, default: 10 })
-  @IsNumber()
-  @Min(0)
-  @Max(100)
-  @Type(() => Number)
-  pageSize: number = 20;
-
-  @IsOptional()
-  @IsString()
-  @ApiPropertyOptional({ type: 'string', description: 'Search string' })
-  search?: string;
-};
+/** `?page=&pageSize=&search=` — search matches display name, email, Discord ID, Twitch login or user ID. */
+export class GetUsersRequestDto extends SearchPaginationDto implements IGetUsersFiltersModel {};
