@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DiscordGuildEntity, DiscordPermissionFlag } from '@libs/database';
 import { In, Repository } from 'typeorm';
 import { DiscordApiService } from './discord-api.service';
-import { IDiscordUserGuildItemModel } from '../models';
+import { IDiscordGuildInfoModel, IDiscordUserGuildItemModel } from '../models';
 import { hasDiscordPermission } from '../utils/discord-permission.util';
 import { DiscordBotService } from './discord-bot.service';
 import { DiscordGuildAccessService } from './discord-guild-access.service';
@@ -86,36 +86,41 @@ export class DiscordGuildService {
     }));
   }
 
-  async getUserGuildInfo(userId: string, guildId: string): Promise<IDiscordUserGuildItemModel> {
+  async getUserGuildInfo(userId: string, guildId: string): Promise<IDiscordGuildInfoModel> {
     const botGuildIds = await this.discordBotService.getBotGuildIds();
     if (!botGuildIds.includes(guildId)) {
       throw new BadRequestException('Discord guild does not have bot');
     }
 
-    const apiUserGuild = await this.discordApiService.fetchUserGuildById(userId, guildId);
-    const guildInfo = await this.getOrCreateGuild(guildId);
+    const [apiUserGuild, guildInfo] = await Promise.all([
+      this.discordApiService.fetchUserGuildById(userId, guildId),
+      this.getOrCreateGuild(guildId),
+    ]);
 
-    const notifications = await this.discordGuildRepository
+    const stats = await this.discordGuildRepository
       .createQueryBuilder('guild')
       .leftJoin('guild.notifications', 'botNotif')
       .leftJoin('guild.webhookNotifications', 'webhookNotif')
-      .select('guild.discordGuildId', 'discordGuildId')
-      .addSelect(
-        'COUNT(DISTINCT botNotif.id) + COUNT(DISTINCT webhookNotif.id)',
-        'count',
-      )
-      .where('guild.discordGuildId = :guildId', { guildId, })
-      .groupBy('guild.guild_id')
-      .getRawOne<{ discordGuildId: string; count: string }>();
+      .select('COUNT(DISTINCT botNotif.id)', 'botCount')
+      .addSelect('COUNT(DISTINCT webhookNotif.id)', 'webhookCount')
+      .addSelect('ARRAY_REMOVE(ARRAY_AGG(DISTINCT botNotif.streamerEventId), NULL)', 'botEventIds')
+      .addSelect('ARRAY_REMOVE(ARRAY_AGG(DISTINCT webhookNotif.streamerEventId), NULL)', 'webhookEventIds')
+      .where('guild.discordGuildId = :guildId', { guildId })
+      .getRawOne<{ botCount: string; webhookCount: string; botEventIds: string[] | null; webhookEventIds: string[] | null }>();
+
+    const botNotificationCount = Number(stats?.botCount ?? 0);
+    const webhookNotificationCount = Number(stats?.webhookCount ?? 0);
+    const subscriptionCount = new Set([...(stats?.botEventIds ?? []), ...(stats?.webhookEventIds ?? [])]).size;
 
     return {
       ...apiUserGuild,
-      balance: guildInfo.balance,
+      balance: Number(guildInfo.balance),
       hasBot: true,
       managerPermission: guildInfo.managerPermission ?? undefined,
-      notificationCount: notifications
-        ? Number(notifications.count)
-        : 0,
+      notificationCount: botNotificationCount + webhookNotificationCount,
+      botNotificationCount,
+      webhookNotificationCount,
+      subscriptionCount,
     };
   }
 

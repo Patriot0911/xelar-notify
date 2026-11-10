@@ -12,8 +12,8 @@ export class DiscordGuildMapper {
     return {
       id: data.id,
       name: data.name,
-      icon: data.icon,
-      banner: data.banner,
+      icon: data.icon ?? null,
+      banner: data.banner ?? null,
       owner: data.owner,
       permissions: data.permissions,
       features: data.features,

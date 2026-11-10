@@ -5,7 +5,7 @@ import { JwtAccessGuard } from '../../auth/guards/jwt-access.guard';
 import { DiscordBotService, DiscordGuildService } from '../services';
 import { DiscordGuildAccessService } from '../services/discord-guild-access.service';
 import { SetManagerPermissionDto } from '../dto/set-manager-permission.dto';
-import { IDiscordChannelModel, IDiscordUserGuildItemModel } from '../models';
+import { IDiscordChannelModel, IDiscordGuildInfoModel, IDiscordUserGuildItemModel } from '../models';
 import { IDiscordRoleModel } from '../models/discord-role.model';
 import { DiscordGuard } from '../guards';
 
@@ -30,7 +30,7 @@ export class DiscordController {
   async getGuildInfo(
     @Req() req,
     @Param('guildId') discordGuildId: string
-  ): Promise<IDiscordUserGuildItemModel> {
+  ): Promise<IDiscordGuildInfoModel> {
     const user = <IAccessTokenPayload> req.user;
     await this.discordGuildAccessService.assertAccess(user.sub, discordGuildId);
     return this.discordGuildService.getUserGuildInfo(user.sub, discordGuildId);

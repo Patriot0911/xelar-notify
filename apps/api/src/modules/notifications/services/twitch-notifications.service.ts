@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { DiscordNotificationEntity, NotificationCostType, NotificationStatus, TwitchStreamerEvents, UserEntity, WebhookNotificationEntity, WebhookType, } from '@libs/database';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
@@ -12,7 +12,8 @@ import {
   UpdateDiscordNotificationDto,
   UpdateWebhookNotificationDto,
 } from '../dto';
-import { IGenericListPayloadResponse } from 'apps/api/src/shared';
+import { applySearch, IGenericListPayloadResponse } from 'apps/api/src/shared';
+import { NOTIFICATION_SEARCH_COLUMNS } from '../notifications.constants';
 import { NotificationsService } from './notifications.service';
 
 @Injectable()
@@ -114,50 +115,66 @@ export class TwitchNotificationsService {
 
   async getGuildBotNotifications(
     discordGuildId: string,
-    { page, pageSize }: GetGuildNotificationsDto,
+    params: GetGuildNotificationsDto,
   ): Promise<IGenericListPayloadResponse<DiscordNotificationEntity>> {
-    const [items, count] = await this.discordNotificationRepository
-      .createQueryBuilder('n')
-      .innerJoinAndSelect('n.guild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
-      .leftJoinAndSelect('n.streamerEvent', 'event')
-      .leftJoinAndSelect('event.streamer', 'streamer')
-      .orderBy('n.createdAt', 'DESC')
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .getManyAndCount();
-
-    return { items, meta: { count } };
+    const qb = this.botListQuery().where('guild.discordGuildId = :discordGuildId', { discordGuildId });
+    return this.paginate(qb, params);
   }
 
   async getGuildWebhookNotifications(
     discordGuildId: string,
-    { page, pageSize }: GetGuildNotificationsDto,
+    params: GetGuildNotificationsDto,
   ): Promise<IGenericListPayloadResponse<WebhookNotificationEntity>> {
-    const [items, count] = await this.webhookNotificationRepository
+    const qb = this.webhookListQuery().where('guild.discordGuildId = :discordGuildId', { discordGuildId });
+    return this.paginate(qb, params);
+  }
+
+  /** Bot notifications created by `ownerId`, across all servers. */
+  async getMyBotNotifications(
+    ownerId: string,
+    params: GetGuildNotificationsDto,
+  ): Promise<IGenericListPayloadResponse<DiscordNotificationEntity>> {
+    return this.paginate(this.botListQuery().where('n.onwerId = :ownerId', { ownerId }), params);
+  }
+
+  /** Webhook notifications created by `ownerId`. */
+  async getMyWebhookNotifications(
+    ownerId: string,
+    params: GetGuildNotificationsDto,
+  ): Promise<IGenericListPayloadResponse<WebhookNotificationEntity>> {
+    return this.paginate(this.webhookListQuery().where('n.onwerId = :ownerId', { ownerId }), params);
+  }
+
+  private botListQuery() {
+    return this.discordNotificationRepository
       .createQueryBuilder('n')
-      .innerJoinAndSelect('n.guild', 'guild', 'guild.discordGuildId = :discordGuildId', { discordGuildId })
+      .leftJoinAndSelect('n.guild', 'guild')
       .leftJoinAndSelect('n.streamerEvent', 'event')
-      .leftJoinAndSelect('event.streamer', 'streamer')
+      .leftJoinAndSelect('event.streamer', 'streamer');
+  }
+
+  private webhookListQuery() {
+    return this.webhookNotificationRepository
+      .createQueryBuilder('n')
+      .leftJoinAndSelect('n.guild', 'guild')
+      .leftJoinAndSelect('n.streamerEvent', 'event')
+      .leftJoinAndSelect('event.streamer', 'streamer');
+  }
+
+  private async paginate<T extends DiscordNotificationEntity | WebhookNotificationEntity>(
+    qb: SelectQueryBuilder<T>,
+    { page, pageSize, search }: GetGuildNotificationsDto,
+  ): Promise<IGenericListPayloadResponse<T>> {
+    applySearch(qb, NOTIFICATION_SEARCH_COLUMNS, search);
+
+    const [items, count] = await qb
       .orderBy('n.createdAt', 'DESC')
+      .addOrderBy('n.id', 'ASC')
       .skip((page - 1) * pageSize)
       .take(pageSize)
       .getManyAndCount();
 
     return { items, meta: { count } };
-  }
-
-  async getUserNotifications(ownerId: string) {
-    const [bot, webhook] = await Promise.all([
-      this.discordNotificationRepository.find({
-        where: { onwerId: ownerId },
-        relations: ['streamerEvent', 'streamerEvent.streamer', 'guild'],
-      }),
-      this.webhookNotificationRepository.find({
-        where: { onwerId: ownerId },
-        relations: ['streamerEvent', 'streamerEvent.streamer'],
-      }),
-    ]);
-    return { bot, webhook };
   }
 
   async updateDiscordNotification(
