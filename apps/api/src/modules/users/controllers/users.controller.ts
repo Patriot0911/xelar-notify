@@ -1,14 +1,15 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAccessGuard, PermissionsGuard } from '../../auth/guards';
-import { Permission } from '@libs/database';
+import { DiscordNotificationEntity, Permission, WebhookNotificationEntity } from '@libs/database';
 import { Permissions } from '../../auth/decorator/permissions.decorator';
 import { UsersService } from '../services';
 import { IGenericListPayloadResponse } from 'apps/api/src/shared';
 import { GetUsersRequestDto, UpdateUserBalanceDto, UpdateUserRolesDto, UpdateUserStatusDto } from '../dto';
-import { IUserItemModel, IUserListItemModel, IUserNotificationLogModel, IUserSessionModel, IUserSubscriptionsModel } from '../models';
+import { IUserItemModel, IUserListItemModel, IUserNotificationLogModel, IUserSessionModel } from '../models';
 import { IAccessTokenPayload } from '../../auth/models';
 import { GetNotificationLogsDto } from '../../notification-logs/dto/get-notification-logs.dto';
+import { GetGuildNotificationsDto } from '../../notifications/dto/get-guild-notifications.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -80,10 +81,22 @@ export class UsersController {
     return this.usersService.updateUserBalance(userId, body.balance);
   }
 
-  @Get(':userId/subscriptions')
-  @ApiOperation({ summary: 'Get all subscriptions (discord + webhook) of a user' })
-  async getUserSubscriptions(@Param('userId') userId: string): Promise<IUserSubscriptionsModel> {
-    return this.usersService.getUserSubscriptions(userId);
+  @Get(':userId/subscriptions/bot')
+  @ApiOperation({ summary: 'Get paginated Discord bot notifications created by a user' })
+  async getUserBotSubscriptions(
+    @Param('userId') userId: string,
+    @Query() params: GetGuildNotificationsDto,
+  ): Promise<IGenericListPayloadResponse<DiscordNotificationEntity>> {
+    return this.usersService.getUserBotSubscriptions(userId, params);
+  }
+
+  @Get(':userId/subscriptions/webhook')
+  @ApiOperation({ summary: 'Get paginated webhook notifications created by a user' })
+  async getUserWebhookSubscriptions(
+    @Param('userId') userId: string,
+    @Query() params: GetGuildNotificationsDto,
+  ): Promise<IGenericListPayloadResponse<WebhookNotificationEntity>> {
+    return this.usersService.getUserWebhookSubscriptions(userId, params);
   }
 
   @Get(':userId/notification-logs')

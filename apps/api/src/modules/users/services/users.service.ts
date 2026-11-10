@@ -5,7 +5,6 @@ import {
   IUserListItemModel,
   IUserNotificationLogModel,
   IUserSessionModel,
-  IUserSubscriptionsModel,
 } from '../models';
 import { IGenericListPayloadResponse } from 'apps/api/src/shared';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,6 +21,7 @@ import {
 import { In, MoreThan, Repository } from 'typeorm';
 import { UsersMapper } from '../mappers/users.mapper';
 import { GetNotificationLogsDto } from '../../notification-logs/dto/get-notification-logs.dto';
+import { GetGuildNotificationsDto } from '../../notifications/dto/get-guild-notifications.dto';
 
 @Injectable()
 export class UsersService {
@@ -168,24 +168,36 @@ export class UsersService {
     await this.usersRepository.update(userId, { balance });
   }
 
-  async getUserSubscriptions(userId: string): Promise<IUserSubscriptionsModel> {
-    const [discord, webhook] = await Promise.all([
-      this.discordNotificationsRepository.find({
-        where: { onwerId: userId },
-        order: { createdAt: 'DESC' },
-        relations: ['guild'],
-      }),
-      this.webhookNotificationsRepository.find({
-        where: { onwerId: userId },
-        order: { createdAt: 'DESC' },
-        relations: ['guild'],
-      }),
-    ]);
+  /** Discord bot notifications created by the user (paid from their balance or their guild's). */
+  async getUserBotSubscriptions(
+    userId: string,
+    { page, pageSize }: GetGuildNotificationsDto,
+  ): Promise<IGenericListPayloadResponse<DiscordNotificationEntity>> {
+    const [items, count] = await this.discordNotificationsRepository.findAndCount({
+      where: { onwerId: userId },
+      order: { createdAt: 'DESC' },
+      relations: { guild: true, streamerEvent: { streamer: true } },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
 
-    return {
-      discord: discord.map((n) => this.usersMapper.discordNotificationToItem(n)),
-      webhook: webhook.map((n) => this.usersMapper.webhookNotificationToItem(n)),
-    };
+    return { items, meta: { count } };
+  }
+
+  /** Webhook notifications created by the user. */
+  async getUserWebhookSubscriptions(
+    userId: string,
+    { page, pageSize }: GetGuildNotificationsDto,
+  ): Promise<IGenericListPayloadResponse<WebhookNotificationEntity>> {
+    const [items, count] = await this.webhookNotificationsRepository.findAndCount({
+      where: { onwerId: userId },
+      order: { createdAt: 'DESC' },
+      relations: { guild: true, streamerEvent: { streamer: true } },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return { items, meta: { count } };
   }
 
   async getUserNotificationLogs(

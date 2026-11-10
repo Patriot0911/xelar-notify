@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { DiscordNotificationEntity, NotificationLogEntity, UserEntity, UserSessionEntity, WebhookNotificationEntity } from '@libs/database';
+import { NotificationLogEntity, UserEntity, UserSessionEntity } from '@libs/database';
 import {
-  IDiscordNotificationItemModel,
   IUserItemModel,
   IUserListItemModel,
   IUserNotificationLogModel,
   IUserSessionModel,
-  IWebhookNotificationItemModel,
 } from '../models';
 
 @Injectable()
@@ -63,32 +61,6 @@ export class UsersMapper {
       id: session.id,
       createdAt: session.createdAt,
       expiresAt: session.expiresAt,
-    };
-  }
-
-  discordNotificationToItem(n: DiscordNotificationEntity): IDiscordNotificationItemModel {
-    return {
-      id: n.id,
-      status: n.status,
-      costType: n.costType,
-      cost: n.cost,
-      channelId: n.channelId,
-      discordGuildId: n.guild.discordGuildId,
-      streamerEventId: n.streamerEventId,
-      createdAt: n.createdAt,
-    };
-  }
-
-  webhookNotificationToItem(n: WebhookNotificationEntity): IWebhookNotificationItemModel {
-    return {
-      id: n.id,
-      status: n.status,
-      costType: n.costType,
-      cost: n.cost,
-      type: n.type,
-      discordGuildId: n.guild?.discordGuildId ?? null,
-      streamerEventId: n.streamerEventId,
-      createdAt: n.createdAt,
     };
   }
 
