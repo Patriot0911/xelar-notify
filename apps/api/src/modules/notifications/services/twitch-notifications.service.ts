@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { DiscordNotificationEntity, NotificationCostType, NotificationStatus, TwitchStreamerEvents, UserEntity, WebhookNotificationEntity, WebhookType, } from '@libs/database';
+import { DiscordNotificationEntity, NotificationCostType, NotificationLogEntity, NotificationLogStatus, NotificationStatus, TwitchStreamerEvents, UserEntity, WebhookNotificationEntity, WebhookType, } from '@libs/database';
 import { TwitchSubscriptionService } from '../../twitch-subscriptions/services';
 import { DiscordPayloadService } from '../../notification-payload/services';
 import { DiscordGuildAccessService, DiscordGuildService, DiscordWebhookService } from '../../discord/services';
@@ -15,6 +15,9 @@ import {
 import { applySearch, IGenericListPayloadResponse } from 'apps/api/src/shared';
 import { NOTIFICATION_SEARCH_COLUMNS } from '../notifications.constants';
 import { NotificationsService } from './notifications.service';
+
+/** A notification as returned by the list endpoints — with the time of its latest successful delivery. */
+export type TNotificationListItem<T> = T & { lastSentAt: Date | null };
 
 @Injectable()
 export class TwitchNotificationsService {
@@ -35,6 +38,8 @@ export class TwitchNotificationsService {
     private readonly webhookNotificationRepository: Repository<WebhookNotificationEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(NotificationLogEntity)
+    private readonly notificationLogRepository: Repository<NotificationLogEntity>,
   ) {}
 
   async createDiscordNotification(
@@ -116,7 +121,7 @@ export class TwitchNotificationsService {
   async getGuildBotNotifications(
     discordGuildId: string,
     params: GetGuildNotificationsDto,
-  ): Promise<IGenericListPayloadResponse<DiscordNotificationEntity>> {
+  ): Promise<IGenericListPayloadResponse<TNotificationListItem<DiscordNotificationEntity>>> {
     const qb = this.botListQuery().where('guild.discordGuildId = :discordGuildId', { discordGuildId });
     return this.paginate(qb, params);
   }
@@ -124,7 +129,7 @@ export class TwitchNotificationsService {
   async getGuildWebhookNotifications(
     discordGuildId: string,
     params: GetGuildNotificationsDto,
-  ): Promise<IGenericListPayloadResponse<WebhookNotificationEntity>> {
+  ): Promise<IGenericListPayloadResponse<TNotificationListItem<WebhookNotificationEntity>>> {
     const qb = this.webhookListQuery().where('guild.discordGuildId = :discordGuildId', { discordGuildId });
     return this.paginate(qb, params);
   }
@@ -133,7 +138,7 @@ export class TwitchNotificationsService {
   async getMyBotNotifications(
     ownerId: string,
     params: GetGuildNotificationsDto,
-  ): Promise<IGenericListPayloadResponse<DiscordNotificationEntity>> {
+  ): Promise<IGenericListPayloadResponse<TNotificationListItem<DiscordNotificationEntity>>> {
     return this.paginate(this.botListQuery().where('n.onwerId = :ownerId', { ownerId }), params);
   }
 
@@ -141,7 +146,7 @@ export class TwitchNotificationsService {
   async getMyWebhookNotifications(
     ownerId: string,
     params: GetGuildNotificationsDto,
-  ): Promise<IGenericListPayloadResponse<WebhookNotificationEntity>> {
+  ): Promise<IGenericListPayloadResponse<TNotificationListItem<WebhookNotificationEntity>>> {
     return this.paginate(this.webhookListQuery().where('n.onwerId = :ownerId', { ownerId }), params);
   }
 
@@ -164,7 +169,7 @@ export class TwitchNotificationsService {
   private async paginate<T extends DiscordNotificationEntity | WebhookNotificationEntity>(
     qb: SelectQueryBuilder<T>,
     { page, pageSize, search }: GetGuildNotificationsDto,
-  ): Promise<IGenericListPayloadResponse<T>> {
+  ): Promise<IGenericListPayloadResponse<TNotificationListItem<T>>> {
     applySearch(qb, NOTIFICATION_SEARCH_COLUMNS, search);
 
     const [items, count] = await qb
@@ -174,7 +179,28 @@ export class TwitchNotificationsService {
       .take(pageSize)
       .getManyAndCount();
 
-    return { items, meta: { count } };
+    const lastSent = await this.getLastSentAt(items.map((n) => n.id));
+
+    return {
+      items: items.map((n) => Object.assign(n, { lastSentAt: lastSent.get(n.id) ?? null })),
+      meta: { count },
+    };
+  }
+
+  /** Time of the latest successful delivery per notification (bot and webhook ids never collide — both are uuids). */
+  private async getLastSentAt(notificationIds: string[]): Promise<Map<string, Date>> {
+    if (!notificationIds.length) return new Map();
+
+    const rows: { notificationId: string; lastSentAt: Date }[] = await this.notificationLogRepository
+      .createQueryBuilder('log')
+      .select('log.notificationId', 'notificationId')
+      .addSelect('MAX(log.createdAt)', 'lastSentAt')
+      .where('log.notificationId IN (:...notificationIds)', { notificationIds })
+      .andWhere('log.status = :status', { status: NotificationLogStatus.Sent })
+      .groupBy('log.notificationId')
+      .getRawMany();
+
+    return new Map(rows.map((r) => [r.notificationId, new Date(r.lastSentAt)]));
   }
 
   async updateDiscordNotification(

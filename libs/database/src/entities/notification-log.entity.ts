@@ -13,6 +13,8 @@ export enum NotificationLogStatus {
 @Entity('notification_logs')
 @Index(['ownerId', 'createdAt'])
 @Index(['discordGuildId', 'createdAt'])
+// Serves "when was this notification last delivered" lookups for notification lists.
+@Index('IDX_notification_logs_notification_status_created', ['notificationId', 'status', 'createdAt'])
 export class NotificationLogEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
