@@ -17,6 +17,7 @@ import { NotificationLogsModule } from './modules/notification-logs/notification
 import { StatisticsModule } from './modules/statistics';
 import { UsersModule } from './modules/users';
 import { StreamersModule } from './modules/streamers';
+import { PublicModule } from './modules/public';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { StreamersModule } from './modules/streamers';
     StatisticsModule,
     UsersModule,
     StreamersModule,
+    PublicModule,
   ],
 })
 export class ApiModule {}

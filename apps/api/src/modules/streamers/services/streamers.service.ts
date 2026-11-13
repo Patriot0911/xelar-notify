@@ -7,12 +7,14 @@ import { TwitchApiService } from '../../twitch/services';
 import { StreamersMapper } from '../mappers/streamers.mapper';
 import { IGetStreamersFiltersModel, IStreamerItemModel, IStreamerListItemModel, IStreamerNotificationLogModel } from '../models';
 import { UpdateStreamerDto } from '../dto';
+import { PublicStreamersService } from '../../public/services';
 
 @Injectable()
 export class StreamersService {
   constructor(
     private readonly streamersMapper: StreamersMapper,
     private readonly twitchApiService: TwitchApiService,
+    private readonly publicStreamersService: PublicStreamersService,
     @InjectRepository(TwitchStreamerEntity)
     private readonly streamersRepository: Repository<TwitchStreamerEntity>,
     @InjectRepository(NotificationLogEntity)
@@ -53,6 +55,8 @@ export class StreamersService {
     if (dto.isInternal !== undefined) streamer.isInternal = dto.isInternal;
 
     await this.streamersRepository.save(streamer);
+    // Internal streamers must disappear from the public showcase right away, not after the TTL.
+    await this.publicStreamersService.invalidate();
     return this.streamersMapper.entityToItem(streamer);
   }
 

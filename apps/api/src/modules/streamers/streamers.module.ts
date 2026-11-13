@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationLogEntity, TwitchStreamerEntity } from '@libs/database';
 import { TwitchModule } from '../twitch';
+import { PublicModule } from '../public';
 import { StreamersController } from './controllers';
 import { StreamersService } from './services';
 import { StreamersMapper } from './mappers/streamers.mapper';
@@ -13,6 +14,7 @@ import { StreamersMapper } from './mappers/streamers.mapper';
       NotificationLogEntity,
     ]),
     TwitchModule,
+    PublicModule,
   ],
   controllers: [StreamersController],
   providers: [StreamersService, StreamersMapper],
