@@ -48,3 +48,6 @@ export const topStreamersStatistics = () =>
 
 export const notificationSplitStatistics = () =>
   `statistics:notification-split`;
+
+export const publicStreamersShowcase = () =>
+  `public:streamers-showcase`;
